@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import { PersistenceManager } from './PersistenceManager';
 import { EventAggregator } from './EventAggregator';
 import { getGitDiffSummary, GitDiffSummary } from './gitUtils';
+import { Logger } from './Logger';
 
 const execAsync = promisify(exec);
 
@@ -38,12 +39,15 @@ export class GitMetadataEngine {
     private lastCommitHash: string | null = null;
     private lastBranchHash: string | null = null;
     private watchers: NodeJS.Timeout[] = [];
+    private logger: Logger;
 
     constructor(
         private workspaceRoot: string,
         private persistence: PersistenceManager,
         private eventAggregator: EventAggregator
     ) {
+        this.logger = new Logger(workspaceRoot, 'Reasoning Layer V3 - Git');
+        this.logger.info('GitMetadataEngine initialized', 'GitMetadataEngine');
         this.persistence.logWithEmoji('🌿', 'GitMetadataEngine initialized');
     }
 
@@ -145,9 +149,14 @@ export class GitMetadataEngine {
             // ✅ Enrichir avec diff summary via gitUtils (proven working)
             let diffSummary: GitDiffSummary | null = null;
             try {
-                this.persistence.logWithEmoji('🔍', `Getting diff stats for ${commitHash.substring(0, 8)}`);
+                this.logger.debug(`Getting diff stats for ${commitHash.substring(0, 8)}`, 'GitCapture', { commitHash });
 
                 diffSummary = await getGitDiffSummary(commitHash, this.workspaceRoot);
+
+                this.logger.info(`Diff summary: ${diffSummary.insertions} insertions, ${diffSummary.deletions} deletions`, 'GitCapture', {
+                    commitHash: commitHash.substring(0, 8),
+                    files: diffSummary.files.length
+                });
 
                 this.persistence.logWithEmoji('🔍', `Diff summary: ${diffSummary.insertions} insertions, ${diffSummary.deletions} deletions`);
 
