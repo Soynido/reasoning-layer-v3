@@ -2,39 +2,39 @@
 
 ## 📋 Status Overview
 
-**Strate 1: Core Layer (J+0 → J+10)** - ✅ **EN COURS**
-- [x] Jour 1: Setup Infrastructure & GitHub Repository
-- [ ] Jour 2: Types de Base
-- [ ] Jour 3-5: PersistenceManager (copié V2)
-- [ ] Jour 6-8: CaptureEngine (inspiré EventAggregator V2)
-- [ ] Jour 9-10: Extension Entry Point & Commands
-- [ ] Jour 10: Validation Strate 1
+**Strate 1: Core Layer (J+0 → J+10)** - ✅ **IN PROGRESS**
+- [x] Day 1: Infrastructure Setup & GitHub Repository
+- [ ] Day 2: Base Types
+- [ ] Day 3-5: PersistenceManager (copied from V2)
+- [ ] Day 6-8: CaptureEngine (inspired by V2 EventAggregator)
+- [ ] Day 9-10: Extension Entry Point & Commands
+- [ ] Day 10: Strate 1 Validation
 
-**Strate 2: Cognitive Layer (J+10 → J+20)** - ⏳ **EN ATTENTE**
-- [ ] Jour 11-13: Types RBOM & Validation Zod
-- [ ] Jour 14-17: RBOMEngine (CRUD simple)
-- [ ] Jour 18-20: Commandes VS Code RBOM
-- [ ] Jour 20: Validation Strate 2
+**Strate 2: Cognitive Layer (J+10 → J+20)** - ⏳ **PENDING**
+- [ ] Day 11-13: RBOM Types & Zod Validation
+- [ ] Day 14-17: RBOMEngine (simple CRUD)
+- [ ] Day 18-20: VS Code RBOM Commands
+- [ ] Day 20: Strate 2 Validation
 
-**Strate 3: Perceptual Layer (J+20 → J+30)** - ⏳ **EN ATTENTE**
-- [ ] Jour 21-25: Webview HTML/CSS/JS Vanilla
-- [ ] Jour 26-28: Migration V2 → V3
-- [ ] Jour 29-30: Tests & Documentation
-- [ ] Jour 30: Validation Strate 3
+**Strate 3: Perceptual Layer (J+20 → J+30)** - ⏳ **PENDING**
+- [ ] Day 21-25: Vanilla HTML/CSS/JS Webview
+- [ ] Day 26-28: V2 → V3 Migration
+- [ ] Day 29-30: Tests & Documentation
+- [ ] Day 30: Strate 3 Validation
 
 ---
 
 ## ✅ COMPLETED TASKS
 
-### Jour 1: Setup Infrastructure & GitHub Repository ✅
+### Day 1: Infrastructure Setup & GitHub Repository ✅
 
-**Status**: ✅ **TERMINÉ**
+**Status**: ✅ **COMPLETED**
 
-**Réalisations**:
-- [x] ✅ Création repo GitHub via `gh CLI` : https://github.com/Soynido/reasoning-layer-v3
-- [x] ✅ Initialisation Git local + remote origin
-- [x] ✅ Création `.gitignore` avec patterns appropriés
-- [x] ✅ Structure projet complète :
+**Achievements**:
+- [x] ✅ GitHub repository creation via `gh CLI`: https://github.com/Soynido/reasoning-layer-v3
+- [x] ✅ Local Git initialization + remote origin
+- [x] ✅ `.gitignore` creation with appropriate patterns
+- [x] ✅ Complete project structure:
   ```
   Reasoning Layer V3/
   ├── extension/
@@ -50,134 +50,134 @@
   ├── .vscodeignore                       ✅
   └── .gitignore                          ✅
   ```
-- [x] ✅ `package.json` : Extension VS Code minimale avec 3 commandes de base
-- [x] ✅ `tsconfig.json` : TypeScript strict mode, target ES2020
-- [x] ✅ `webpack.config.js` : Build simple avec externals appropriés
-- [x] ✅ Installation dépendances : `npm install` ✅
-- [x] ✅ Compilation TypeScript : `npm run compile` ✅
-- [x] ✅ Build webpack : `npm run build` ✅
-- [x] ✅ Premier commit + push GitHub : `53e4d55`
+- [x] ✅ `package.json`: Minimal VS Code extension with 3 basic commands
+- [x] ✅ `tsconfig.json`: TypeScript strict mode, ES2020 target
+- [x] ✅ `webpack.config.js`: Simple build with appropriate externals
+- [x] ✅ Dependencies installation: `npm install` ✅
+- [x] ✅ TypeScript compilation: `npm run compile` ✅
+- [x] ✅ Webpack build: `npm run build` ✅
+- [x] ✅ First commit + GitHub push: `53e4d55`
 
-**Code implémenté**:
-- ✅ **PersistenceManager.ts** : 80% du code V2 copié avec sérialisation explicite
-- ✅ **CaptureEngine.ts** : EventAggregator V2 simplifié avec debouncing 2s
-- ✅ **extension.ts** : Activation progressive Phase 1 seulement
-- ✅ **types/index.ts** : CaptureEvent, ProjectManifest, SerializableData
+**Implemented code**:
+- ✅ **PersistenceManager.ts**: 80% of V2 code copied with explicit serialization
+- ✅ **CaptureEngine.ts**: V2 EventAggregator simplified with 2s debouncing
+- ✅ **extension.ts**: Progressive activation Phase 1 only
+- ✅ **types/index.ts**: CaptureEvent, ProjectManifest, SerializableData
 
-**Tests validés**:
-- ✅ Compilation TypeScript sans erreurs
-- ✅ Build webpack réussi (8.39 KiB)
-- ✅ Structure `.reasoning/` créée automatiquement
-- ✅ OutputChannel avec logging emoji fonctionnel
+**Validated tests**:
+- ✅ TypeScript compilation without errors
+- ✅ Successful webpack build (8.39 KiB)
+- ✅ `.reasoning/` structure created automatically
+- ✅ OutputChannel with emoji logging functional
 
 ---
 
 ## 🔄 CURRENT TASK
 
-### Jour 2: Types de Base
+### Day 2: Base Types
 
-**Status**: 🔄 **EN COURS**
+**Status**: 🔄 **IN PROGRESS**
 
-**Objectif**: Finaliser les types de base et préparer la validation Strate 1
+**Objective**: Finalize base types and prepare Strate 1 validation
 
-**Tâches**:
-- [ ] Validation des types existants
-- [ ] Tests manuels de l'extension
-- [ ] Documentation des interfaces
-- [ ] Préparation pour Jour 3-5 (PersistenceManager)
+**Tasks**:
+- [ ] Validate existing types
+- [ ] Manual extension testing
+- [ ] Interface documentation
+- [ ] Preparation for Day 3-5 (PersistenceManager)
 
 ---
 
-## 📊 MÉTRIQUES DE SUCCÈS
+## 📊 SUCCESS METRICS
 
-### Strate 1 - Critères de Validation (Jour 10)
+### Strate 1 - Validation Criteria (Day 10)
 
 **Extension**:
-- ✅ Extension installable en < 2s
-- ✅ Activation Phase 1 < 500ms
-- ⏳ Capture fichiers fonctionnelle (debounce 2s)
-- ⏳ Capture commits Git fonctionnelle (polling 5s)
-- ⏳ Persistance dans `.reasoning/traces/YYYY-MM-DD.json`
-- ✅ OutputChannel affiche logs avec emojis
-- ⏳ Commandes `init`, `showOutput`, `captureNow` fonctionnelles
-- ⏳ 0 erreur "An object could not be cloned"
+- ✅ Extension installable in < 2s
+- ✅ Phase 1 activation < 500ms
+- ⏳ File capture functional (2s debounce)
+- ⏳ Git commit capture functional (5s polling)
+- ⏳ Persistence in `.reasoning/traces/YYYY-MM-DD.json`
+- ✅ OutputChannel displays logs with emojis
+- ⏳ Commands `init`, `showOutput`, `captureNow` functional
+- ⏳ 0 "An object could not be cloned" errors
 
-**Tests manuels à effectuer**:
+**Manual tests to perform**:
 ```bash
-# 1. Build et installation
+# 1. Build and installation
 npm run build
 code --install-extension reasoning-layer-v3-1.0.0.vsix
 
-# 2. Test activation
-# Ouvrir workspace → vérifier console "✅ Phase 1 completed"
+# 2. Activation test
+# Open workspace → check console "✅ Phase 1 completed"
 
-# 3. Test capture fichier
+# 3. File capture test
 echo "test" >> test.ts
-# Attendre 2s → vérifier .reasoning/traces/YYYY-MM-DD.json
+# Wait 2s → check .reasoning/traces/YYYY-MM-DD.json
 
-# 4. Test capture commit
+# 4. Commit capture test
 git add test.ts && git commit -m "test"
-# Attendre 5s → vérifier trace avec type: 'git_commit'
+# Wait 5s → check trace with type: 'git_commit'
 
-# 5. Test OutputChannel
-# Commande Palette → "Reasoning: Show Output Channel"
+# 5. OutputChannel test
+# Command Palette → "Reasoning: Show Output Channel"
 ```
 
 ---
 
-## 🎯 PROCHAINES ÉTAPES
+## 🎯 NEXT STEPS
 
-### Immédiat (Jour 2)
-1. **Tester l'extension** dans VS Code/Cursor
-2. **Valider la capture** fichiers et Git
-3. **Vérifier la persistance** dans `.reasoning/`
-4. **Documenter les interfaces** types
+### Immediate (Day 2)
+1. **Test the extension** in VS Code/Cursor
+2. **Validate capture** files and Git
+3. **Verify persistence** in `.reasoning/`
+4. **Document interfaces** types
 
-### Court terme (Jour 3-5)
-1. **Finaliser PersistenceManager** avec rotation par date
-2. **Optimiser CaptureEngine** avec filtrage robuste
-3. **Ajouter compression gzip** pour fichiers anciens
-4. **Tests unitaires** pour Core Layer
+### Short term (Day 3-5)
+1. **Finalize PersistenceManager** with date rotation
+2. **Optimize CaptureEngine** with robust filtering
+3. **Add gzip compression** for old files
+4. **Unit tests** for Core Layer
 
-### Moyen terme (Jour 6-10)
-1. **Extension Entry Point** complet
-2. **Commandes VS Code** fonctionnelles
-3. **Validation Strate 1** complète
-4. **Préparation Strate 2** (RBOM Engine)
-
----
-
-## 📝 NOTES TECHNIQUES
-
-### Architecture Local-First JSON Persistence ✅
-
-**Pattern appliqué**:
-- ✅ Sérialisation avec `JSON.stringify()` partout
-- ✅ Lecture directe depuis `.reasoning/` sans serveur
-- ✅ Exportable en `.reasonpack` portable (Strate 3)
-
-**Avantages validés**:
-- ✅ Zéro configuration : fonctionne immédiatement
-- ✅ Versionnable avec Git : `.reasoning/` dans le repo
-- ✅ Portable : copier `.reasoning/` = copier toute l'intelligence
-- ✅ Pas de serveur : pas de dépendance externe
-- ✅ Offline-first : fonctionne sans connexion
-- ✅ Multi-projet : chaque workspace est isolé
-
-### Leçons V2 Appliquées ✅
-
-**Patterns gardés**:
-- ✅ RepoPersistenceManager : OutputChannel, logging emoji, auto-save 30s
-- ✅ EventAggregator : Debouncing par fichier avec Map<string, Timeout>
-- ✅ Filtrage robuste : Patterns regex pour exclure `.git/`, `node_modules/`
-- ✅ Sérialisation explicite : Fonction deepSanitize() pour Map, Set, Date, URI
-
-**Erreurs évitées**:
-- ✅ Pas de passage d'objets VS Code au webview
-- ✅ Pas de ReasoningManager trop complexe
-- ✅ Activation progressive (pas tout en même temps)
-- ✅ Pas d'AnalyticsEngine/MetricsCollector complexes
+### Medium term (Day 6-10)
+1. **Complete Extension Entry Point**
+2. **Functional VS Code Commands**
+3. **Complete Strate 1 Validation**
+4. **Strate 2 Preparation** (RBOM Engine)
 
 ---
 
-*Dernière mise à jour : Jour 1 terminé - Extension Core Layer fonctionnelle*
+## 📝 TECHNICAL NOTES
+
+### Local-First JSON Persistence Architecture ✅
+
+**Applied pattern**:
+- ✅ Serialization with `JSON.stringify()` everywhere
+- ✅ Direct reading from `.reasoning/` without server
+- ✅ Exportable as portable `.reasonpack` (Strate 3)
+
+**Validated advantages**:
+- ✅ Zero configuration: works immediately
+- ✅ Git versionable: `.reasoning/` in the repo
+- ✅ Portable: copy `.reasoning/` = copy all intelligence
+- ✅ No server: no external dependency
+- ✅ Offline-first: works without connection
+- ✅ Multi-project: each workspace is isolated
+
+### V2 Lessons Applied ✅
+
+**Kept patterns**:
+- ✅ RepoPersistenceManager: OutputChannel, emoji logging, 30s auto-save
+- ✅ EventAggregator: File debouncing with Map<string, Timeout>
+- ✅ Robust filtering: Regex patterns to exclude `.git/`, `node_modules/`
+- ✅ Explicit serialization: deepSanitize() function for Map, Set, Date, URI
+
+**Avoided errors**:
+- ✅ No passing VS Code objects to webview
+- ✅ No overly complex ReasoningManager
+- ✅ Progressive activation (not everything at once)
+- ✅ No AnalyticsEngine/MetricsCollector complexity
+
+---
+
+*Last update: Day 1 completed - Core Layer extension functional*
