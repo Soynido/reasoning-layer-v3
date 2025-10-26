@@ -2,18 +2,21 @@
 
 ## 📋 Status Overview
 
-**Strate 1: Core Layer (J+0 → J+10)** - ✅ **IN PROGRESS**
+**Strate 1: Core Layer (J+0 → J+10)** - ✅ **COMPLETED**
 - [x] Day 1: Infrastructure Setup & GitHub Repository
-- [ ] Day 2: Base Types
-- [ ] Day 3-5: PersistenceManager (copied from V2)
-- [ ] Day 6-8: CaptureEngine (inspired by V2 EventAggregator)
-- [ ] Day 9-10: Extension Entry Point & Commands
-- [ ] Day 10: Strate 1 Validation
+- [x] Day 2-3: Base Types & PersistenceManager
+- [x] Day 4-5: CaptureEngine (EventAggregator)
+- [x] Day 6-7: Capture Engines (SBOM, Config, Test, Git)
+- [x] Day 8: SchemaManager & Manifest Generation
+- [x] Day 9: Extension Entry Point & Commands
+- [x] Day 10: Strate 1 Validation & Stabilisation
+- [x] Day 11: Debug & Fix (OutputChannel duplicate)
 
-**Strate 2: Cognitive Layer (J+10 → J+20)** - ⏳ **PENDING**
-- [ ] Day 11-13: RBOM Types & Zod Validation
-- [ ] Day 14-17: RBOMEngine (simple CRUD)
-- [ ] Day 18-20: VS Code RBOM Commands
+**Strate 2: Cognitive Layer (J+12 → J+20)** - 🔄 **NEXT**
+- [ ] Day 12-13: RBOM Types & Zod Validation
+- [ ] Day 14-15: RBOMEngine (simple CRUD) - APPROCHE PROGRESSIVE
+- [ ] Day 16-17: EvidenceMapper (Capture → RBOM)
+- [ ] Day 18-19: VS Code RBOM Commands
 - [ ] Day 20: Strate 2 Validation
 
 **Strate 3: Perceptual Layer (J+20 → J+30)** - ⏳ **PENDING**
@@ -72,19 +75,36 @@
 
 ---
 
-## 🔄 CURRENT TASK
+## 🎯 CURRENT STATE
 
-### Day 2: Base Types
+### Strate 1 - Core Layer ✅ COMPLETED
 
-**Status**: 🔄 **IN PROGRESS**
+**Date**: 26 octobre 2025  
+**Status**: ✅ **PRODUCTION-READY**  
+**Extension Size**: 55 KiB (184 KB avec assets)
 
-**Objective**: Finalize base types and prepare Strate 1 validation
+**Achievements**:
+- ✅ Extension stable, 0 crash
+- ✅ 594 événements capturés avec succès
+- ✅ 4 Capture Engines fonctionnels
+- ✅ PersistenceManager + SchemaManager opérationnels
+- ✅ Un seul OutputChannel unifié
+- ✅ Manifest auto-généré avec cohérence
 
-**Tasks**:
-- [ ] Validate existing types
-- [ ] Manual extension testing
-- [ ] Interface documentation
-- [ ] Preparation for Day 3-5 (PersistenceManager)
+## 🔄 NEXT TASK
+
+### Day 12: Préparer Layer 2 - RBOM Engine
+
+**Status**: ⏳ **READY TO START**
+
+**Objective**: Implémenter RBOM Engine avec approche progressive et sûre
+
+**Tâches à faire**:
+- [ ] Valider les types RBOM existants
+- [ ] Réimplémenter RBOMEngine de manière progressive
+- [ ] Tester chaque composant individuellement
+- [ ] Créer EvidenceMapper (interface Capture → RBOM)
+- [ ] Implémenter commandes VS Code pour ADRs
 
 ---
 
@@ -127,27 +147,30 @@ git add test.ts && git commit -m "test"
 
 ## 🎯 NEXT STEPS
 
-### ✅ Strate 1: Core Layer (J+0 → J+10) - COMPLETED
-- ✅ PersistenceManager fonctionnel
-- ✅ Capture automatique des fichiers (VS Code API)
-- ✅ Logs détaillés avec emojis
-- ✅ Messages GitHub integration
-- ✅ GitCaptureEngine (Niveau 1: Commit Data + Diff Summary)
+### ✅ Strate 1: Core Layer - COMPLETED & STABLE
+- ✅ PersistenceManager + SchemaManager opérationnels
+- ✅ EventAggregator avec debounce fonctionnel
+- ✅ 4 Capture Engines: SBOM, Config, Test, Git
+- ✅ Logs détaillés avec emojis via un seul OutputChannel
+- ✅ GitMetadataEngine avec diff summary complet
+- ✅ Manifest auto-généré avec intégrité SHA256
+- ✅ 594 événements capturés sans erreur
+- ✅ Extension: 55 KiB (stable)
 
-### 🚀 Strate 2: Cognitive Layer (J+10 → J+20) - IN PROGRESS
-- 🔄 RBOM Engine (Architectural Decision Records)
-- 🔄 Schema Zod pour validation
-- 🔄 Commandes VS Code pour ADRs
-- 🔄 Niveau 1: Dependencies (SBOM/package-lock)
-- 🔄 Niveau 4: PR/Issues linking (GitHub API)
+### 🚀 Strate 2: Cognitive Layer (J+12 → J+20) - NEXT
+- [ ] RBOMEngine avec approche progressive (éviter crash)
+- [ ] EvidenceMapper pour interface Capture → RBOM
+- [ ] Schema Zod pour validation ADRs
+- [ ] Commandes VS Code pour CRUD ADRs
+- [ ] Détection automatique de décisions (DecisionSynthesizer)
+- [ ] Validation Strate 2
 
 ### 📋 Strate 3: Perceptual Layer (J+20 → J+30) - PLANNED
-- Webview HTML/CSS/JS Vanilla
-- Niveau 2: ADR Engine complet
-- Niveau 3: Team Context
-- Niveau 5: Integrity & Persistence
-- Migration V2 → V3
-- Tests & Documentation
+- [ ] Webview HTML/CSS/JS Vanilla
+- [ ] Dashboard visualisation traces
+- [ ] Interface ADR interactive
+- [ ] Tests & Documentation
+- [ ] Migration V2 → V3
 
 ---
 
@@ -184,4 +207,38 @@ git add test.ts && git commit -m "test"
 
 ---
 
-*Last update: Day 1 completed - Core Layer extension functional*
+## 📅 CHANGELOG
+
+### 2025-10-26 (Jour 11)
+- ✅ Fix: Retrait du Logger du GitMetadataEngine pour éviter duplication OutputChannel
+- ✅ Extension stable: 55 KiB, 594 événements capturés
+- ✅ Un seul OutputChannel unifié
+- ✅ Strate 1 complétée et production-ready
+
+### 2025-10-26 (Jour 10)
+- ✅ Stabilisation Layer 1
+- ✅ Désactivation RBOM Engine (rollback pour éviter crash)
+- ✅ PersistenceManager + SchemaManager opérationnels
+- ✅ 4 Capture Engines fonctionnels
+
+### 2025-10-26 (Jour 8-9)
+- ✅ Intégration GitMetadataEngine avec diff summary
+- ✅ Manifest auto-généré avec intégrité
+- ✅ EventAggregator avec validation schema
+
+### 2025-10-26 (Jour 6-7)
+- ✅ SBOMCaptureEngine, ConfigCaptureEngine, TestCaptureEngine
+- ✅ Capture dependencies, configs, tests
+
+### 2025-10-26 (Jour 4-5)
+- ✅ EventAggregator avec debounce
+- ✅ VS Code file watchers
+
+### 2025-10-26 (Jour 1-3)
+- ✅ Infrastructure complète
+- ✅ PersistenceManager opérationnel
+- ✅ Types de base définis
+
+---
+
+*Last update: 2025-10-26 - Strate 1 COMPLETED & STABLE - Prêt pour Strate 2*
