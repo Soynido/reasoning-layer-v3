@@ -12,7 +12,7 @@ import { ManifestGenerator } from './core/ManifestGenerator';
 import { RBOMEngine } from './core/rbom/RBOMEngine';
 import { ADR } from './core/rbom/types';
 import { EvidenceMapper } from './core/EvidenceMapper';
-import { DecisionDetector } from './core/rbom/DecisionDetector';
+import { DecisionSynthesizer } from './core/rbom/DecisionSynthesizer';
 
 let persistence: PersistenceManager | null = null;
 let eventAggregator: EventAggregator | null = null;
@@ -23,7 +23,7 @@ let gitMetadata: GitMetadataEngine | null = null;
 let schemaManager: SchemaManager | null = null;
 let rbomEngine: RBOMEngine | null = null;
 let evidenceMapper: EvidenceMapper | null = null;
-let decisionDetector: DecisionDetector | null = null;
+let decisionSynthesizer: DecisionSynthesizer | null = null;
 
 // ✅ Debounce map pour éviter la multiplication d'événements
 const fileDebounceMap = new Map<string, NodeJS.Timeout>();
@@ -217,17 +217,22 @@ export async function activate(context: vscode.ExtensionContext) {
         if (workspaceRoot) {
             rbomEngine = new RBOMEngine(workspaceRoot);
             evidenceMapper = new EvidenceMapper();
-            decisionDetector = new DecisionDetector(workspaceRoot, persistence, rbomEngine, evidenceMapper);
-            persistence.logWithEmoji('🧠', 'RBOM Engine initialized with auto-decision detection');
+            decisionSynthesizer = new DecisionSynthesizer(workspaceRoot, persistence, rbomEngine);
+            persistence.logWithEmoji('🧠', 'RBOM Engine initialized with historical synthesis');
 
-            // ✅ Activer le scanner automatique
-            const scanInterval = setInterval(() => {
-                decisionDetector?.scanRecentEvents();
-            }, 10000); // Scan toutes les 10 secondes
+            // ✅ Activer la synthèse historique (toutes les 5 minutes)
+            const synthesisInterval = setInterval(() => {
+                decisionSynthesizer?.synthesizeHistoricalDecisions();
+            }, 300000); // Synthèse toutes les 5 minutes
 
             context.subscriptions.push({
-                dispose: () => clearInterval(scanInterval)
+                dispose: () => clearInterval(synthesisInterval)
             });
+
+            // ✅ Premier lancement après 2 minutes
+            setTimeout(() => {
+                decisionSynthesizer?.synthesizeHistoricalDecisions();
+            }, 120000);
         }
 
         // ✅ ADR Commands
