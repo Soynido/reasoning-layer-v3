@@ -9,10 +9,11 @@ import { TestCaptureEngine } from './core/TestCaptureEngine';
 import { GitMetadataEngine } from './core/GitMetadataEngine';
 import { SchemaManager } from './core/SchemaManager';
 import { ManifestGenerator } from './core/ManifestGenerator';
-import { RBOMEngine } from './core/rbom/RBOMEngine';
-import { ADR } from './core/rbom/types';
-import { EvidenceMapper } from './core/EvidenceMapper';
-import { DecisionSynthesizer } from './core/rbom/DecisionSynthesizer';
+// ❌ RBOM Engine désactivé pour stabilité Layer 1
+// import { RBOMEngine } from './core/rbom/RBOMEngine';
+// import { ADR } from './core/rbom/types';
+// import { EvidenceMapper } from './core/EvidenceMapper';
+// import { DecisionSynthesizer } from './core/rbom/DecisionSynthesizer';
 
 let persistence: PersistenceManager | null = null;
 let eventAggregator: EventAggregator | null = null;
@@ -21,9 +22,10 @@ let configCapture: ConfigCaptureEngine | null = null;
 let testCapture: TestCaptureEngine | null = null;
 let gitMetadata: GitMetadataEngine | null = null;
 let schemaManager: SchemaManager | null = null;
-let rbomEngine: RBOMEngine | null = null;
-let evidenceMapper: EvidenceMapper | null = null;
-let decisionSynthesizer: DecisionSynthesizer | null = null;
+// ❌ RBOM Engine désactivé pour stabilité Layer 1
+// let rbomEngine: RBOMEngine | null = null;
+// let evidenceMapper: EvidenceMapper | null = null;
+// let decisionSynthesizer: DecisionSynthesizer | null = null;
 
 // ✅ Debounce map pour éviter la multiplication d'événements
 const fileDebounceMap = new Map<string, NodeJS.Timeout>();
@@ -213,29 +215,30 @@ export async function activate(context: vscode.ExtensionContext) {
             })
         );
 
-        // ✅ RBOM Engine initialization
+        // ❌ RBOM Engine DÉSACTIVÉ pour stabilité Layer 1 (réactivé en Strate 2)
+        /*
         if (workspaceRoot) {
             rbomEngine = new RBOMEngine(workspaceRoot);
             evidenceMapper = new EvidenceMapper();
             decisionSynthesizer = new DecisionSynthesizer(workspaceRoot, persistence, rbomEngine);
             persistence.logWithEmoji('🧠', 'RBOM Engine initialized with historical synthesis');
 
-            // ✅ Activer la synthèse historique (toutes les 5 minutes)
             const synthesisInterval = setInterval(() => {
                 decisionSynthesizer?.synthesizeHistoricalDecisions();
-            }, 300000); // Synthèse toutes les 5 minutes
+            }, 300000);
 
             context.subscriptions.push({
                 dispose: () => clearInterval(synthesisInterval)
             });
 
-            // ✅ Premier lancement après 2 minutes
             setTimeout(() => {
                 decisionSynthesizer?.synthesizeHistoricalDecisions();
             }, 120000);
         }
+        */
 
-        // ✅ ADR Commands
+        // ❌ ADR Commands DÉSACTIVÉS (Layer 2)
+        /*
         context.subscriptions.push(
             vscode.commands.registerCommand('reasoning.adr.create', async () => {
                 if (!rbomEngine) {
@@ -417,6 +420,7 @@ ${adr.evidenceIds.length} evidence(s) linked
                 persistence.logWithEmoji('🔗', `Linking evidence to ADR: ${selectedADR.label}`);
             })
         );
+        */
 
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
