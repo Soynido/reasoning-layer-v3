@@ -11,13 +11,18 @@
 - [x] Day 9: Extension Entry Point & Commands
 - [x] Day 10: Strate 1 Validation & Stabilisation
 - [x] Day 11: Debug & Fix (OutputChannel duplicate)
+- [x] Day 13: Layer 1 Stabilisation finale (RBOM disabled)
 
-**Strate 2: Cognitive Layer (J+12 → J+20)** - 🔄 **NEXT**
-- [ ] Day 12-13: RBOM Types & Zod Validation
-- [ ] Day 14-15: RBOMEngine (simple CRUD) - APPROCHE PROGRESSIVE
-- [ ] Day 16-17: EvidenceMapper (Capture → RBOM)
-- [ ] Day 18-19: VS Code RBOM Commands
-- [ ] Day 20: Strate 2 Validation
+**Strate 2: Cognitive Layer (J+12 → J+20)** - ⏸️ **SUSPENDED**
+- [x] Day 12: RBOM Types consolidation ✅
+- [x] Day 13: Zod Validation v3.23.8 ✅
+- [x] Day 13: EvidenceMapper created ✅
+- [ ] Day 14-15: RBOMEngine activation (ON HOLD)
+- [ ] Day 16-17: Evidence → RBOM integration (ON HOLD)
+- [ ] Day 18-19: VS Code RBOM Commands (ON HOLD)
+- [ ] Day 20: Strate 2 Validation (ON HOLD)
+
+**NOTE**: RBOMEngine est compilé et prêt mais **désactivé** pour stabiliser Layer 1.
 
 **Strate 3: Perceptual Layer (J+20 → J+30)** - ⏳ **PENDING**
 - [ ] Day 21-25: Vanilla HTML/CSS/JS Webview
@@ -209,6 +214,13 @@ git add test.ts && git commit -m "test"
 
 ## 📅 CHANGELOG
 
+### 2025-01-27 (Jour 13) - STABILISATION FINALE
+- ✅ **RBOM Engine désactivé** pour stabiliser Layer 1
+- ✅ Downgrade Zod v4 → v3.23.8 (compatibilité)
+- ✅ Fix schema.ts (z.string() au lieu de .datetime())
+- ✅ Extension stable et fonctionnelle
+- ✅ Layer 1 complètement opérationnel
+
 ### 2025-10-26 (Jour 11)
 - ✅ Fix: Retrait du Logger du GitMetadataEngine pour éviter duplication OutputChannel
 - ✅ Extension stable: 55 KiB, 594 événements capturés
@@ -241,4 +253,4 @@ git add test.ts && git commit -m "test"
 
 ---
 
-*Last update: 2025-10-26 - Strate 1 COMPLETED & STABLE - Prêt pour Strate 2*
+*Last update: 2025-01-27 - Layer 1 STABLE - RBOM prêt mais désactivé - Prêt pour tests & validation*

@@ -31,51 +31,51 @@
         "title": "📋 Show Output Channel",
         "category": "Reasoning"
       },
-              {
-                "command": "reasoning.captureNow",
-                "title": "📸 Capture Now",
-                "category": "Reasoning"
-              },
-              {
-                "command": "reasoning.checkGitHub",
-                "title": "🔍 Check GitHub Status",
-                "category": "Reasoning"
-              },
-              {
-                "command": "reasoning.refreshTraces",
-                "title": "🔄 Refresh Traces",
-                "category": "Reasoning"
-              },
-              {
-                "command": "reasoning.showSchema",
-                "title": "📋 Show Persistence Contract Schema",
-                "category": "Reasoning"
-              },
-              {
-                "command": "reasoning.validateTraces",
-                "title": "✅ Validate Traces File",
-                "category": "Reasoning"
-              },
-              {
-                "command": "reasoning.adr.create",
-                "title": "📝 Create ADR",
-                "category": "Reasoning ADR"
-              },
-              {
-                "command": "reasoning.adr.list",
-                "title": "📋 List ADRs",
-                "category": "Reasoning ADR"
-              },
-              {
-                "command": "reasoning.adr.view",
-                "title": "👁️ View ADR",
-                "category": "Reasoning ADR"
-              },
-              {
-                "command": "reasoning.adr.link",
-                "title": "🔗 Link Evidence to ADR",
-                "category": "Reasoning ADR"
-              }
+      {
+        "command": "reasoning.captureNow",
+        "title": "📸 Capture Now",
+        "category": "Reasoning"
+      },
+      {
+        "command": "reasoning.checkGitHub",
+        "title": "🔍 Check GitHub Status",
+        "category": "Reasoning"
+      },
+      {
+        "command": "reasoning.refreshTraces",
+        "title": "🔄 Refresh Traces",
+        "category": "Reasoning"
+      },
+      {
+        "command": "reasoning.showSchema",
+        "title": "📋 Show Persistence Contract Schema",
+        "category": "Reasoning"
+      },
+      {
+        "command": "reasoning.validateTraces",
+        "title": "✅ Validate Traces File",
+        "category": "Reasoning"
+      },
+      {
+        "command": "reasoning.adr.create",
+        "title": "📝 Create ADR",
+        "category": "Reasoning ADR"
+      },
+      {
+        "command": "reasoning.adr.list",
+        "title": "📋 List ADRs",
+        "category": "Reasoning ADR"
+      },
+      {
+        "command": "reasoning.adr.view",
+        "title": "👁️ View ADR",
+        "category": "Reasoning ADR"
+      },
+      {
+        "command": "reasoning.adr.link",
+        "title": "🔗 Link Evidence to ADR",
+        "category": "Reasoning ADR"
+      }
     ]
   },
   "scripts": {
@@ -90,7 +90,7 @@
     "chokidar": "^3.5.3",
     "simple-git": "^3.28.0",
     "uuid": "^9.0.0",
-    "zod": "^4.1.12"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",

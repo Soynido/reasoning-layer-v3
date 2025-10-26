@@ -9,11 +9,10 @@ import { TestCaptureEngine } from './core/TestCaptureEngine';
 import { GitMetadataEngine } from './core/GitMetadataEngine';
 import { SchemaManager } from './core/SchemaManager';
 import { ManifestGenerator } from './core/ManifestGenerator';
-// ❌ RBOM Engine désactivé pour stabilité Layer 1
+// ❌ RBOM Engine désactivé - patienter Strate 2
 // import { RBOMEngine } from './core/rbom/RBOMEngine';
 // import { ADR } from './core/rbom/types';
 // import { EvidenceMapper } from './core/EvidenceMapper';
-// import { DecisionSynthesizer } from './core/rbom/DecisionSynthesizer';
 
 let persistence: PersistenceManager | null = null;
 let eventAggregator: EventAggregator | null = null;
@@ -22,10 +21,9 @@ let configCapture: ConfigCaptureEngine | null = null;
 let testCapture: TestCaptureEngine | null = null;
 let gitMetadata: GitMetadataEngine | null = null;
 let schemaManager: SchemaManager | null = null;
-// ❌ RBOM Engine désactivé pour stabilité Layer 1
+// ❌ RBOM Engine désactivé - patienter Strate 2
 // let rbomEngine: RBOMEngine | null = null;
 // let evidenceMapper: EvidenceMapper | null = null;
-// let decisionSynthesizer: DecisionSynthesizer | null = null;
 
 // ✅ Debounce map pour éviter la multiplication d'événements
 const fileDebounceMap = new Map<string, NodeJS.Timeout>();
@@ -129,6 +127,9 @@ export async function activate(context: vscode.ExtensionContext) {
                 persistence.logWithEmoji('⚠️', 'GitMetadataEngine disabled');
             }
         }, 5000); // Activation différée de 5 secondes
+        
+        // ❌ ÉTAPE 7: RBOMEngine désactivé (Strate 2)
+        // RBOMEngine sera activé dans une version future
         
         // ✅ GitHub Repository Info (once only)
         persistence.logWithEmoji('🚀', 'GitHub integration available - create repo for full features');

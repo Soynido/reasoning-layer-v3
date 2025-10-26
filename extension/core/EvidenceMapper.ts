@@ -1,41 +1,56 @@
-import { CaptureEvent, Evidence, DependencyInfo, TestReport, ConfigValue } from './types';
+import { CaptureEvent, Evidence } from './types';
 
 /**
- * EvidenceMapper - Data Contract Interface entre Capture et RBOM
+ * EvidenceMapper
  * 
- * Chaque événement capturé devient un "Evidence" node utilisable par le RBOM Engine
- * pour lier des preuves à des Architectural Decision Records (ADRs).
+ * Couche de transformation qui convertit les CaptureEvent en Evidence
+ * pour le moteur RBOM.
+ * 
+ * L'Evidence est l'interface standardisée entre la couche Capture (Layer 1)
+ * et la couche RBOM (Layer 2).
  */
 export class EvidenceMapper {
     /**
-     * Convertit un CaptureEvent en Evidence node
+     * Convertit un CaptureEvent en Evidence
      */
-    public mapToEvidence(event: CaptureEvent): Evidence {
+    public toEvidence(event: CaptureEvent): Evidence {
+        // Mapping intelligent selon le type d'événement
         switch (event.type) {
             case 'git_commit':
-                return this.mapCommitToEvidence(event);
+                return this.mapGitCommit(event);
             
             case 'file_change':
-                return this.mapFileChangeToEvidence(event);
+                return this.mapFileChange(event);
             
             case 'git_branch':
-                return this.mapBranchToEvidence(event);
+                return this.mapGitBranch(event);
             
             case 'dependencies':
-                return this.mapDependenciesToEvidence(event);
+                return this.mapDependencies(event);
             
             case 'config':
-                return this.mapConfigToEvidence(event);
+                return this.mapConfig(event);
             
             case 'test':
-                return this.mapTestToEvidence(event);
+                return this.mapTest(event);
             
             default:
-                return this.mapDefaultToEvidence(event);
+                return this.mapDefault(event);
         }
     }
 
-    private mapCommitToEvidence(event: CaptureEvent): Evidence {
+    /**
+     * Convertit plusieurs CaptureEvents en Evidences
+     */
+    public toEvidences(events: CaptureEvent[]): Evidence[] {
+        return events.map(event => this.toEvidence(event));
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Mappings spécifiques par type
+    // ═══════════════════════════════════════════════════════════════
+
+    private mapGitCommit(event: CaptureEvent): Evidence {
         return {
             id: event.id,
             type: 'commit',
@@ -43,14 +58,14 @@ export class EvidenceMapper {
             timestamp: event.timestamp,
             metadata: {
                 ...event.metadata,
-                level: '1 - Code & Structure Technique',
-                category: 'Git Metadata'
+                _mapped: true,
+                _category: 'git-metadata'
             },
             version: '1.0'
         };
     }
 
-    private mapFileChangeToEvidence(event: CaptureEvent): Evidence {
+    private mapFileChange(event: CaptureEvent): Evidence {
         return {
             id: event.id,
             type: 'file_change',
@@ -58,14 +73,14 @@ export class EvidenceMapper {
             timestamp: event.timestamp,
             metadata: {
                 ...event.metadata,
-                level: '1 - Code & Structure Technique',
-                category: 'File Changes'
+                _mapped: true,
+                _category: 'file-changes'
             },
             version: '1.0'
         };
     }
 
-    private mapBranchToEvidence(event: CaptureEvent): Evidence {
+    private mapGitBranch(event: CaptureEvent): Evidence {
         return {
             id: event.id,
             type: 'git_branch',
@@ -73,113 +88,70 @@ export class EvidenceMapper {
             timestamp: event.timestamp,
             metadata: {
                 ...event.metadata,
-                level: '1 - Code & Structure Technique',
-                category: 'Git Metadata'
+                _mapped: true,
+                _category: 'git-metadata'
             },
             version: '1.0'
         };
     }
 
-    private mapDependenciesToEvidence(event: CaptureEvent): Evidence {
-        const dependencies = event.metadata.dependencies as DependencyInfo[] | undefined;
-        
+    private mapDependencies(event: CaptureEvent): Evidence {
         return {
             id: event.id,
             type: 'dependency',
             source: event.source,
             timestamp: event.timestamp,
             metadata: {
-                level: '1 - Code & Structure Technique',
-                category: 'Dependencies',
-                dependencies: dependencies || [],
-                total: event.metadata.total || 0
+                ...event.metadata,
+                _mapped: true,
+                _category: 'sbom'
             },
             version: '1.0'
         };
     }
 
-    private mapConfigToEvidence(event: CaptureEvent): Evidence {
+    private mapConfig(event: CaptureEvent): Evidence {
         return {
             id: event.id,
             type: 'config',
             source: event.source,
             timestamp: event.timestamp,
             metadata: {
-                level: '1 - Code & Structure Technique',
-                category: 'Configuration',
-                fileType: event.metadata.fileType,
-                keys: event.metadata.keys || {}
+                ...event.metadata,
+                _mapped: true,
+                _category: 'configuration'
             },
             version: '1.0'
         };
     }
 
-    private mapTestToEvidence(event: CaptureEvent): Evidence {
+    private mapTest(event: CaptureEvent): Evidence {
         return {
             id: event.id,
             type: 'test',
             source: event.source,
             timestamp: event.timestamp,
             metadata: {
-                level: '1 - Code & Structure Technique',
-                category: 'Test Reports',
-                framework: event.metadata.framework,
-                status: event.metadata.status,
-                totalTests: event.metadata.totalTests || 0,
-                passed: event.metadata.passed || 0,
-                failed: event.metadata.failed || 0,
-                coverage: event.metadata.coverage
+                ...event.metadata,
+                _mapped: true,
+                _category: 'test-reports'
             },
             version: '1.0'
         };
     }
 
-    private mapDefaultToEvidence(event: CaptureEvent): Evidence {
+    private mapDefault(event: CaptureEvent): Evidence {
         return {
             id: event.id,
             type: 'file_change',
             source: event.source,
             timestamp: event.timestamp,
-            metadata: event.metadata,
+            metadata: {
+                ...event.metadata,
+                _mapped: true,
+                _category: 'unknown'
+            },
             version: '1.0'
         };
     }
-
-    /**
-     * Convertit une liste de CaptureEvents en Evidence nodes
-     */
-    public mapEventsToEvidence(events: CaptureEvent[]): Evidence[] {
-        return events.map(event => this.mapToEvidence(event));
-    }
-
-    /**
-     * Filtre les Evidence nodes par type
-     */
-    public filterByType(evidenceList: Evidence[], type: Evidence['type']): Evidence[] {
-        return evidenceList.filter(evidence => evidence.type === type);
-    }
-
-    /**
-     * Trouve des Evidence nodes liés à un fichier spécifique
-     */
-    public findEvidenceForFile(evidenceList: Evidence[], filePath: string): Evidence[] {
-        return evidenceList.filter(evidence => evidence.source.includes(filePath));
-    }
-
-    /**
-     * Trouve des Evidence nodes dans un intervalle de temps
-     */
-    public findEvidenceInTimeRange(
-        evidenceList: Evidence[], 
-        startTime: string, 
-        endTime: string
-    ): Evidence[] {
-        return evidenceList.filter(evidence => {
-            const timestamp = new Date(evidence.timestamp).getTime();
-            const start = new Date(startTime).getTime();
-            const end = new Date(endTime).getTime();
-            return timestamp >= start && timestamp <= end;
-        });
-    }
 }
-
