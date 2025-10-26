@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import simpleGit from 'simple-git';
 import { PersistenceManager } from './PersistenceManager';
 import { EventAggregator } from './EventAggregator';
 
@@ -40,14 +39,12 @@ export class GitMetadataEngine {
     private lastCommitHash: string | null = null;
     private lastBranchHash: string | null = null;
     private watchers: NodeJS.Timeout[] = [];
-    private git: any;
 
     constructor(
         private workspaceRoot: string,
         private persistence: PersistenceManager,
         private eventAggregator: EventAggregator
     ) {
-        this.git = simpleGit(this.workspaceRoot);
         this.persistence.logWithEmoji('🌿', 'GitMetadataEngine initialized');
     }
 
