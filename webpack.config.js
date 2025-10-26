@@ -10,7 +10,10 @@ module.exports = {
     libraryTarget: 'commonjs2'
   },
   externals: {
-    vscode: 'commonjs vscode'
+    vscode: 'commonjs vscode',
+    chokidar: 'commonjs chokidar',
+    'simple-git': 'commonjs simple-git',
+    uuid: 'commonjs uuid'
   },
   resolve: {
     extensions: ['.ts', '.js']
@@ -24,5 +27,9 @@ module.exports = {
       }
     ]
   },
-  devtool: 'nosources-source-map'
+  devtool: 'nosources-source-map',
+  node: {
+    __dirname: false,
+    __filename: false
+  }
 };
