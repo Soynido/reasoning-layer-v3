@@ -55,6 +55,26 @@
                 "command": "reasoning.validateTraces",
                 "title": "✅ Validate Traces File",
                 "category": "Reasoning"
+              },
+              {
+                "command": "reasoning.adr.create",
+                "title": "📝 Create ADR",
+                "category": "Reasoning ADR"
+              },
+              {
+                "command": "reasoning.adr.list",
+                "title": "📋 List ADRs",
+                "category": "Reasoning ADR"
+              },
+              {
+                "command": "reasoning.adr.view",
+                "title": "👁️ View ADR",
+                "category": "Reasoning ADR"
+              },
+              {
+                "command": "reasoning.adr.link",
+                "title": "🔗 Link Evidence to ADR",
+                "category": "Reasoning ADR"
               }
     ]
   },

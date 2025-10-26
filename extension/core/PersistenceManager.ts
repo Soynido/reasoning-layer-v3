@@ -132,6 +132,10 @@ export class PersistenceManager {
         return this.tracesPath;
     }
 
+    public getWorkspaceRoot(): string {
+        return this.workspaceRoot;
+    }
+
     public dispose(): void {
         if (this.autoSaveInterval) {
             clearInterval(this.autoSaveInterval);

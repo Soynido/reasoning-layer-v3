@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import { PersistenceManager } from './core/PersistenceManager';
 import { EventAggregator } from './core/EventAggregator';
 import { SBOMCaptureEngine } from './core/SBOMCaptureEngine';
@@ -8,6 +9,9 @@ import { TestCaptureEngine } from './core/TestCaptureEngine';
 import { GitMetadataEngine } from './core/GitMetadataEngine';
 import { SchemaManager } from './core/SchemaManager';
 import { ManifestGenerator } from './core/ManifestGenerator';
+import { RBOMEngine } from './core/rbom/RBOMEngine';
+import { ADR } from './core/rbom/types';
+import { EvidenceMapper } from './core/EvidenceMapper';
 
 let persistence: PersistenceManager | null = null;
 let eventAggregator: EventAggregator | null = null;
@@ -16,6 +20,8 @@ let configCapture: ConfigCaptureEngine | null = null;
 let testCapture: TestCaptureEngine | null = null;
 let gitMetadata: GitMetadataEngine | null = null;
 let schemaManager: SchemaManager | null = null;
+let rbomEngine: RBOMEngine | null = null;
+let evidenceMapper: EvidenceMapper | null = null;
 
 // ✅ Debounce map pour éviter la multiplication d'événements
 const fileDebounceMap = new Map<string, NodeJS.Timeout>();
@@ -202,6 +208,196 @@ export async function activate(context: vscode.ExtensionContext) {
                 } else {
                     vscode.window.showErrorMessage('SchemaManager or PersistenceManager not initialized');
                 }
+            })
+        );
+
+        // ✅ RBOM Engine initialization
+        if (workspaceRoot) {
+            rbomEngine = new RBOMEngine(workspaceRoot);
+            evidenceMapper = new EvidenceMapper();
+            persistence.logWithEmoji('🧠', 'RBOM Engine initialized');
+        }
+
+        // ✅ ADR Commands
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.adr.create', async () => {
+                if (!rbomEngine) {
+                    vscode.window.showErrorMessage('RBOM Engine not initialized');
+                    return;
+                }
+
+                const title = await vscode.window.showInputBox({
+                    prompt: 'Enter ADR title',
+                    placeHolder: 'e.g., Use TypeScript for type safety'
+                });
+
+                if (!title) return;
+
+                const author = await vscode.window.showInputBox({
+                    prompt: 'Enter author name',
+                    value: 'Developer'
+                });
+
+                if (!author) return;
+
+                const adr = rbomEngine.createADR({
+                    title,
+                    author,
+                    status: 'proposed',
+                    context: '',
+                    decision: '',
+                    consequences: ''
+                });
+
+                if (adr) {
+                    vscode.window.showInformationMessage(`✅ ADR created: ${adr.id}`);
+                    persistence?.logWithEmoji('📝', `ADR created: ${adr.title}`);
+                } else {
+                    vscode.window.showErrorMessage('❌ Failed to create ADR');
+                }
+            })
+        );
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.adr.list', async () => {
+                if (!rbomEngine) {
+                    vscode.window.showErrorMessage('RBOM Engine not initialized');
+                    return;
+                }
+
+                const adrs = rbomEngine.listADRs();
+                
+                if (adrs.length === 0) {
+                    vscode.window.showInformationMessage('📋 No ADRs found. Create one with "Create ADR" command.');
+                    return;
+                }
+
+                const items = adrs.map(adr => ({
+                    label: `📄 ${adr.title}`,
+                    description: `Status: ${adr.status} | ${adr.evidenceIds.length} evidence(s)`,
+                    adr
+                }));
+
+                const selected = await vscode.window.showQuickPick(items, {
+                    placeHolder: 'Select an ADR to view'
+                });
+
+                if (selected) {
+                    vscode.commands.executeCommand('reasoning.adr.view', selected.adr.id);
+                }
+            })
+        );
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.adr.view', async (adrId?: string) => {
+                if (!rbomEngine) {
+                    vscode.window.showErrorMessage('RBOM Engine not initialized');
+                    return;
+                }
+
+                let id = adrId;
+                
+                if (!id) {
+                    const adrs = rbomEngine.listADRs();
+                    if (adrs.length === 0) {
+                        vscode.window.showInformationMessage('📋 No ADRs found');
+                        return;
+                    }
+
+                    const items = adrs.map(adr => ({
+                        label: adr.title,
+                        description: `Status: ${adr.status}`,
+                        id: adr.id
+                    }));
+
+                    const selected = await vscode.window.showQuickPick(items);
+                    if (!selected) return;
+                    id = selected.id;
+                }
+
+                const adr = rbomEngine.getADR(id);
+                if (!adr) {
+                    vscode.window.showErrorMessage(`ADR not found: ${id}`);
+                    return;
+                }
+
+                // Open ADR in new editor
+                const content = `# ${adr.title}
+
+**Status**: ${adr.status}
+**Author**: ${adr.author}
+**Created**: ${adr.createdAt}
+**Modified**: ${adr.modifiedAt}
+
+## Context
+${adr.context}
+
+## Decision
+${adr.decision}
+
+## Consequences
+${adr.consequences}
+
+## Tags
+${adr.tags.join(', ')}
+
+## Components
+${adr.components.join(', ')}
+
+## Evidence
+${adr.evidenceIds.length} evidence(s) linked
+`;
+
+                const doc = await vscode.workspace.openTextDocument({
+                    content,
+                    language: 'markdown'
+                });
+                vscode.window.showTextDocument(doc);
+
+                persistence?.logWithEmoji('👁️', `Viewing ADR: ${adr.title}`);
+            })
+        );
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.adr.link', async () => {
+                if (!rbomEngine || !persistence) {
+                    vscode.window.showErrorMessage('RBOM Engine not initialized');
+                    return;
+                }
+
+                const adrs = rbomEngine.listADRs();
+                if (adrs.length === 0) {
+                    vscode.window.showInformationMessage('📋 No ADRs found. Create one first.');
+                    return;
+                }
+
+                const adrItems = adrs.map(adr => ({
+                    label: adr.title,
+                    description: `Status: ${adr.status}`,
+                    adrId: adr.id
+                }));
+
+                const selectedADR = await vscode.window.showQuickPick(adrItems, {
+                    placeHolder: 'Select ADR to link evidence'
+                });
+
+                if (!selectedADR) return;
+
+                // Load recent evidence (from traces)
+                const tracesPath = path.join(persistence.getWorkspaceRoot(), '.reasoning', 'traces');
+                let evidenceCount = 0;
+                
+                if (fs.existsSync(tracesPath)) {
+                    const files = fs.readdirSync(tracesPath).filter(f => f.endsWith('.json'));
+                    for (const file of files) {
+                        const filePath = path.join(tracesPath, file);
+                        const events = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+                        evidenceCount += events.length;
+                    }
+                }
+
+                vscode.window.showInformationMessage(`🔗 Link evidence to ADR\nFound ${evidenceCount} events in traces`);
+                persistence.logWithEmoji('🔗', `Linking evidence to ADR: ${selectedADR.label}`);
             })
         );
 
