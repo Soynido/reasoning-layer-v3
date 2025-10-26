@@ -1,0 +1,103 @@
+[
+  {
+    "title": "Architecture V3 basée sur des strates progressives",
+    "context": "Les traces montrent une migration complète de V2 vers V3 avec l'abandon du ReasoningManager monolithique (561 lignes) au profit d'une architecture modulaire et progressive. Le commit 'feat: Complete Layer 1 - Code & Structure Technique' et le document de transfert V2→V3 révèlent une refonte fondamentale.",
+    "solution": "Implémenter une architecture en 3 strates avec activation progressive et spécialisation des responsabilités. Chaque composant est isolé et activé séquentiellement pour éviter les blocages au démarrage.",
+    "consequences": "Robustesse accrue, maintenabilité améliorée, et élimination des problèmes de sérialisation. Le système est plus résilient mais nécessite une gestion orchestrée des dépendances entre composants.",
+    "components": [
+      "extension/extension.ts",
+      "extension/core/PersistenceManager.ts",
+      "REASONING_LAYER_V2_V3_TRANSFER.md",
+      ".reasoning/manifest.json"
+    ],
+    "tags": ["architecture", "refactor", "progressive_activation", "modularity"],
+    "evidenceIds": ["trace-20251026-001", "trace-20251026-002"]
+  },
+  {
+    "title": "Sérialisation explicite et local-first persistence",
+    "context": "L'analyse du code et des traces révèle l'abandon des objets non-sérialisables (problématique en V2) au profit d'une approche JSON-first. Le PersistenceManager utilise maintenant des structures de données purement sérialisables avec stockage local dans .reasoning/traces/.",
+    "solution": "Forcer la sérialisation JSON de toutes les données capturées et stocker localement par projet sans dépendance externe. Le système utilise Zod pour la validation des contrats de données.",
+    "consequences": "Élimination des erreurs de clonage webview, amélioration de la fiabilité des données, mais limitation sur la complexité des structures de données autorisées.",
+    "components": [
+      "extension/core/PersistenceManager.ts",
+      "extension/core/SchemaManager.ts",
+      "extension/core/types/index.ts"
+    ],
+    "tags": ["persistence", "serialization", "local_first", "data_integrity"],
+    "evidenceIds": ["trace-20251026-003", "trace-20251026-004"]
+  },
+  {
+    "title": "Pattern Capture Engine pour la spécialisation métier",
+    "context": "Les traces montrent la création de moteurs de capture spécialisés (SBOMCaptureEngine, ConfigCaptureEngine, TestCaptureEngine, GitMetadataEngine) remplaçant l'approche monolithique précédente. Chaque moteur gère un type d'événement spécifique.",
+    "solution": "Décomposer la logique de capture en moteurs spécialisés avec activation différée et gestion autonome des événements de leur domaine.",
+    "consequences": "Amélioration de la spécialisation et de la maintenabilité, mais complexification de l'orchestration globale et nécessité de coordination entre moteurs.",
+    "components": [
+      "extension/core/SBOMCaptureEngine.ts",
+      "extension/core/ConfigCaptureEngine.ts",
+      "extension/core/TestCaptureEngine.ts",
+      "extension/core/GitMetadataEngine.ts"
+    ],
+    "tags": ["pattern", "specialization", "capture_engine", "domain_separation"],
+    "evidenceIds": ["trace-20251026-005", "trace-20251026-006"]
+  },
+  {
+    "title": "Debounce intelligent pour la capture d'événements",
+    "context": "L'EventAggregator implémente un système de debounce de 2 secondes pour éviter la surcharge de captures lors de modifications rapides de fichiers. Les traces montrent de multiples événements 'save' rapprochés qui sont agrégés.",
+    "solution": "Intégrer un mécanisme de debounce configurable dans l'EventAggregator pour lisser les flux d'événements et optimiser les performances de capture.",
+    "consequences": "Réduction significative du bruit dans les traces et optimisation des performances, mais risque de perte d'événements très rapprochés si le debounce est trop agressif.",
+    "components": [
+      "extension/core/EventAggregator.ts",
+      "extension/extension.ts"
+    ],
+    "tags": ["performance", "debounce", "event_aggregation", "optimization"],
+    "evidenceIds": ["trace-20251026-007", "trace-20251026-008"]
+  },
+  {
+    "title": "Validation de contrats avec Zod pour l'intégrité des données",
+    "context": "Le SchemaManager a été introduit pour valider tous les événements avant persistence. Cette décision répond aux problèmes d'intégrité de données observés en V2 où des structures invalides pouvaient être sauvegardées.",
+    "solution": "Implémenter une validation stricte via Zod de toutes les structures de données avant persistence, avec rejet des événements non conformes.",
+    "consequences": "Amélioration drastique de la fiabilité des données et détection précoce des incompatibilités, mais rigidité accrue et nécessité de maintenir les schémas à jour.",
+    "components": [
+      "extension/core/SchemaManager.ts",
+      "extension/core/types/index.ts"
+    ],
+    "tags": ["validation", "schema", "data_integrity", "zod"],
+    "evidenceIds": ["trace-20251026-009", "trace-20251026-010"]
+  },
+  {
+    "title": "Génération automatique de manifeste de projet",
+    "context": "Le commit 'feat: Optimize Layer 1 with automatic manifest generation' montre l'automatisation de la création du manifest.json. Cette décision élimine le besoin de configuration manuelle pour chaque projet.",
+    "solution": "Générer automatiquement le manifeste de projet lors de la première activation avec détection des métadonnées du workspace (nom, chemin, dates clés).",
+    "consequences": "Expérience utilisateur simplifiée et réduction des erreurs de configuration, mais moins de flexibilité dans les personnalisations initiales.",
+    "components": [
+      ".reasoning/manifest.json",
+      "extension/core/GitMetadataEngine.ts"
+    ],
+    "tags": ["automation", "manifest", "onboarding", "configuration"],
+    "evidenceIds": ["trace-20251026-011", "trace-20251026-012"]
+  },
+  {
+    "title": "Internationalisation complète de la documentation",
+    "context": "Le commit 'docs: Translate all documentation to English' et les traces montrent une décision stratégique de passer tout le projet en anglais pour faciliter la contribution et l'adoption internationale.",
+    "solution": "Traduire l'ensemble de la documentation, commentaires et messages vers l'anglais tout en maintenant les compétences techniques du système.",
+    "consequences": "Amélioration de l'accessibilité internationale et réduction de la barrière linguistique, mais perte potentielle de nuances culturelles et besoin de maintenir la cohérence linguistique.",
+    "components": [
+      "README.md",
+      "TASKS.md",
+      ".reasoning-layer.json"
+    ],
+    "tags": ["internationalization", "documentation", "accessibility", "english_only"],
+    "evidenceIds": ["trace-20251026-013", "trace-20251026-014"]
+  },
+  {
+    "title": "Orchestration par timeouts échelonnés au démarrage",
+    "context": "L'extension.ts révèle une activation séquentielle avec timeouts (2s, 3s, 4s, 5s) pour éviter la surcharge du système au démarrage. Cette décision répond aux problèmes de performance observés en V2.",
+    "solution": "Implémenter une activation progressive des composants avec délais échelonnés pour répartir la charge de démarrage et maintenir la réactivité de l'éditeur.",
+    "consequences": "Démarrage plus fluide et expérience utilisateur améliorée, mais latence dans la disponibilité complète des fonctionnalités et complexité accrue de l'orchestration.",
+    "components": [
+      "extension/extension.ts"
+    ],
+    "tags": ["performance", "startup", "orchestration", "progressive_activation"],
+    "evidenceIds": ["trace-20251026-015", "trace-20251026-016"]
+  }
+]
