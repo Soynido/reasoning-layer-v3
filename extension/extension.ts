@@ -37,30 +37,18 @@ export async function activate(context: vscode.ExtensionContext) {
         schemaManager = new SchemaManager(workspaceRoot, persistence);
         persistence.logWithEmoji('📋', 'SchemaManager initialized - persistence contract v1.0');
         
-        // ✅ Auto-générer le manifest initial
-        setTimeout(async () => {
-            if (schemaManager) {
-                await schemaManager.generateManifest();
-            }
-        }, 1000); // Après 1 seconde
+        // ✅ Auto-générer le manifest initial (DÉSACTIVÉ)
         
         // ✅ ÉTAPE 2: EventAggregator (centralisation + debounce)
         eventAggregator = new EventAggregator();
         console.log('EventAggregator created successfully');
         
         // ✅ ÉTAPE 2: Connecter EventAggregator au PersistenceManager avec validation schema
-        eventAggregator.on('eventCaptured', async (event) => {
+        eventAggregator.on('eventCaptured', (event) => {
             if (schemaManager) {
                 const validatedEvent = schemaManager.validateEvent(event);
                 if (validatedEvent) {
                     persistence?.saveEvent(validatedEvent as any);
-                    
-                    // ✅ Auto-générer le manifest après chaque événement (avec debounce)
-                    setTimeout(async () => {
-                        if (schemaManager) {
-                            await schemaManager.generateManifest();
-                        }
-                    }, 2000); // 2 secondes de debounce
                 }
             } else {
                 persistence?.saveEvent(event);
