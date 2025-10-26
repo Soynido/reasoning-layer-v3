@@ -7,6 +7,7 @@ import { ConfigCaptureEngine } from './core/ConfigCaptureEngine';
 import { TestCaptureEngine } from './core/TestCaptureEngine';
 import { GitMetadataEngine } from './core/GitMetadataEngine';
 import { SchemaManager } from './core/SchemaManager';
+import { ManifestGenerator } from './core/ManifestGenerator';
 
 let persistence: PersistenceManager | null = null;
 let eventAggregator: EventAggregator | null = null;
@@ -206,6 +207,19 @@ export async function activate(context: vscode.ExtensionContext) {
 
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
+
+        // ✅ Générer le manifest après 2 secondes (sécurisé)
+        setTimeout(async () => {
+            try {
+                if (persistence && workspaceRoot) {
+                    const manifestGenerator = new ManifestGenerator(workspaceRoot, persistence);
+                    await manifestGenerator.generate();
+                    persistence.logWithEmoji('📄', 'Manifest auto-generated successfully');
+                }
+            } catch (err) {
+                persistence?.logWithEmoji('⚠️', `Manifest generation skipped: ${(err as Error).message}`);
+            }
+        }, 2000);
 
     } catch (error) {
         console.error('❌ Activation failed:', error);

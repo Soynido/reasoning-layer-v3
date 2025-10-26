@@ -1,7 +1,13 @@
 {
-  "version": "1.0",
-  "projectName": "Reasoning Layer V3",
-  "createdAt": "2025-10-26T16:22:58.064Z",
-  "lastCaptureAt": "2025-10-26T17:45:17.999Z",
-  "totalEvents": 263
+  "project": "Reasoning Layer V3",
+  "version": "1.0.0",
+  "schemaVersion": "1.0",
+  "lastUpdated": "2025-10-26T18:02:16.121Z",
+  "totalEvents": 307,
+  "layers": [
+    "SBOM",
+    "Config",
+    "Test",
+    "Git"
+  ]
 }
