@@ -150,8 +150,12 @@ export class GitMetadataEngine {
             let diffSummary = null;
             try {
                 const parentHash = `${commitHash}^`;
+                this.persistence.logWithEmoji('🔍', `Attempting diff summary for ${commitHash.substring(0, 8)} vs ${parentHash.substring(0, 8)}`);
+
                 diffSummary = await this.git.diffSummary([parentHash, commitHash]);
-                
+
+                this.persistence.logWithEmoji('🔍', `Raw diffSummary result: ${JSON.stringify(diffSummary)}`);
+
                 // Enrichir avec les détails du diff
                 const summaryFiles = diffSummary.files.map((file: any) => ({
                     file: file.file,
@@ -159,9 +163,9 @@ export class GitMetadataEngine {
                     deletions: file.deletions,
                     changes: file.changes
                 }));
-                
+
                 this.persistence.logWithEmoji('🔍', `Diff summary: ${diffSummary.insertions} insertions, ${diffSummary.deletions} deletions`);
-                
+
                 commit.insertions = diffSummary.insertions;
                 commit.deletions = diffSummary.deletions;
                 diffs.forEach(diff => {
@@ -172,7 +176,7 @@ export class GitMetadataEngine {
                     }
                 });
             } catch (diffError) {
-                this.persistence.logWithEmoji('⚠️', `Could not get diff summary for ${commitHash}`);
+                this.persistence.logWithEmoji('⚠️', `Could not get diff summary for ${commitHash}: ${diffError}`);
             }
             
             this.eventAggregator.captureEvent(
