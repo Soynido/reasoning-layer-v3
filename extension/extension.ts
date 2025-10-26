@@ -12,6 +12,7 @@ import { ManifestGenerator } from './core/ManifestGenerator';
 import { RBOMEngine } from './core/rbom/RBOMEngine';
 import { ADR } from './core/rbom/types';
 import { EvidenceMapper } from './core/EvidenceMapper';
+import { DecisionDetector } from './core/rbom/DecisionDetector';
 
 let persistence: PersistenceManager | null = null;
 let eventAggregator: EventAggregator | null = null;
@@ -22,6 +23,7 @@ let gitMetadata: GitMetadataEngine | null = null;
 let schemaManager: SchemaManager | null = null;
 let rbomEngine: RBOMEngine | null = null;
 let evidenceMapper: EvidenceMapper | null = null;
+let decisionDetector: DecisionDetector | null = null;
 
 // ✅ Debounce map pour éviter la multiplication d'événements
 const fileDebounceMap = new Map<string, NodeJS.Timeout>();
@@ -215,7 +217,17 @@ export async function activate(context: vscode.ExtensionContext) {
         if (workspaceRoot) {
             rbomEngine = new RBOMEngine(workspaceRoot);
             evidenceMapper = new EvidenceMapper();
-            persistence.logWithEmoji('🧠', 'RBOM Engine initialized');
+            decisionDetector = new DecisionDetector(workspaceRoot, persistence, rbomEngine, evidenceMapper);
+            persistence.logWithEmoji('🧠', 'RBOM Engine initialized with auto-decision detection');
+
+            // ✅ Activer le scanner automatique
+            const scanInterval = setInterval(() => {
+                decisionDetector?.scanRecentEvents();
+            }, 10000); // Scan toutes les 10 secondes
+
+            context.subscriptions.push({
+                dispose: () => clearInterval(scanInterval)
+            });
         }
 
         // ✅ ADR Commands
