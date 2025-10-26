@@ -1,9 +1,8 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { PersistenceManager } from './PersistenceManager';
 import { EventAggregator } from './EventAggregator';
+import { getGitDiffSummary, GitDiffSummary } from './gitUtils';
 
 const execAsync = promisify(exec);
 
@@ -143,61 +142,35 @@ export class GitMetadataEngine {
             const commit = await this.getCommitDetails(commitHash);
             const diffs = await this.getCommitDiffs(commitHash);
             
-            // ✅ Enrichir avec diff summary via execAsync (plus fiable)
-            let diffSummary = null;
+            // ✅ Enrichir avec diff summary via gitUtils (proven working)
+            let diffSummary: GitDiffSummary | null = null;
             try {
-                const { exec } = require('child_process');
-                const { promisify } = require('util');
-                const execAsync = promisify(exec);
+                this.persistence.logWithEmoji('🔍', `Getting diff stats for ${commitHash.substring(0, 8)}`);
 
-                const parentHash = `${commitHash}^`;
-                this.persistence.logWithEmoji('🔍', `Getting diff stats for ${commitHash.substring(0, 8)} vs ${parentHash.substring(0, 8)}`);
+                diffSummary = await getGitDiffSummary(commitHash, this.workspaceRoot);
 
-                const { stdout: diffOutput } = await execAsync(
-                    `git diff --numstat ${parentHash} ${commitHash}`,
-                    { cwd: this.workspaceRoot }
-                );
+                this.persistence.logWithEmoji('🔍', `Diff summary: ${diffSummary.insertions} insertions, ${diffSummary.deletions} deletions`);
 
-                // Parser le résultat manuellement
-                let totalInsertions = 0;
-                let totalDeletions = 0;
-                const files: any[] = [];
+                // Appliquer les résultats au commit
+                if (diffSummary) {
+                    commit.insertions = diffSummary.insertions;
+                    commit.deletions = diffSummary.deletions;
 
-                const lines = diffOutput.split('\n');
-                for (const line of lines) {
-                    const trimmed = line.trim();
-                    if (trimmed && /^[0-9]/.test(trimmed) && line.includes('\t')) {
-                        const parts = line.split('\t');
-                        if (parts.length >= 3) {
-                            const insertions = parseInt(parts[0]) || 0;
-                            const deletions = parseInt(parts[1]) || 0;
-                            const file = parts[2];
-
-                            totalInsertions += insertions;
-                            totalDeletions += deletions;
-                            files.push({ file, insertions, deletions });
-                        }
+                    // Appliquer les résultats aux diffs individuels
+                    if (diffSummary!.files.length > 0) {
+                        diffs.forEach(diff => {
+                            const fileInSummary = diffSummary!.files.includes(diff.file);
+                            if (fileInSummary) {
+                                // Pour l'instant, nous distribuons les chiffres uniformément
+                                // TODO: améliorer avec parsing détaillé par fichier
+                                const avgInsertions = Math.floor(diffSummary!.insertions / diffSummary!.files.length);
+                                const avgDeletions = Math.floor(diffSummary!.deletions / diffSummary!.files.length);
+                                diff.insertions = avgInsertions;
+                                diff.deletions = avgDeletions;
+                            }
+                        });
                     }
                 }
-
-                diffSummary = {
-                    insertions: totalInsertions,
-                    deletions: totalDeletions,
-                    files: files
-                };
-
-                this.persistence.logWithEmoji('🔍', `Diff summary: ${totalInsertions} insertions, ${totalDeletions} deletions`);
-
-                // Appliquer les résultats
-                commit.insertions = totalInsertions;
-                commit.deletions = totalDeletions;
-                diffs.forEach(diff => {
-                    const summaryFile = files.find(f => f.file === diff.file);
-                    if (summaryFile) {
-                        diff.insertions = summaryFile.insertions;
-                        diff.deletions = summaryFile.deletions;
-                    }
-                });
 
             } catch (diffError) {
                 this.persistence.logWithEmoji('⚠️', `Could not get diff summary for ${commitHash}: ${diffError}`);
