@@ -186,6 +186,7 @@ export class DecisionSynthesizer {
         const decisions: ADRFromSummary[] = [];
 
         // ✅ Pattern 1: Structure de persistance établie
+        // Intent: Détecter la décision humaine de stabiliser un contrat de persistance
         if (summary.byFile['PersistenceManager.ts'] > 3 || summary.byFile['ManifestGenerator.ts'] > 2) {
             const persistenceEvents = events.filter(e => 
                 e.source.includes('PersistenceManager') || 
@@ -194,13 +195,13 @@ export class DecisionSynthesizer {
             );
 
             decisions.push({
-                title: 'Architecture de persistance locale avec contrat stable',
-                context: `${summary.byFile['PersistenceManager.ts'] || 0} modifications de PersistenceManager, ${summary.byFile['ManifestGenerator.ts'] || 0} de ManifestGenerator. Système de persistance itéré jusqu'à stabilité.`,
-                decision: 'Implémentation d\'un moteur de persistance local-first avec manifest versionné, schéma Zod, et traces JSON quotidiennes.',
-                consequences: 'Architecture local-first sans dépendance serveur. Possible migration future vers synchronisation cloud.',
+                title: 'Stabilisation du contrat de persistance via manifest versionné',
+                context: `Le développeur a itéré ${summary.byFile['PersistenceManager.ts'] || 0} fois sur PersistenceManager et ${summary.byFile['ManifestGenerator.ts'] || 0} fois sur ManifestGenerator. L'intention implicite était de garantir la cohérence des données capturées.`,
+                decision: 'Le choix fait: implémenter un moteur de persistance local-first avec manifest versionné et schéma Zod pour validation. Cette décision visait à éviter la corruption de données et faciliter le debugging.',
+                consequences: 'Impact observable: architecture locale sans dépendance serveur, validation systématique des événements, manifest toujours en cohérence avec les traces.',
                 components: ['PersistenceManager.ts', 'ManifestGenerator.ts', 'SchemaManager.ts'],
                 evidenceIds: persistenceEvents.map(e => e.id).slice(0, 5),
-                tags: ['architecture', 'persistence', 'local-first'],
+                tags: ['decision', 'persistence', 'data-integrity'],
                 confidence: 0.95
             });
         }
@@ -213,13 +214,13 @@ export class DecisionSynthesizer {
 
         if (enginesDetected.length >= 2) {
             decisions.push({
-                title: 'Architecture multi-capteurs pour observation du code',
-                context: `Système multi-capteurs détecté avec ${enginesDetected.length} engines actifs. ${summary.totalEvents} événements capturés depuis le début.`,
-                decision: 'Utilisation d\'architectures modulaires par type de métadonnée (SBOM, Config, Tests, Git) pour observation complète.',
-                consequences: 'Données riches disponibles pour raisonnement architectural. Scalabilité par ajout de nouveaux capteurs.',
+                title: 'Adoption d\'une architecture modulaire par capteur spécialisé',
+                context: `Le développement montre la création de ${enginesDetected.length} engines séparés (${enginesDetected.join(', ')}). L'intention était de découpler les responsabilités de capture par domaine technique.`,
+                decision: 'Le choix fait: un engine par type de métadonnée plutôt qu\'un capteur monolithique. Cette décision visait à améliorer la maintenabilité et tester chaque capteur indépendamment.',
+                consequences: 'Impact observable: le code est plus modulaire, chaque engine peut évoluer sans affecter les autres. Cela facilite l\'ajout de nouveaux capteurs.',
                 components: enginesDetected,
                 evidenceIds: events.slice(0, 10).map(e => e.id),
-                tags: ['architecture', 'capture', 'observability'],
+                tags: ['decision', 'architecture', 'modularity'],
                 confidence: 0.90
             });
         }
@@ -230,13 +231,13 @@ export class DecisionSynthesizer {
         );
         if (strategicDeps.length > 0) {
             decisions.push({
-                title: `Intégration de dépendances stratégiques: ${strategicDeps.join(', ')}`,
-                context: `Project relies on ${strategicDeps.join(' and ')} for core functionality.`,
-                decision: `${strategicDeps.map(d => `- ${d}: pour ${this.getDepPurpose(d)}`).join('\n')}`,
-                consequences: 'Dépendances critiques à maintenir à jour pour sécurité et compatibilité.',
+                title: `Adoption de librairies externes pour ${strategicDeps.join(', ')}`,
+                context: `Le projet a ajouté les dépendances ${strategicDeps.join(' et ')} dans package-lock.json. L'intention était d'utiliser des solutions matures plutôt que de réinventer.`,
+                decision: `Le choix fait: utiliser ${strategicDeps.map(d => `${d} (${this.getDepPurpose(d)})`).join(' et ')}. Cette décision visait à gagner du temps et éviter les bugs.`,
+                consequences: 'Impact observable: code plus stable, moins de maintenance, mais dépendance de communauté externe.',
                 components: ['package-lock.json'],
                 evidenceIds: events.filter(e => e.type === 'dependencies').map(e => e.id).slice(0, 5),
-                tags: ['dependencies', 'security', 'tooling'],
+                tags: ['decision', 'dependencies', 'trade-off'],
                 confidence: 0.85
             });
         }
@@ -247,13 +248,13 @@ export class DecisionSynthesizer {
             if (totalCommits > 10) {
                 const authors = Object.keys(summary.gitEvolution.commitsByAuthor);
                 decisions.push({
-                    title: 'Stratégie de commits structurés pour traçabilité',
-                    context: `${totalCommits} commits détectés, ${authors.length} contributeur(s). Historique Git complet maintenu.`,
-                    decision: 'Utilisation de Git pour traçabilité complète des décisions via commits structurés.',
-                    consequences: 'ADRs auto-générés peuvent s\'appuyer sur l\'historique Git complet pour contexte.',
+                    title: 'Usage de Git pour traçabilité des décisions via historique',
+                    context: `${totalCommits} commits détectés, ${authors.length} contributeur(s). Le développement montre l'utilisation de Git comme outil de traçabilité.`,
+                    decision: 'Le choix fait: maintenir un historique Git complet avec commits structurés. Cette décision visait à documenter naturellement les changements.',
+                    consequences: 'Impact observable: L\'historique Git devient source de vérité pour comprendre l\'évolution du projet.',
                     components: ['git'],
                     evidenceIds: events.filter(e => e.type === 'git_commit').map(e => e.id).slice(0, 5),
-                    tags: ['git', 'traceability', 'workflow'],
+                    tags: ['decision', 'git', 'traceability'],
                     confidence: 0.80
                 });
             }
@@ -269,12 +270,12 @@ export class DecisionSynthesizer {
 
                 decisions.push({
                     title: `Refactor majeur de ${path.basename(biggestChange.files[0]?.split('/')[0] || 'unknown')}`,
-                    context: `${biggestChange.count} modifications détectées sur ${biggestChange.files.length} fichiers dans ${biggestChange.description}.`,
-                    decision: 'Refactorisation pour améliorer la maintenabilité et la modularité.',
-                    consequences: 'Architecture plus stable, mais attention aux breaking changes potentiels.',
+                    context: `${biggestChange.count} modifications détectées sur ${biggestChange.files.length} fichiers dans ${biggestChange.description}. Le développeur a choisi de refactoriser plutôt que d'ajouter des patches.`,
+                    decision: 'Le choix fait: refactoriser plutôt que d\'ajouter des workarounds. Cette décision visait à améliorer la maintenabilité à long terme.',
+                    consequences: 'Impact observable: code plus propre, architecture plus claire, mais risque de breaking changes à court terme.',
                     components: biggestChange.files,
                     evidenceIds: changeEvents.map(e => e.id).slice(0, 10),
-                    tags: ['refactor', 'architecture', 'evolution'],
+                    tags: ['decision', 'refactor', 'trade-off'],
                     confidence: 0.75
                 });
             }
