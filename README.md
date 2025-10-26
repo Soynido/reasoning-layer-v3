@@ -216,6 +216,64 @@ code --install-extension reasoning-layer-v3-1.0.0.vsix
 - AnalyticsEngine/MetricsCollector (non-serializable Map, Timeout)
 - React Router (unnecessary complexity - start with vanilla HTML/CSS/JS)
 
+## 📊 Data Contract Interface (Capture → RBOM)
+
+**Architecture de liaison** : Chaque événement capturé devient un `Evidence` node utilisable par le RBOM Engine pour lier des preuves à des ADRs.
+
+### Interface Evidence
+
+```typescript
+interface Evidence {
+    id: string;                    // UUID unique de l'évidence
+    type: 'commit' | 'dependency' | 'config' | 'test' | 'file_change' | 'git_branch';
+    source: string;                 // File path ou commit hash
+    timestamp: string;               // ISO 8601
+    metadata: Record<string, any>;   // Données spécifiques au type
+    version: '1.0';                 // Version du schéma Evidence
+}
+```
+
+### EvidenceMapper
+
+Le `EvidenceMapper` convertit automatiquement les `CaptureEvent` en `Evidence` :
+
+- ✅ **Commit** → Evidence avec category "Git Metadata"
+- ✅ **Dependencies** → Evidence avec category "Dependencies"
+- ✅ **Config** → Evidence avec category "Configuration"
+- ✅ **Test** → Evidence avec category "Test Reports"
+- ✅ **File Change** → Evidence avec category "File Changes"
+- ✅ **Git Branch** → Evidence avec category "Git Metadata"
+
+### Usage Example
+
+```typescript
+import { EvidenceMapper } from './core/EvidenceMapper';
+
+const mapper = new EvidenceMapper();
+const evidence = mapper.mapToEvidence(captureEvent);
+
+// Filter evidence by type
+const commits = mapper.filterByType(evidenceList, 'commit');
+const deps = mapper.filterByType(evidenceList, 'dependency');
+
+// Find evidence for specific file
+const fileEvidence = mapper.findEvidenceForFile(evidenceList, 'package.json');
+
+// Find evidence in time range
+const recentEvidence = mapper.findEvidenceInTimeRange(
+    evidenceList,
+    '2025-01-01T00:00:00Z',
+    '2025-01-31T23:59:59Z'
+);
+```
+
+### RBOM Engine Integration
+
+Le RBOM Engine utilisera ces `Evidence` nodes pour :
+- 🔗 Lier des preuves à des ADRs (Architectural Decision Records)
+- 📊 Analyser les patterns de décision
+- 🎯 Suggérer des ADRs basés sur l'activité capturée
+
 ## 🤝 Contributing
 
 ### Development Workflow

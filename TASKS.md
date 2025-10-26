@@ -127,23 +127,27 @@ git add test.ts && git commit -m "test"
 
 ## 🎯 NEXT STEPS
 
-### Immediate (Day 2)
-1. **Test the extension** in VS Code/Cursor
-2. **Validate capture** files and Git
-3. **Verify persistence** in `.reasoning/`
-4. **Document interfaces** types
+### ✅ Strate 1: Core Layer (J+0 → J+10) - COMPLETED
+- ✅ PersistenceManager fonctionnel
+- ✅ Capture automatique des fichiers (VS Code API)
+- ✅ Logs détaillés avec emojis
+- ✅ Messages GitHub integration
+- ✅ GitCaptureEngine (Niveau 1: Commit Data + Diff Summary)
 
-### Short term (Day 3-5)
-1. **Finalize PersistenceManager** with date rotation
-2. **Optimize CaptureEngine** with robust filtering
-3. **Add gzip compression** for old files
-4. **Unit tests** for Core Layer
+### 🚀 Strate 2: Cognitive Layer (J+10 → J+20) - IN PROGRESS
+- 🔄 RBOM Engine (Architectural Decision Records)
+- 🔄 Schema Zod pour validation
+- 🔄 Commandes VS Code pour ADRs
+- 🔄 Niveau 1: Dependencies (SBOM/package-lock)
+- 🔄 Niveau 4: PR/Issues linking (GitHub API)
 
-### Medium term (Day 6-10)
-1. **Complete Extension Entry Point**
-2. **Functional VS Code Commands**
-3. **Complete Strate 1 Validation**
-4. **Strate 2 Preparation** (RBOM Engine)
+### 📋 Strate 3: Perceptual Layer (J+20 → J+30) - PLANNED
+- Webview HTML/CSS/JS Vanilla
+- Niveau 2: ADR Engine complet
+- Niveau 3: Team Context
+- Niveau 5: Integrity & Persistence
+- Migration V2 → V3
+- Tests & Documentation
 
 ---
 

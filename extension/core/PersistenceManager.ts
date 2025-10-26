@@ -8,6 +8,7 @@ export class PersistenceManager {
     private outputChannel: vscode.OutputChannel;
     private autoSaveInterval: NodeJS.Timeout | null = null;
     private manifest!: ProjectManifest;
+    private tracesPath!: string;
 
     constructor(workspaceRoot: string) {
         this.workspaceRoot = workspaceRoot;
@@ -19,13 +20,18 @@ export class PersistenceManager {
         const reasoningDir = path.join(this.workspaceRoot, '.reasoning');
         const tracesDir = path.join(reasoningDir, 'traces');
         const manifestFile = path.join(reasoningDir, 'manifest.json');
+        
+        // Initialize tracesPath
+        this.tracesPath = path.join(tracesDir, `${new Date().toISOString().split('T')[0]}.json`);
 
         // Créer structure
         if (!fs.existsSync(reasoningDir)) {
             fs.mkdirSync(reasoningDir, { recursive: true });
+            this.logWithEmoji('📁', `Created .reasoning directory: ${reasoningDir}`);
         }
         if (!fs.existsSync(tracesDir)) {
             fs.mkdirSync(tracesDir, { recursive: true });
+            this.logWithEmoji('📁', `Created traces directory: ${tracesDir}`);
         }
 
         // Charger ou créer manifest
@@ -45,8 +51,20 @@ export class PersistenceManager {
         // Auto-save toutes les 30 secondes
         this.autoSaveInterval = setInterval(() => {
             this.saveManifest();
+            this.logWithEmoji('💾', 'Auto-save completed');
         }, 30000);
 
+        // Logs détaillés comme V2
+        this.outputChannel.appendLine('🔄 === REASONING LAYER V3 INITIALIZATION ===');
+        const createdDate = new Date(this.manifest.createdAt);
+        // Afficher en heure locale correcte
+        this.outputChannel.appendLine(`📅 Created: ${createdDate.toLocaleString('fr-FR')} (Local)`);
+        this.outputChannel.appendLine(`📊 Project: ${this.manifest.projectName}`);
+        this.outputChannel.appendLine(`📊 Total Events: ${this.manifest.totalEvents}`);
+        this.outputChannel.appendLine(`📊 Version: ${this.manifest.version}`);
+        this.outputChannel.appendLine(`📁 Workspace: ${this.workspaceRoot}`);
+        this.outputChannel.appendLine('✅ === PERSISTENCE MANAGER READY ===');
+        
         this.logWithEmoji('✅', 'PersistenceManager initialized');
     }
 
@@ -108,6 +126,10 @@ export class PersistenceManager {
     private saveManifest(): void {
         const manifestFile = path.join(this.workspaceRoot, '.reasoning', 'manifest.json');
         fs.writeFileSync(manifestFile, JSON.stringify(this.manifest, null, 2));
+    }
+
+    public getTracesPath(): string {
+        return this.tracesPath;
     }
 
     public dispose(): void {

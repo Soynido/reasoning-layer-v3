@@ -1,13 +1,10 @@
-import * as chokidar from 'chokidar';
-import simpleGit, { SimpleGit } from 'simple-git';
-import { v4 as uuidv4 } from 'uuid';
+import * as vscode from 'vscode';
+import simpleGit from 'simple-git';
 import { PersistenceManager } from './PersistenceManager';
 import { CaptureEvent } from './types';
 
 export class CaptureEngine {
-    private fileWatcher: chokidar.FSWatcher | null = null;
-    private debounceMap = new Map<string, NodeJS.Timeout>();
-    private git: SimpleGit;
+    private git: any = null;
     private lastCommitHash: string | null = null;
     private gitPollingInterval: NodeJS.Timeout | null = null;
 
@@ -15,90 +12,110 @@ export class CaptureEngine {
         private workspaceRoot: string,
         private persistence: PersistenceManager
     ) {
-        this.git = simpleGit(workspaceRoot);
+        // Initialisation Git sécurisée
+        try {
+            this.git = simpleGit(workspaceRoot);
+            this.persistence.logWithEmoji('🐙', 'Git integration initialized');
+        } catch (error) {
+            this.persistence.logWithEmoji('⚠️', 'Git integration failed - file capture only');
+        }
     }
 
     public start(): void {
-        this.startFileWatcher();
+        this.startVSCodeWatchers();
         this.startGitWatcher();
         this.persistence.logWithEmoji('🚀', 'CaptureEngine started');
     }
 
-    // ✅ COPIÉ V2 - File watcher avec debouncing
-    private startFileWatcher(): void {
-        this.fileWatcher = chokidar.watch(this.workspaceRoot, {
-            ignored: /(^|[\/\\])\../,
-            persistent: true,
-            ignoreInitial: true
+    // ✅ NOUVEAU - VS Code native watchers (comme V2)
+    private startVSCodeWatchers(): void {
+        // 1. Text document changes
+        vscode.workspace.onDidChangeTextDocument(textDocEvent => {
+            if (textDocEvent.document.isUntitled || textDocEvent.document.uri.scheme !== 'file') {
+                return;
+            }
+
+            if (this.shouldIgnoreFile(textDocEvent.document.uri.fsPath)) {
+                return;
+            }
+
+            const change = textDocEvent.contentChanges[0];
+            if (change) {
+                const event: CaptureEvent = {
+                    id: this.generateId(),
+                    timestamp: new Date().toISOString(),
+                    type: 'file_change',
+                    source: textDocEvent.document.uri.fsPath,
+                    metadata: {
+                        language: textDocEvent.document.languageId,
+                        lineCount: textDocEvent.document.lineCount,
+                        range: { 
+                            start: change.range.start, 
+                            end: change.range.end 
+                        }
+                    }
+                };
+
+                this.persistence.saveEvent(event);
+                this.persistence.logWithEmoji('📝', `File modified: ${textDocEvent.document.fileName}`);
+            }
         });
 
-        this.fileWatcher.on('change', (path) => {
-            this.debounceFileChange(path, 'modify');
+        // 2. File saves
+        vscode.workspace.onDidSaveTextDocument(document => {
+            if (document.uri.scheme !== 'file' || this.shouldIgnoreFile(document.uri.fsPath)) {
+                return;
+            }
+
+            const event: CaptureEvent = {
+                id: this.generateId(),
+                timestamp: new Date().toISOString(),
+                type: 'file_change',
+                source: document.uri.fsPath,
+                metadata: {
+                    action: 'save',
+                    language: document.languageId,
+                    lineCount: document.lineCount
+                }
+            };
+
+            this.persistence.saveEvent(event);
+            this.persistence.logWithEmoji('💾', `File saved: ${document.fileName}`);
         });
 
-        this.fileWatcher.on('add', (path) => {
-            this.debounceFileChange(path, 'create');
-        });
-
-        this.fileWatcher.on('unlink', (path) => {
-            this.debounceFileChange(path, 'delete');
-        });
-    }
-
-    // ✅ COPIÉ V2 - Debouncing par fichier (2s au lieu de 1s)
-    private debounceFileChange(filePath: string, changeType: 'create' | 'modify' | 'delete'): void {
-        if (!this.shouldTrackFile(filePath)) {
-            return;
-        }
-
-        const existingTimeout = this.debounceMap.get(filePath);
-        if (existingTimeout) {
-            clearTimeout(existingTimeout);
-        }
-
-        const timeout = setTimeout(() => {
-            this.captureFileChange(filePath, changeType);
-            this.debounceMap.delete(filePath);
-        }, 2000); // 2 secondes (au lieu de 1s V2)
-
-        this.debounceMap.set(filePath, timeout);
+        this.persistence.logWithEmoji('👀', 'VS Code native watchers started');
     }
 
     // ✅ COPIÉ V2 - Filtrage robuste
-    private shouldTrackFile(filePath: string): boolean {
-        const excludedPatterns = [
-            /\.git\//,
+    private shouldIgnoreFile(filePath: string): boolean {
+        const ignoredPatterns = [
             /node_modules\//,
+            /\.git\//,
             /\.vscode\//,
             /out\//,
             /dist\//,
             /build\//,
+            /\.reasoning\//,
+            /\.cache\//,
+            /coverage\//,
             /\.map$/,
             /\.tmp$/,
-            /\.cache\//,
             /\.log$/
         ];
 
-        return !excludedPatterns.some(pattern => pattern.test(filePath));
-    }
-
-    private captureFileChange(filePath: string, changeType: string): void {
-        const event: CaptureEvent = {
-            id: uuidv4(),
-            timestamp: new Date().toISOString(),
-            type: 'file_change',
-            source: filePath,
-            metadata: { changeType }
-        };
-
-        this.persistence.saveEvent(event);
+        return ignoredPatterns.some(pattern => pattern.test(filePath));
     }
 
     // ✅ NOUVEAU - Git watcher avec polling (5s)
     private startGitWatcher(): void {
+        if (!this.git) {
+            this.persistence.logWithEmoji('⚠️', 'Git watcher disabled - no Git integration');
+            return;
+        }
+
         this.gitPollingInterval = setInterval(async () => {
             try {
-                const log = await this.git.log({ n: 1 });
+                const log = await this.git!.log({ n: 1 });
                 const latestCommit = log.latest;
 
                 if (latestCommit && latestCommit.hash !== this.lastCommitHash) {
@@ -106,14 +123,16 @@ export class CaptureEngine {
                     this.lastCommitHash = latestCommit.hash;
                 }
             } catch (error) {
-                // Git not initialized or error
+                // Git not initialized or error - silent fail
             }
         }, 5000); // Poll every 5 seconds
+        
+        this.persistence.logWithEmoji('🐙', 'Git watcher started');
     }
 
     private captureGitCommit(commit: any): void {
         const event: CaptureEvent = {
-            id: uuidv4(),
+            id: this.generateId(),
             timestamp: new Date().toISOString(),
             type: 'git_commit',
             source: commit.hash,
@@ -128,15 +147,14 @@ export class CaptureEngine {
         this.persistence.logWithEmoji('📝', `Git commit captured: ${commit.message.substring(0, 50)}`);
     }
 
+    private generateId(): string {
+        return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    }
+
     public stop(): void {
-        if (this.fileWatcher) {
-            this.fileWatcher.close();
-        }
         if (this.gitPollingInterval) {
             clearInterval(this.gitPollingInterval);
         }
-        this.debounceMap.forEach(timeout => clearTimeout(timeout));
-        this.debounceMap.clear();
         this.persistence.logWithEmoji('🛑', 'CaptureEngine stopped');
     }
 }

@@ -4,6 +4,10 @@
   "version": "1.0.0",
   "publisher": "valentingaludec",
   "description": "Technical Decision Intelligence System",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Soynido/reasoning-layer-v3.git"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -11,6 +15,7 @@
     "Other"
   ],
   "activationEvents": [
+    "workspaceContains:**/.git",
     "onStartupFinished"
   ],
   "main": "out/extension.js",
@@ -26,11 +31,31 @@
         "title": "📋 Show Output Channel",
         "category": "Reasoning"
       },
-      {
-        "command": "reasoning.captureNow",
-        "title": "📸 Capture Now",
-        "category": "Reasoning"
-      }
+              {
+                "command": "reasoning.captureNow",
+                "title": "📸 Capture Now",
+                "category": "Reasoning"
+              },
+              {
+                "command": "reasoning.checkGitHub",
+                "title": "🔍 Check GitHub Status",
+                "category": "Reasoning"
+              },
+              {
+                "command": "reasoning.refreshTraces",
+                "title": "🔄 Refresh Traces",
+                "category": "Reasoning"
+              },
+              {
+                "command": "reasoning.showSchema",
+                "title": "📋 Show Persistence Contract Schema",
+                "category": "Reasoning"
+              },
+              {
+                "command": "reasoning.validateTraces",
+                "title": "✅ Validate Traces File",
+                "category": "Reasoning"
+              }
     ]
   },
   "scripts": {
@@ -44,7 +69,8 @@
   "dependencies": {
     "chokidar": "^3.5.3",
     "simple-git": "^3.28.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
