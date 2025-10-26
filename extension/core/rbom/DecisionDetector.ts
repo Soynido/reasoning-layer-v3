@@ -75,21 +75,21 @@ export class DecisionDetector {
 
     public async scanRecentEvents(): Promise<void> {
         const now = Date.now();
-        if (now - this.lastScan < 60000) { // Scansion minimum toutes les minutes
+        if (now - this.lastScan < 120000) { // Scansion minimum toutes les 2 minutes
             return;
         }
         this.lastScan = now;
 
         try {
-            const recentEvents = this.loadRecentEvents(60); // Dernières 60 secondes
-            if (recentEvents.length === 0) return;
+            const allEvents = this.loadAllEvents(); // TOUS les événements historiques
+            if (allEvents.length === 0) return;
 
-            this.persistence.logWithEmoji('🔍', `Scanning ${recentEvents.length} recent events for decisions...`);
+            this.persistence.logWithEmoji('🔍', `Scanning ${allEvents.length} historical events for decisions...`);
 
             let candidates: ADRCandidate[] = [];
 
             for (const pattern of this.patterns) {
-                const patternCandidates = pattern.detect(recentEvents);
+                const patternCandidates = pattern.detect(allEvents);
                 candidates.push(...patternCandidates);
             }
 
@@ -104,6 +104,26 @@ export class DecisionDetector {
         } catch (error) {
             this.persistence.logWithEmoji('⚠️', `Decision scan failed: ${error}`);
         }
+    }
+
+    private loadAllEvents(): CaptureEvent[] {
+        const tracesDir = path.join(this.workspaceRoot, '.reasoning', 'traces');
+        if (!fs.existsSync(tracesDir)) return [];
+
+        const allEvents: CaptureEvent[] = [];
+        const files = fs.readdirSync(tracesDir).filter(f => f.endsWith('.json'));
+
+        for (const file of files) {
+            try {
+                const filePath = path.join(tracesDir, file);
+                const events: CaptureEvent[] = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+                allEvents.push(...events);
+            } catch (error) {
+                // Ignore corrupted files
+            }
+        }
+
+        return allEvents;
     }
 
     private loadRecentEvents(minutesAgo: number): CaptureEvent[] {
@@ -284,6 +304,18 @@ export class DecisionDetector {
 
     private async createADRFromCandidate(candidate: ADRCandidate): Promise<void> {
         try {
+            // ✅ Vérifier si un ADR similaire existe déjà
+            const existingADRs = this.rbomEngine.listADRs();
+            const similarADR = existingADRs.find(adr => 
+                adr.title === candidate.title || 
+                adr.components.some(c => candidate.components.includes(c))
+            );
+
+            if (similarADR) {
+                this.persistence.logWithEmoji('⏭️', `ADR déjà existant: ${candidate.title}`);
+                return;
+            }
+
             const adr = this.rbomEngine.createADR({
                 title: candidate.title,
                 status: 'proposed',
