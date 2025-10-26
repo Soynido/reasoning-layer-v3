@@ -9,6 +9,7 @@ export class SBOMCaptureEngine {
     private lastYarnLockHash: string | null = null;
     private lastRequirementsHash: string | null = null;
     private watchers: NodeJS.Timeout[] = [];
+    private lastCapture: number = 0; // ✅ Timestamp pour éviter la redondance
 
     constructor(
         private workspaceRoot: string,
@@ -41,12 +42,18 @@ export class SBOMCaptureEngine {
 
         const watcher = setInterval(() => {
             try {
+                // ✅ Éviter la redondance - ne capturer que toutes les 3 secondes max
+                if (Date.now() - this.lastCapture < 3000) {
+                    return;
+                }
+                
                 const content = fs.readFileSync(packageLockPath, 'utf-8');
                 const hash = this.generateHash(content);
                 
                 if (hash !== this.lastPackageLockHash) {
                     this.capturePackageLockDependencies(packageLockPath);
                     this.lastPackageLockHash = hash;
+                    this.lastCapture = Date.now();
                 }
             } catch (error) {
                 this.persistence.logWithEmoji('❌', `Failed to watch package-lock.json: ${error}`);

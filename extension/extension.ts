@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { PersistenceManager } from './core/PersistenceManager';
 import { EventAggregator } from './core/EventAggregator';
 import { SBOMCaptureEngine } from './core/SBOMCaptureEngine';
@@ -14,6 +15,9 @@ let configCapture: ConfigCaptureEngine | null = null;
 let testCapture: TestCaptureEngine | null = null;
 let gitMetadata: GitMetadataEngine | null = null;
 let schemaManager: SchemaManager | null = null;
+
+// ✅ Debounce map pour éviter la multiplication d'événements
+const fileDebounceMap = new Map<string, NodeJS.Timeout>();
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log('🧠 Reasoning Layer V3 - Activation started');
@@ -33,16 +37,30 @@ export async function activate(context: vscode.ExtensionContext) {
         schemaManager = new SchemaManager(workspaceRoot, persistence);
         persistence.logWithEmoji('📋', 'SchemaManager initialized - persistence contract v1.0');
         
+        // ✅ Auto-générer le manifest initial
+        setTimeout(async () => {
+            if (schemaManager) {
+                await schemaManager.generateManifest();
+            }
+        }, 1000); // Après 1 seconde
+        
         // ✅ ÉTAPE 2: EventAggregator (centralisation + debounce)
         eventAggregator = new EventAggregator();
         console.log('EventAggregator created successfully');
         
         // ✅ ÉTAPE 2: Connecter EventAggregator au PersistenceManager avec validation schema
-        eventAggregator.on('eventCaptured', (event) => {
+        eventAggregator.on('eventCaptured', async (event) => {
             if (schemaManager) {
                 const validatedEvent = schemaManager.validateEvent(event);
                 if (validatedEvent) {
                     persistence?.saveEvent(validatedEvent as any);
+                    
+                    // ✅ Auto-générer le manifest après chaque événement (avec debounce)
+                    setTimeout(async () => {
+                        if (schemaManager) {
+                            await schemaManager.generateManifest();
+                        }
+                    }, 2000); // 2 secondes de debounce
                 }
             } else {
                 persistence?.saveEvent(event);
@@ -244,7 +262,7 @@ function setupVSCodeWatchers() {
         return;
     }
 
-    // 1. Text document changes
+    // 1. Text document changes (avec debounce)
     vscode.workspace.onDidChangeTextDocument(textDocEvent => {
         if (textDocEvent.document.isUntitled || textDocEvent.document.uri.scheme !== 'file') {
             return;
@@ -254,20 +272,33 @@ function setupVSCodeWatchers() {
             return;
         }
 
-        const change = textDocEvent.contentChanges[0];
-        if (change && eventAggregator) {
-            eventAggregator.captureEvent(
-                'file_change',
-                textDocEvent.document.uri.fsPath,
-                {
-                    language: textDocEvent.document.languageId,
-                    lineCount: textDocEvent.document.lineCount,
-                    level: '1 - Code & Structure Technique',
-                    category: 'File Changes'
-                }
-            );
-            persistence?.logWithEmoji('📝', `File modified: ${textDocEvent.document.fileName}`);
+        const filePath = textDocEvent.document.uri.fsPath;
+
+        // ✅ Debounce pour éviter la multiplication d'événements
+        const existingTimeout = fileDebounceMap.get(filePath);
+        if (existingTimeout) {
+            clearTimeout(existingTimeout);
         }
+
+        const timeout = setTimeout(() => {
+            const change = textDocEvent.contentChanges[0];
+            if (change && eventAggregator) {
+                eventAggregator.captureEvent(
+                    'file_change',
+                    filePath,
+                    {
+                        language: textDocEvent.document.languageId,
+                        lineCount: textDocEvent.document.lineCount,
+                        level: '1 - Code & Structure Technique',
+                        category: 'File Changes'
+                    }
+                );
+                persistence?.logWithEmoji('📝', `File modified: ${path.basename(filePath)}`);
+            }
+            fileDebounceMap.delete(filePath);
+        }, 1000); // 1 seconde de debounce
+
+        fileDebounceMap.set(filePath, timeout);
     });
 
     // 2. File saves

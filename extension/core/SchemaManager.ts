@@ -16,37 +16,56 @@ export interface EventSchema {
 }
 
 export interface ManifestSchema {
-    version: '1.0';
-    schemaVersion: '1.0';
-    projectName: string;
-    workspaceRoot: string;
-    createdAt: string;
+    project: string;
+    version: string;
+    schemaVersion: string;
     lastUpdated: string;
     totalEvents: number;
-    engines: {
+    layers: string[];
+    integrity: {
+        algorithm: string;
+        lastHash: string;
+    };
+    // Legacy fields for backward compatibility
+    projectName?: string;
+    workspaceRoot?: string;
+    createdAt?: string;
+    engines?: {
         sbom: boolean;
         config: boolean;
         test: boolean;
         git: boolean;
     };
-    captors: string[];
-    eventsCaptured: number;
-    persistenceContract: {
-        version: '1.0';
-        schema: 'stable';
-        compatibility: 'v1.0+';
+    captors?: string[];
+    eventsCaptured?: number;
+    persistenceContract?: {
+        version: string;
+        schema: string;
+        compatibility: string;
     };
 }
 
 export class SchemaManager {
     private schemaVersion = '1.0' as const;
     private persistenceContract = '1.0' as const;
+    private crypto = require('crypto');
 
     constructor(
         private workspaceRoot: string,
         private persistence: PersistenceManager
     ) {
         this.persistence.logWithEmoji('📋', 'SchemaManager initialized');
+    }
+
+    // ✅ Calcul de l'intégrité avec BLAKE3 (fallback sur SHA256 si non disponible)
+    private calculateHash(content: string): string {
+        try {
+            // Utiliser crypto.createHash avec SHA256 (BLAKE3 nécessite une lib externe)
+            return this.crypto.createHash('sha256').update(content).digest('hex').substring(0, 32);
+        } catch (error) {
+            this.persistence.logWithEmoji('⚠️', `Hash calculation failed: ${error}`);
+            return 'unknown';
+        }
     }
 
     public validateEvent(event: any): EventSchema | null {
@@ -105,27 +124,150 @@ export class SchemaManager {
         const projectName = path.basename(this.workspaceRoot);
 
         return {
-            version: '1.0' as const,
-            schemaVersion: '1.0' as const,
-            projectName,
-            workspaceRoot: this.workspaceRoot,
-            createdAt: now,
+            project: projectName,
+            version: '1.0.0',
+            schemaVersion: '1.0',
             lastUpdated: now,
             totalEvents: 0,
-            engines: {
-                sbom: true,
-                config: true,
-                test: true,
-                git: true
-            },
-            captors: ['sbom', 'config', 'test', 'git'],
-            eventsCaptured: 0,
-            persistenceContract: {
-                version: '1.0' as const,
-                schema: 'stable' as const,
-                compatibility: 'v1.0+' as const
+            layers: ['SBOM', 'Config', 'Test', 'Git'],
+            integrity: {
+                algorithm: 'SHA256',
+                lastHash: ''
             }
         };
+    }
+
+    // ✅ Auto-génération du manifest avec intégrité
+    public async generateManifest(): Promise<ManifestSchema> {
+        try {
+            const manifest = this.createManifest();
+            const totalEvents = await this.countEventsInTraces();
+            
+            // Calculer l'intégrité
+            const tracesContent = this.readTracesContent();
+            const hash = this.calculateHash(tracesContent);
+            
+            const updatedManifest: ManifestSchema = {
+                ...manifest,
+                totalEvents,
+                lastUpdated: new Date().toISOString(),
+                integrity: {
+                    algorithm: 'SHA256',
+                    lastHash: hash
+                }
+            };
+
+            this.saveManifest(updatedManifest);
+            
+            // ✅ Validation de cohérence
+            const isConsistent = await this.validateCoherence(updatedManifest);
+            if (!isConsistent) {
+                this.persistence.logWithEmoji('⚠️', 'Manifest coherence check failed - manual review recommended');
+            }
+
+            return updatedManifest;
+
+        } catch (error) {
+            this.persistence.logWithEmoji('❌', `Failed to generate manifest: ${error}`);
+            return this.createManifest();
+        }
+    }
+
+    // ✅ Compte les événements dans les traces
+    private async countEventsInTraces(): Promise<number> {
+        try {
+            const tracesDir = path.join(this.workspaceRoot, '.reasoning', 'traces');
+            if (!fs.existsSync(tracesDir)) {
+                return 0;
+            }
+
+            let totalCount = 0;
+            const files = fs.readdirSync(tracesDir);
+
+            for (const file of files) {
+                if (file.endsWith('.json')) {
+                    const filePath = path.join(tracesDir, file);
+                    const content = fs.readFileSync(filePath, 'utf-8');
+                    const events = JSON.parse(content);
+                    
+                    if (Array.isArray(events)) {
+                        totalCount += events.length;
+                    }
+                }
+            }
+
+            return totalCount;
+
+        } catch (error) {
+            this.persistence.logWithEmoji('⚠️', `Failed to count events: ${error}`);
+            return 0;
+        }
+    }
+
+    // ✅ Lit le contenu des traces pour calculer l'intégrité
+    private readTracesContent(): string {
+        try {
+            const tracesDir = path.join(this.workspaceRoot, '.reasoning', 'traces');
+            if (!fs.existsSync(tracesDir)) {
+                return '';
+            }
+
+            const files = fs.readdirSync(tracesDir);
+            let combinedContent = '';
+
+            for (const file of files) {
+                if (file.endsWith('.json')) {
+                    const filePath = path.join(tracesDir, file);
+                    combinedContent += fs.readFileSync(filePath, 'utf-8');
+                }
+            }
+
+            return combinedContent;
+
+        } catch (error) {
+            return '';
+        }
+    }
+
+    // ✅ Contrôle de cohérence automatique
+    private async validateCoherence(manifest: ManifestSchema): Promise<boolean> {
+        try {
+            // 1. Vérifier totalEvents vs somme réelle
+            const actualCount = await this.countEventsInTraces();
+            if (actualCount !== manifest.totalEvents) {
+                this.persistence.logWithEmoji('⚠️', `Event count mismatch: manifest says ${manifest.totalEvents}, actual: ${actualCount}`);
+                return false;
+            }
+
+            // 2. Vérifier la présence des répertoires
+            const tracesDir = path.join(this.workspaceRoot, '.reasoning', 'traces');
+            const adrsDir = path.join(this.workspaceRoot, '.reasoning', 'adrs');
+
+            if (!fs.existsSync(tracesDir)) {
+                this.persistence.logWithEmoji('⚠️', 'Traces directory missing');
+                return false;
+            }
+
+            // Note: adrs/ n'existe pas encore en Strate 1
+            // if (!fs.existsSync(adrsDir)) {
+            //     this.persistence.logWithEmoji('⚠️', 'ADRs directory missing');
+            //     return false;
+            // }
+
+            // 3. Vérifier l'intégrité
+            const currentHash = this.calculateHash(this.readTracesContent());
+            if (currentHash !== manifest.integrity.lastHash) {
+                this.persistence.logWithEmoji('⚠️', 'Integrity hash mismatch');
+                return false;
+            }
+
+            this.persistence.logWithEmoji('✅', 'Manifest coherence check passed');
+            return true;
+
+        } catch (error) {
+            this.persistence.logWithEmoji('❌', `Coherence validation failed: ${error}`);
+            return false;
+        }
     }
 
     public updateManifest(manifest: ManifestSchema, totalEvents: number): ManifestSchema {

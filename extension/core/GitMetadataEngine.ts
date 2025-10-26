@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import simpleGit from 'simple-git';
 import { PersistenceManager } from './PersistenceManager';
 import { EventAggregator } from './EventAggregator';
 
@@ -39,12 +40,14 @@ export class GitMetadataEngine {
     private lastCommitHash: string | null = null;
     private lastBranchHash: string | null = null;
     private watchers: NodeJS.Timeout[] = [];
+    private git: any;
 
     constructor(
         private workspaceRoot: string,
         private persistence: PersistenceManager,
         private eventAggregator: EventAggregator
     ) {
+        this.git = simpleGit(this.workspaceRoot);
         this.persistence.logWithEmoji('🌿', 'GitMetadataEngine initialized');
     }
 
@@ -143,6 +146,35 @@ export class GitMetadataEngine {
             const commit = await this.getCommitDetails(commitHash);
             const diffs = await this.getCommitDiffs(commitHash);
             
+            // ✅ Enrichir avec diff summary via simple-git
+            let diffSummary = null;
+            try {
+                const parentHash = `${commitHash}^`;
+                diffSummary = await this.git.diffSummary([parentHash, commitHash]);
+                
+                // Enrichir avec les détails du diff
+                const summaryFiles = diffSummary.files.map((file: any) => ({
+                    file: file.file,
+                    insertions: file.insertions,
+                    deletions: file.deletions,
+                    changes: file.changes
+                }));
+                
+                this.persistence.logWithEmoji('🔍', `Diff summary: ${diffSummary.insertions} insertions, ${diffSummary.deletions} deletions`);
+                
+                commit.insertions = diffSummary.insertions;
+                commit.deletions = diffSummary.deletions;
+                diffs.forEach(diff => {
+                    const summaryFile = summaryFiles.find((f: any) => f.file === diff.file);
+                    if (summaryFile) {
+                        diff.insertions = summaryFile.insertions;
+                        diff.deletions = summaryFile.deletions;
+                    }
+                });
+            } catch (diffError) {
+                this.persistence.logWithEmoji('⚠️', `Could not get diff summary for ${commitHash}`);
+            }
+            
             this.eventAggregator.captureEvent(
                 'file_change',
                 `git:${commitHash}`,
@@ -153,7 +185,12 @@ export class GitMetadataEngine {
                     level: '1 - Code & Structure Technique',
                     category: 'Git Metadata',
                     totalFiles: commit.files.length,
-                    totalChanges: commit.insertions + commit.deletions
+                    totalChanges: commit.insertions + commit.deletions,
+                    diffSummary: diffSummary ? {
+                        insertions: diffSummary.insertions,
+                        deletions: diffSummary.deletions,
+                        files: diffSummary.files.length
+                    } : null
                 }
             );
 
