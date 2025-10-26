@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "createdAt": "2025-10-26T14:50:14.606Z",
+    "lastUpdated": "2025-10-26T16:02:27.600Z",
+    "version": "2.0.0",
+    "workspaceRoot": "/Users/valentingaludec/Reasoning Layer V3",
+    "totalSessions": 0,
+    "totalEvents": 0,
+    "totalGraphs": 0,
+    "totalWorkflowSteps": 0,
+    "totalNodes": 0,
+    "schemaVersion": "2.0.0"
+  },
+  "currentSession": null,
+  "allSessions": [],
+  "allEvents": [],
+  "allGraphs": [],
+  "logs": [
+    "CLEANED: [OBJECT_REPLACED]"
+  ],
+  "workflowSteps": [],
+  "reasoningNodes": [],
+  "workflow": {
+    "decisions": [],
+    "validations": [],
+    "goals": [],
+    "actions": [],
+    "insights": []
+  },
+  "context": {
+    "businessContext": {
+      "currentBranch": "main",
+      "recentCommits": [],
+      "activeIssues": [],
+      "teamMembers": [],
+      "projectGoals": []
+    },
+    "technicalContext": {
+      "fileStructure": {},
+      "dependencies": {},
+      "architecture": {},
+      "performanceMetrics": {}
+    },
+    "temporalChain": {
+      "sessionHistory": [],
+      "activityPatterns": [],
+      "timeBasedInsights": []
+    }
+  },
+  "patterns": {
+    "detected": [],
+    "insights": [],
+    "recommendations": [],
+    "alerts": []
+  },
+  "synthesis": {
+    "daily": [],
+    "weekly": [],
+    "monthly": [],
+    "custom": []
+  },
+  "analytics": {
+    "metrics": [],
+    "trends": [],
+    "performance": [],
+    "quality": []
+  }
+}
