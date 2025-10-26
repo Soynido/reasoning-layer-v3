@@ -146,35 +146,62 @@ export class GitMetadataEngine {
             const commit = await this.getCommitDetails(commitHash);
             const diffs = await this.getCommitDiffs(commitHash);
             
-            // ✅ Enrichir avec diff summary via simple-git
+            // ✅ Enrichir avec diff summary via execAsync (plus fiable)
             let diffSummary = null;
             try {
+                const { exec } = require('child_process');
+                const { promisify } = require('util');
+                const execAsync = promisify(exec);
+
                 const parentHash = `${commitHash}^`;
-                this.persistence.logWithEmoji('🔍', `Attempting diff summary for ${commitHash.substring(0, 8)} vs ${parentHash.substring(0, 8)}`);
+                this.persistence.logWithEmoji('🔍', `Getting diff stats for ${commitHash.substring(0, 8)} vs ${parentHash.substring(0, 8)}`);
 
-                diffSummary = await this.git.diffSummary([parentHash, commitHash]);
+                const { stdout: diffOutput } = await execAsync(
+                    `git diff --numstat ${parentHash} ${commitHash}`,
+                    { cwd: this.workspaceRoot }
+                );
 
-                this.persistence.logWithEmoji('🔍', `Raw diffSummary result: ${JSON.stringify(diffSummary)}`);
+                // Parser le résultat manuellement
+                let totalInsertions = 0;
+                let totalDeletions = 0;
+                const files: any[] = [];
 
-                // Enrichir avec les détails du diff
-                const summaryFiles = diffSummary.files.map((file: any) => ({
-                    file: file.file,
-                    insertions: file.insertions,
-                    deletions: file.deletions,
-                    changes: file.changes
-                }));
+                const lines = diffOutput.split('\n');
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed && /^[0-9]/.test(trimmed) && line.includes('\t')) {
+                        const parts = line.split('\t');
+                        if (parts.length >= 3) {
+                            const insertions = parseInt(parts[0]) || 0;
+                            const deletions = parseInt(parts[1]) || 0;
+                            const file = parts[2];
 
-                this.persistence.logWithEmoji('🔍', `Diff summary: ${diffSummary.insertions} insertions, ${diffSummary.deletions} deletions`);
+                            totalInsertions += insertions;
+                            totalDeletions += deletions;
+                            files.push({ file, insertions, deletions });
+                        }
+                    }
+                }
 
-                commit.insertions = diffSummary.insertions;
-                commit.deletions = diffSummary.deletions;
+                diffSummary = {
+                    insertions: totalInsertions,
+                    deletions: totalDeletions,
+                    files: files
+                };
+
+                this.persistence.logWithEmoji('🔍', `Diff summary: ${totalInsertions} insertions, ${totalDeletions} deletions`);
+
+                // Appliquer les résultats
+                commit.insertions = totalInsertions;
+                commit.deletions = totalDeletions;
                 diffs.forEach(diff => {
-                    const summaryFile = summaryFiles.find((f: any) => f.file === diff.file);
+                    const summaryFile = files.find(f => f.file === diff.file);
                     if (summaryFile) {
                         diff.insertions = summaryFile.insertions;
                         diff.deletions = summaryFile.deletions;
                     }
                 });
+
             } catch (diffError) {
                 this.persistence.logWithEmoji('⚠️', `Could not get diff summary for ${commitHash}: ${diffError}`);
             }
