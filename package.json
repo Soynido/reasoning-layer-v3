@@ -75,6 +75,11 @@
         "command": "reasoning.adr.link",
         "title": "🔗 Link Evidence to ADR",
         "category": "Reasoning ADR"
+      },
+      {
+        "command": "reasoning.adr.auto",
+        "title": "🤖 Auto-generate ADRs",
+        "category": "Reasoning ADR"
       }
     ]
   },

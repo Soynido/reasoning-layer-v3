@@ -21,9 +21,10 @@ let configCapture: ConfigCaptureEngine | null = null;
 let testCapture: TestCaptureEngine | null = null;
 let gitMetadata: GitMetadataEngine | null = null;
 let schemaManager: SchemaManager | null = null;
-// ❌ RBOM Engine désactivé temporairement
-// let rbomEngine: RBOMEngine | null = null;
-// let evidenceMapper: EvidenceMapper | null = null;
+// ✅ RBOM Engine activé (initialisé de manière asynchrone)
+let rbomEngine: any = null; // RBOMEngine chargé dynamiquement
+let evidenceMapper: any = null; // EvidenceMapper chargé dynamiquement
+let decisionSynthesizer: any = null; // DecisionSynthesizer chargé dynamiquement
 
 // ✅ Debounce map pour éviter la multiplication d'événements
 const fileDebounceMap = new Map<string, NodeJS.Timeout>();
@@ -141,6 +142,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 // ✅ Import dynamique pour éviter le blocage top-level
                 const { RBOMEngine } = await import('./core/rbom/RBOMEngine');
                 const { EvidenceMapper } = await import('./core/EvidenceMapper');
+                const { DecisionSynthesizer } = await import('./core/rbom/DecisionSynthesizer');
                 
                 // Fire-and-forget callbacks
                 const log = (msg: string) => {
@@ -153,16 +155,30 @@ export async function activate(context: vscode.ExtensionContext) {
                 };
 
                 console.log('🔧 Creating RBOMEngine instance (async)...');
-                const rbom = new RBOMEngine(workspaceRoot, log, warn);
-                const evidenceMapper = new EvidenceMapper();
+                rbomEngine = new RBOMEngine(workspaceRoot, log, warn);
+                evidenceMapper = new EvidenceMapper();
+                decisionSynthesizer = new DecisionSynthesizer(workspaceRoot, persistence, rbomEngine);
 
                 // Fire-and-forget: ne jamais await
                 console.log('🔧 Calling warmupValidation()...');
-                rbom.warmupValidation();
+                rbomEngine.warmupValidation();
 
                 persistence.logWithEmoji('🧠', 'RBOMEngine initialized asynchronously (deferred 6s)');
                 persistence.logWithEmoji('🔗', 'EvidenceMapper ready - Capture ↔ RBOM bridge active');
+                persistence.logWithEmoji('🤖', 'DecisionSynthesizer ready - Auto ADR generation enabled');
                 console.log('✅ RBOMEngine initialization completed (async deferred)');
+                
+                // ✅ Déclencher la synthèse d'ADRs après 2 minutes
+                setTimeout(() => {
+                    console.log('🧠 Starting historical decision synthesis...');
+                    decisionSynthesizer?.synthesizeHistoricalDecisions();
+                }, 120000); // 2 minutes
+                
+                // ✅ Synthèse périodique toutes les 5 minutes
+                setInterval(() => {
+                    console.log('🧠 Periodic decision synthesis...');
+                    decisionSynthesizer?.synthesizeHistoricalDecisions();
+                }, 300000); // 5 minutes
             } catch (rbomError) {
                 const errorMsg = rbomError instanceof Error ? rbomError.message : String(rbomError);
                 console.warn('⚠️ RBOMEngine could not load:', errorMsg);
@@ -277,8 +293,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
         */
 
-        // ❌ ADR Commands DÉSACTIVÉS (Layer 2)
-        /*
+        // ✅ ADR Commands ACTIVÉS (Layer 2)
         context.subscriptions.push(
             vscode.commands.registerCommand('reasoning.adr.create', async () => {
                 if (!rbomEngine) {
@@ -332,17 +347,17 @@ export async function activate(context: vscode.ExtensionContext) {
                     return;
                 }
 
-                const items = adrs.map(adr => ({
+                const items = adrs.map((adr: any) => ({
                     label: `📄 ${adr.title}`,
-                    description: `Status: ${adr.status} | ${adr.evidenceIds.length} evidence(s)`,
+                    description: `Status: ${adr.status} | ${adr.evidenceIds?.length || 0} evidence(s)`,
                     adr
                 }));
 
-                const selected = await vscode.window.showQuickPick(items, {
+                const selected: any = await vscode.window.showQuickPick(items, {
                     placeHolder: 'Select an ADR to view'
                 });
 
-                if (selected) {
+                if (selected && selected.adr) {
                     vscode.commands.executeCommand('reasoning.adr.view', selected.adr.id);
                 }
             })
@@ -364,13 +379,13 @@ export async function activate(context: vscode.ExtensionContext) {
                         return;
                     }
 
-                    const items = adrs.map(adr => ({
+                    const items = adrs.map((adr: any) => ({
                         label: adr.title,
                         description: `Status: ${adr.status}`,
                         id: adr.id
                     }));
 
-                    const selected = await vscode.window.showQuickPick(items);
+                    const selected: any = await vscode.window.showQuickPick(items);
                     if (!selected) return;
                     id = selected.id;
                 }
@@ -431,13 +446,13 @@ ${adr.evidenceIds.length} evidence(s) linked
                     return;
                 }
 
-                const adrItems = adrs.map(adr => ({
+                const adrItems = adrs.map((adr: any) => ({
                     label: adr.title,
                     description: `Status: ${adr.status}`,
                     adrId: adr.id
                 }));
 
-                const selectedADR = await vscode.window.showQuickPick(adrItems, {
+                const selectedADR: any = await vscode.window.showQuickPick(adrItems, {
                     placeHolder: 'Select ADR to link evidence'
                 });
 
@@ -457,10 +472,42 @@ ${adr.evidenceIds.length} evidence(s) linked
                 }
 
                 vscode.window.showInformationMessage(`🔗 Link evidence to ADR\nFound ${evidenceCount} events in traces`);
-                persistence.logWithEmoji('🔗', `Linking evidence to ADR: ${selectedADR.label}`);
+                persistence.logWithEmoji('🔗', `Linking evidence to ADR: ${selectedADR?.label || 'Unknown'}`);
             })
         );
-        */
+
+        // ✅ Commande Auto-synthèse d'ADRs
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.adr.auto', async () => {
+                if (!rbomEngine) {
+                    vscode.window.showErrorMessage('RBOM Engine not initialized. Please wait a few seconds.');
+                    persistence?.logWithEmoji('⚠️', 'Auto-synthesis skipped: RBOM Engine not ready');
+                    return;
+                }
+
+                const progressOptions: vscode.ProgressOptions = {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Auto-generating ADRs',
+                    cancellable: false
+                };
+
+                vscode.window.withProgress(progressOptions, async () => {
+                    try {
+                        if (decisionSynthesizer) {
+                            await decisionSynthesizer.runAutoSynthesis();
+                            vscode.window.showInformationMessage('✅ Auto ADR synthesis complete!');
+                            persistence?.logWithEmoji('✅', 'Auto-synthesis completed successfully');
+                        } else {
+                            vscode.window.showErrorMessage('DecisionSynthesizer not initialized');
+                        }
+                    } catch (error) {
+                        const errorMsg = error instanceof Error ? error.message : String(error);
+                        vscode.window.showErrorMessage(`Auto-synthesis failed: ${errorMsg}`);
+                        persistence?.logWithEmoji('❌', `Auto-synthesis error: ${errorMsg}`);
+                    }
+                });
+            })
+        );
 
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
