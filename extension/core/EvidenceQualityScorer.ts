@@ -79,8 +79,8 @@ export class EvidenceQualityScorer {
         if (type === 'git_commit') return 0.9;
         if (type === 'test') return 0.8;
 
-        // Medium quality sources
-        if (source.includes('git:')) return 0.7;
+        // Medium-high quality sources (Git-related)
+        if (source.includes('git:')) return 0.8; // Increased from 0.7
         if (type === 'dependencies') return 0.6;
         if (type === 'config') return 0.6;
 
@@ -93,7 +93,7 @@ export class EvidenceQualityScorer {
      * Calculate completeness score based on available data
      */
     private calculateCompleteness(event: CaptureEvent): number {
-        let score = 0.5; // Base score
+        let score = 0.6; // Increased base score from 0.5
 
         // Check for metadata
         if (event.metadata && Object.keys(event.metadata).length > 0) {
@@ -118,8 +118,8 @@ export class EvidenceQualityScorer {
      * Map score to confidence level
      */
     private mapScoreToConfidence(score: number): 'low' | 'medium' | 'high' {
-        if (score >= 0.5) return 'high';  // Allow medium-high scores as high quality
-        if (score >= 0.3) return 'medium';
+        if (score >= 0.4) return 'high';  // Lower threshold to capture more recent Git events
+        if (score >= 0.25) return 'medium';
         return 'low';
     }
 
