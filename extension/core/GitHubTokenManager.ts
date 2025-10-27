@@ -16,7 +16,8 @@ export class GitHubTokenManager {
      */
     public static async storeToken(token: string): Promise<void> {
         const config = vscode.workspace.getConfiguration('reasoningLayer');
-        await config.update('githubToken', token, vscode.ConfigurationTarget.Workspace);
+        // Use Global target for window-scoped settings
+        await config.update('githubToken', token, vscode.ConfigurationTarget.Global);
     }
 
     /**
@@ -24,7 +25,8 @@ export class GitHubTokenManager {
      */
     public static async clearToken(): Promise<void> {
         const config = vscode.workspace.getConfiguration('reasoningLayer');
-        await config.update('githubToken', undefined, vscode.ConfigurationTarget.Workspace);
+        // Use Global target for window-scoped settings
+        await config.update('githubToken', undefined, vscode.ConfigurationTarget.Global);
     }
 
     /**

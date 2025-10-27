@@ -27,7 +27,7 @@
           "type": "string",
           "default": null,
           "description": "GitHub Personal Access Token for PR and Issue integration",
-          "scope": "application"
+          "scope": "window"
         }
       }
     },
