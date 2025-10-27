@@ -106,6 +106,21 @@
         "command": "reasoning.adr.auto",
         "title": "🤖 Auto-generate ADRs",
         "category": "Reasoning ADR"
+      },
+      {
+        "command": "reasoning.adr.evolution",
+        "title": "🔄 Show ADR Evolution Timeline",
+        "category": "Reasoning ADR"
+      },
+      {
+        "command": "reasoning.adr.deprecated",
+        "title": "📜 List Deprecated ADRs",
+        "category": "Reasoning ADR"
+      },
+      {
+        "command": "reasoning.adr.suggest",
+        "title": "💡 Suggest Superseding Relationships",
+        "category": "Reasoning ADR"
       }
     ]
   },

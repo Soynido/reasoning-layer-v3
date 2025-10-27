@@ -577,6 +577,97 @@ ${adr.evidenceIds.length} evidence(s) linked
             })
         );
 
+        // Evolution Timeline Commands
+        let evolutionManager: any = null;
+        
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.adr.evolution', async () => {
+                if (!rbomEngine) {
+                    vscode.window.showErrorMessage('RBOM Engine not initialized');
+                    return;
+                }
+
+                // Dynamic import of EvolutionManager
+                if (!evolutionManager) {
+                    const { EvolutionManager } = await import('./core/rbom/EvolutionManager');
+                    evolutionManager = new EvolutionManager(rbomEngine, (msg: string) => persistence?.logWithEmoji('🔄', msg));
+                }
+
+                const allADRs = rbomEngine.listADRs();
+                if (allADRs.length === 0) {
+                    vscode.window.showInformationMessage('No ADRs found. Create some ADRs first.');
+                    return;
+                }
+
+                interface ADRChoice {
+                    label: string;
+                    adr: any;
+                }
+                
+                const adrChoices: ADRChoice[] = allADRs.map((adr: any) => ({ label: adr.title, adr }));
+                const selected = await vscode.window.showQuickPick(adrChoices, {
+                    placeHolder: 'Select an ADR to view its evolution timeline'
+                });
+
+                if (selected && selected.adr) {
+                    const timeline = evolutionManager.getEvolutionTimeline(selected.adr.id);
+                    if (timeline.length === 0) {
+                        vscode.window.showInformationMessage(`No evolution links found for "${selected.adr.title}"`);
+                    } else {
+                        const details = timeline.map((link: any) => `• ${link.from.substring(0, 8)} → ${link.to.substring(0, 8)}`).join('\n');
+                        vscode.window.showInformationMessage(`Evolution timeline for "${selected.adr.title}":\n${details}`);
+                    }
+                }
+            })
+        );
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.adr.deprecated', async () => {
+                if (!rbomEngine) {
+                    vscode.window.showErrorMessage('RBOM Engine not initialized');
+                    return;
+                }
+
+                if (!evolutionManager) {
+                    const { EvolutionManager } = await import('./core/rbom/EvolutionManager');
+                    evolutionManager = new EvolutionManager(rbomEngine, (msg: string) => persistence?.logWithEmoji('🔄', msg));
+                }
+
+                const deprecated = evolutionManager.getDeprecatedADRs();
+                if (deprecated.length === 0) {
+                    vscode.window.showInformationMessage('No deprecated ADRs found.');
+                } else {
+                    const list = deprecated.map((adr: any) => `• ${adr.title} (${adr.status})`).join('\n');
+                    vscode.window.showInformationMessage(`Deprecated ADRs:\n${list}`);
+                }
+            })
+        );
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.adr.suggest', async () => {
+                if (!rbomEngine) {
+                    vscode.window.showErrorMessage('RBOM Engine not initialized');
+                    return;
+                }
+
+                if (!evolutionManager) {
+                    const { EvolutionManager } = await import('./core/rbom/EvolutionManager');
+                    evolutionManager = new EvolutionManager(rbomEngine, (msg: string) => persistence?.logWithEmoji('🔄', msg));
+                }
+
+                vscode.window.showInformationMessage('Analyzing ADRs for potential superseding relationships...');
+                const suggestions = evolutionManager.suggestSuperseding();
+                
+                if (suggestions.length === 0) {
+                    vscode.window.showInformationMessage('No potential superseding relationships found.');
+                } else {
+                    const top = suggestions.slice(0, 5);
+                    const list = top.map((s: any) => `• Similarity: ${(s.similarity * 100).toFixed(0)}% between ${s.adr1.substring(0, 8)} and ${s.adr2.substring(0, 8)}`).join('\n');
+                    vscode.window.showInformationMessage(`Potential superseding relationships:\n${list}`);
+                }
+            })
+        );
+
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
 
