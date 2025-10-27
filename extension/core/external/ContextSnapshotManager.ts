@@ -7,8 +7,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { ExternalEvidence, ExternalIntegrator } from './ExternalIntegrator';
+import { ExternalIntegrator } from './ExternalIntegrator';
 import { ExternalSyncStatus } from './ExternalIntegrator';
+import { ExternalEvidence } from './types';
 
 export interface ConsolidatedInsight {
     id: string;
