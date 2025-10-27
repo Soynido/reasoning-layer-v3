@@ -10,7 +10,7 @@ import * as path from 'path';
 
 interface BiasAlert {
     id: string;
-    type: 'pattern_repetition' | 'contradiction' | 'correlation_divergence' | 'temporal_focus' | 'thematic_bias';
+    type: 'pattern_repetition' | 'contradiction' | 'correlation_divergence' | 'temporal_focus' | 'thematic_bias' | 'duplicate_decision';
     description: string;
     evidence: string[];
     confidence: number;
@@ -107,6 +107,10 @@ export class BiasMonitor {
         // Detect thematic bias
         const thematicBias = this.detectThematicBias(proposedAdrs, patterns);
         if (thematicBias) alerts.push(thematicBias);
+
+        // Detect duplicate ADRs
+        const duplicateBiases = this.detectDuplicateADRs(proposedAdrs);
+        alerts.push(...duplicateBiases);
 
         // Save alerts
         await this.saveAlerts(alerts);
@@ -280,6 +284,41 @@ export class BiasMonitor {
         }
 
         return null;
+    }
+
+    /**
+     * Detect duplicate ADRs (same title multiple times)
+     */
+    private detectDuplicateADRs(proposedAdrs: ADR[]): BiasAlert[] {
+        const alerts: BiasAlert[] = [];
+        const titleCounts = new Map<string, ADR[]>();
+
+        // Group ADRs by title
+        for (const adr of proposedAdrs) {
+            const normalizedTitle = adr.title.toLowerCase().trim();
+            const existing = titleCounts.get(normalizedTitle) || [];
+            existing.push(adr);
+            titleCounts.set(normalizedTitle, existing);
+        }
+
+        // Find duplicates
+        for (const [title, adrs] of titleCounts) {
+            if (adrs.length > 1) {
+                const confidence = Math.min(0.95, 0.7 + (adrs.length / 10) * 0.25);
+                alerts.push(this.createAlert(
+                    'duplicate_decision',
+                    `Duplicate ADR detected: '${adrs[0].title}' (${adrs.length} occurrences)`,
+                    adrs.map(a => a.id),
+                    confidence,
+                    'medium',
+                    adrs.length > 3 
+                        ? 'Merge ADRs or improve forecast deduplication' 
+                        : 'Review for consolidation opportunity'
+                ));
+            }
+        }
+
+        return alerts;
     }
 
     /**
