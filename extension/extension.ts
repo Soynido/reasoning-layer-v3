@@ -811,6 +811,56 @@ ${adr.evidenceIds.length} evidence(s) linked
             })
         );
 
+        // Evidence Report Command
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.evidence.report', async () => {
+                if (!rbomEngine) {
+                    vscode.window.showErrorMessage('RBOM Engine not initialized');
+                    return;
+                }
+
+                const allADRs = rbomEngine.listADRs();
+                if (allADRs.length === 0) {
+                    vscode.window.showInformationMessage('No ADRs found.');
+                    return;
+                }
+
+                interface ADRChoice {
+                    label: string;
+                    adr: any;
+                }
+                
+                const adrChoices: ADRChoice[] = allADRs.map((adr: any) => ({ label: `${adr.title} (${adr.evidenceIds?.length || 0} evidence)`, adr }));
+                const selected = await vscode.window.showQuickPick(adrChoices, {
+                    placeHolder: 'Select an ADR to view its evidence report'
+                });
+
+                if (selected && selected.adr) {
+                    try {
+                        const { ADREvidenceManager } = await import('./core/rbom/ADREvidenceManager');
+                        const evidenceManager = new ADREvidenceManager();
+                        
+                        // Load all events
+                        const eventsPath = path.join(workspaceRoot, '.reasoning', 'events.json');
+                        let allEvents: any[] = [];
+                        if (fs.existsSync(eventsPath)) {
+                            const eventsData = JSON.parse(fs.readFileSync(eventsPath, 'utf-8'));
+                            allEvents = eventsData.events || [];
+                        }
+                        
+                        const report = evidenceManager.generateEvidenceReport(selected.adr, allEvents);
+                        const formatted = evidenceManager.formatEvidenceReport(report);
+                        
+                        // Show report
+                        vscode.window.showInformationMessage(formatted);
+                    } catch (error) {
+                        const errorMsg = error instanceof Error ? error.message : String(error);
+                        vscode.window.showErrorMessage(`Failed to generate evidence report: ${errorMsg}`);
+                    }
+                }
+            })
+        );
+
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
 

@@ -136,6 +136,11 @@
         "command": "reasoning.contributors.list",
         "title": "📋 List Contributors",
         "category": "Reasoning Human"
+      },
+      {
+        "command": "reasoning.evidence.report",
+        "title": "📊 Show ADR Evidence Report",
+        "category": "Reasoning Evidence"
       }
     ]
   },
