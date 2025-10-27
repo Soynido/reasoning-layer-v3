@@ -38,7 +38,7 @@ export class CorrelationEngine {
         this.workspaceRoot = workspaceRoot;
         this.correlationsPath = path.join(workspaceRoot, '.reasoning', 'correlations.json');
         this.patternsPath = path.join(workspaceRoot, '.reasoning', 'patterns.json');
-        this.ledgerPath = path.join(workspaceRoot, '.reasoning', 'security', 'ledger.jsonl');
+        this.ledgerPath = path.join(workspaceRoot, '.reasoning', 'external', 'ledger.jsonl');
     }
 
     /**

@@ -32,7 +32,7 @@ export class ForecastEngine {
         this.patternsPath = path.join(workspaceRoot, '.reasoning', 'patterns.json');
         this.correlationsPath = path.join(workspaceRoot, '.reasoning', 'correlations.json');
         this.marketSignalsPath = path.join(workspaceRoot, '.reasoning', 'external', 'market_signals.json');
-        this.ledgerPath = path.join(workspaceRoot, '.reasoning', 'security', 'ledger.jsonl');
+        this.ledgerPath = path.join(workspaceRoot, '.reasoning', 'external', 'ledger.jsonl');
     }
 
     /**
