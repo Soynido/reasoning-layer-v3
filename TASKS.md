@@ -61,11 +61,47 @@
 - [x] Insight generation (3 strategic insights) ✅
 - [x] Snapshot generation for Level 7 input ✅
 
-**Level 7: Reasoning & Forecast Layer** - ⏳ **NEXT**
-- [ ] AI-based pattern learning from evidence
-- [ ] Automated correlation detection
-- [ ] Predictive insights engine
-- [ ] ADR recommendation system
+**Level 7: Reasoning & Forecast Layer** - ⏳ **IN PROGRESS**
+
+**🎯 Objective**: Transform reasoning memory (RBOM + ledger + context snapshot) into predictive and explanatory engine.
+
+**📊 Components:**
+
+1. **Pattern Learning Engine (PLE)**
+   - [ ] Analyze ledger entries (internal + external) over time window
+   - [ ] Extract recurrent decision patterns:
+     - Structural (e.g., cache incidents ↔ performance feedback)
+     - Cognitive (e.g., refactor decisions → reduced incidents)
+     - Contextual (e.g., market trends → tech migration)
+   - [ ] Generate DecisionPattern with frequency, confidence, impact
+
+2. **Correlation Engine**
+   - [ ] Compare recent patterns with new evidence
+   - [ ] Detect unexpected correlations (pattern matches, divergences)
+   - [ ] Record correlations in ledger as correlation_events
+
+3. **Forecast Engine**
+   - [ ] Predict future decisions (probability of new ADRs)
+   - [ ] Identify emerging risks (recurrent incidents, tech debt)
+   - [ ] Surface strategic opportunities (migration, features, market)
+   - [ ] Generate forecasts with confidence scores and timeframes
+
+4. **ADR Synthesizer 2.0**
+   - [ ] Auto-generate ADR drafts from forecasts
+   - [ ] Create proposal ADRs with context and justification
+   - [ ] Require human validation before acceptance
+
+5. **Bias Monitor**
+   - [ ] Detect reasoning biases and divergences
+   - [ ] Generate alerts for potential decision errors
+
+**📦 Expected Deliverables:**
+- [ ] `PatternLearningEngine.ts` → `patterns.json`
+- [ ] `ForecastEngine.ts` → `forecasts.json`
+- [ ] `CorrelationEngine.ts` → `correlations.json`
+- [ ] `ADRGeneratorV2.ts` → `ADRs/auto/`
+- [ ] `BiasMonitor.ts` → `alerts.json`
+- [ ] `LEVEL_7_REPORT.md` with forecasts and patterns
 
 **Layer 3: Perceptual Layer (J+20 → J+30)** - ⏳ **PENDING**
 - [ ] Day 21-25: Vanilla HTML/CSS/JS Webview
