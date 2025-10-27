@@ -1,5 +1,27 @@
 # TASKS - Reasoning Layer V3
 
+## 🚨 URGENT PRIORITIES - This Week
+
+### 🔴 ADR Synthesizer 2.0 - CRITICAL PATH
+**Why**: This completes the Level 7 reasoning loop - transforming forecasts into actionable proposals.
+
+**Must Do**:
+1. Create `extension/core/reasoning/ADRGeneratorV2.ts`
+2. Read `forecasts.json` and generate proposed ADRs
+3. Save to `.reasoning/adrs/auto/*.json`
+4. Create `proposals.index.json` for pending ADRs
+5. Add VS Code command: "Validate ADR Forecasts"
+6. Generate `LEVEL_7_REPORT.md` summarizing all reasoning outputs
+
+**Success Criteria**:
+- ✅ See 2-3 auto-proposed ADRs in `.reasoning/adrs/auto/`
+- ✅ All proposals have `requires_human_validation: true`
+- ✅ Generated ADRs referenced in `LEVEL_7_REPORT.md`
+
+**Testing**: After each component, run validation to ensure semantic coherence.
+
+---
+
 ## 📋 Status Overview
 
 **Layer 1: Core Layer (J+0 → J+10)** - ✅ **COMPLETED**
@@ -91,12 +113,14 @@
    - [x] Confidence scoring algorithm implemented ✅
    - [x] Types: Decision, Risk, Opportunity, Refactor ✅
 
-4. **ADR Synthesizer 2.0**
-   - [ ] Auto-generate ADR drafts from forecasts
+4. **ADR Synthesizer 2.0** - ⏳ **URGENT - IN PROGRESS**
+   - [ ] Auto-generate ADR drafts from forecasts 🔴 PRIORITY
    - [ ] Create proposal ADRs with context and justification
    - [ ] Require human validation before acceptance
+   - [ ] Generate proposals.index.json for pending ADRs
+   - [ ] VS Code command: Validate ADR Forecasts
 
-5. **Bias Monitor**
+5. **Bias Monitor** - ⏳ **PENDING**
    - [ ] Detect reasoning biases and divergences
    - [ ] Generate alerts for potential decision errors
 
@@ -104,9 +128,9 @@
 - [x] `PatternLearningEngine.ts` → `patterns.json` ✅
 - [x] `ForecastEngine.ts` → `forecasts.json` ✅
 - [x] `CorrelationEngine.ts` → `correlations.json` ✅
-- [ ] `ADRGeneratorV2.ts` → `ADRs/auto/`
+- [ ] `ADRGeneratorV2.ts` → `ADRs/auto/` 🔴 URGENT
+- [ ] `LEVEL_7_REPORT.md` with forecasts and patterns 🔴 URGENT
 - [ ] `BiasMonitor.ts` → `alerts.json`
-- [ ] `LEVEL_7_REPORT.md` with forecasts and patterns
 
 **Layer 3: Perceptual Layer (J+20 → J+30)** - ⏳ **PENDING**
 - [ ] Day 21-25: Vanilla HTML/CSS/JS Webview
