@@ -1149,20 +1149,34 @@ ${adr.evidenceIds.length} evidence(s) linked
         // Perceptual Layer (Level 11)
         context.subscriptions.push(
             vscode.commands.registerCommand('reasoning.perceptual.open', () => {
-                const panel = vscode.window.createWebviewPanel(
-                    'reasoningPerceptualLayer',
-                    '🧠 Reasoning Layer - Perceptual View',
-                    vscode.ViewColumn.One,
-                    {
-                        enableScripts: true,
-                        retainContextWhenHidden: true
-                    }
-                );
+                try {
+                    console.log('🎨 Opening Perceptual Layer...');
+                    
+                    const panel = vscode.window.createWebviewPanel(
+                        'reasoningPerceptualLayer',
+                        '🧠 Reasoning Layer - Perceptual View',
+                        vscode.ViewColumn.One,
+                        {
+                            enableScripts: true,
+                            retainContextWhenHidden: true
+                        }
+                    );
 
-                // Load the built UI
-                const uiPath = path.join(context.extensionPath, 'webview', 'ui', 'dist', 'index.html');
-                const htmlContent = fs.readFileSync(uiPath, 'utf-8');
-                panel.webview.html = htmlContent;
+                    // Load the built UI
+                    const uiPath = path.join(context.extensionPath, 'webview', 'ui', 'dist', 'index.html');
+                    console.log('📁 UI Path:', uiPath);
+                    console.log('📁 Extension Path:', context.extensionPath);
+                    
+                    if (!fs.existsSync(uiPath)) {
+                        vscode.window.showErrorMessage(`UI not found at: ${uiPath}`);
+                        console.error('❌ UI file not found!');
+                        panel.webview.html = '<h1>UI not found</h1><p>Please run: cd extension/webview/ui && npm run build</p>';
+                        return;
+                    }
+                    
+                    const htmlContent = fs.readFileSync(uiPath, 'utf-8');
+                    console.log('✅ HTML loaded, size:', htmlContent.length);
+                    panel.webview.html = htmlContent;
 
                 // Load cognitive state and send to UI
                 const cognitiveManifestPath = path.join(workspaceRoot, '.reasoning', 'CognitiveManifest.json');
@@ -1206,7 +1220,11 @@ ${adr.evidenceIds.length} evidence(s) linked
                     }
                 });
 
-                persistence?.logWithEmoji('🎨', 'Perceptual Layer opened');
+                    persistence?.logWithEmoji('🎨', 'Perceptual Layer opened');
+                } catch (error) {
+                    console.error('❌ Failed to open Perceptual Layer:', error);
+                    vscode.window.showErrorMessage(`Failed to open Perceptual Layer: ${error}`);
+                }
             })
         );
 
