@@ -78,6 +78,48 @@ Create a webview to visualize the reasoning graph:
 
 ---
 
+## 🔄 Level 9: Self-Review Engine - OPERATIONAL INTELLIGENCE
+
+**🎯 Objective**: Establish feedback loop that evaluates, learns, and adjusts the Reasoning Layer from its own execution cycles.
+
+**📊 Components:**
+
+1. **SelfReviewEngine** - 🔴 **NEXT PRIORITY**
+   - [ ] Analyze previous cycles for progression/regressions
+   - [ ] Track metrics: mean_confidence, bias_count, goal_completion_rate, pattern_diversity
+   - [ ] Generate quantitative + qualitative insights
+   - [ ] Save to `history.json` and `review_report.md`
+
+2. **HistoryManager** - ⏳ **PENDING**
+   - [ ] Store execution history (patterns, goals, biases, duration)
+   - [ ] Maintain historical record per cycle
+   - [ ] Enable temporal comparison
+
+3. **EvolutionScorer** - ⏳ **PENDING**
+   - [ ] Calculate cognitive evolution score
+   - [ ] Measure: stability, diversity, confidence trends
+   - [ ] Track forecast_duplication reduction
+
+4. **SelfReportGenerator** - ⏳ **PENDING**
+   - [ ] Generate human-readable report (REVIEW_REPORT.md)
+   - [ ] Include insights, recommendations, trends
+
+**📊 Metrics Tracked:**
+- `mean_confidence`: Average confidence global (e.g., 0.82 → 0.84)
+- `bias_count`: Total biases detected (e.g., 3 → 1, -66%)
+- `goal_completion_rate`: % of goals executed vs deferred
+- `pattern_diversity`: Entropy of patterns used
+- `forecast_duplication`: Duplicate ADRs count
+- `cycle_duration`: Total pipeline time
+
+**🎯 Success Criteria:**
+- [ ] System tracks own evolution over time
+- [ ] Auto-evaluates cognitive performance
+- [ ] Provides actionable insights
+- [ ] Closes the reasoning feedback loop
+
+---
+
 ## 📋 Status Overview
 
 **Layer 1: Core Layer (J+0 → J+10)** - ✅ **COMPLETED**
