@@ -1,0 +1,41 @@
+{
+  "contributors": [
+    {
+      "name": "Soynido",
+      "email": "vgaludec@gmail.com",
+      "activity": {
+        "firstSeen": "2025-10-26T17:02:37+01:00",
+        "lastSeen": "2025-10-27T13:49:56+01:00",
+        "commitCount": 77
+      },
+      "expertise": [
+        "Core Logic",
+        "Documentation",
+        "Database",
+        "DevOps"
+      ],
+      "filesOwned": [
+        ".reasoning/manifest.json",
+        "extension/core/HumanContextManager.ts",
+        "extension/extension.ts",
+        "package.json",
+        "extension/core/rbom/RationaleScorer.ts",
+        "extension/core/rbom/EvolutionManager.ts",
+        "TASKS.md",
+        "extension/core/GitMetadataEngine.ts",
+        "extension/core/TestAnalyzer.ts",
+        "extension/core/CodeAnalyzer.ts"
+      ]
+    }
+  ],
+  "summary": {
+    "totalContributors": 1,
+    "totalCommits": 77,
+    "domains": [
+      "Core Logic",
+      "Documentation",
+      "Database",
+      "DevOps"
+    ]
+  }
+}

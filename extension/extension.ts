@@ -752,13 +752,19 @@ ${adr.evidenceIds.length} evidence(s) linked
                             fs.writeFileSync(contextPath, JSON.stringify(contextData, null, 2));
                             
                             vscode.window.showInformationMessage(
-                                `✅ Extracted ${contributors.length} contributors. Saved to .reasoning/human-context.json`
+                                `✅ Extracted ${contributors.length} contributor(s). Saved to .reasoning/human-context.json`
                             );
                             
-                            // Show top contributors
-                            const top = humanContext.getTopContributors(3);
-                            const topList = top.map((c, i) => `${i + 1}. ${c.name} (${c.commitCount} commits)`).join('\n');
-                            vscode.window.showInformationMessage(`Top contributors:\n${topList}`);
+                            // Show contributors summary
+                            const summary = contextData.summary;
+                            const exportContributors = contextData.contributors;
+                            const contributorInfo = exportContributors.map((c: any, i: number) => 
+                                `  ${i + 1}. ${c.name} - ${c.activity.commitCount} commits - Domains: ${c.expertise.slice(0, 3).join(', ')}`
+                            ).join('\n');
+                            
+                            vscode.window.showInformationMessage(
+                                `Contributors Summary:\n${contributorInfo}\n\nTotal commits: ${summary.totalCommits}\nDomains: ${summary.domains.join(', ')}`
+                            );
                         }
                     } catch (error) {
                         const errorMsg = error instanceof Error ? error.message : String(error);
