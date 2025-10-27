@@ -248,7 +248,7 @@ export class SchemaManager {
                 return false;
             }
 
-            // Note: adrs/ n'existe pas encore en Strate 1
+            // Note: adrs/ doesn't exist yet in Layer 1
             // if (!fs.existsSync(adrsDir)) {
             //     this.persistence.logWithEmoji('⚠️', 'ADRs directory missing');
             //     return false;
