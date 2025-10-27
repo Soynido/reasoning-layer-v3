@@ -12,7 +12,7 @@ export class EventAggregator extends EventEmitter {
 
     // ✅ COPIÉ V2 - Capture d'événement avec debounce
     captureEvent(
-        type: 'file_change' | 'git_commit' | 'git_branch',
+        type: 'file_change' | 'git_commit' | 'git_branch' | 'pr_linked' | 'issue_linked',
         source: string,
         metadata: Record<string, any> = {}
     ): void {
