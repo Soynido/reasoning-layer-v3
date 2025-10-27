@@ -17,7 +17,40 @@
 - [x] Goal-to-Action Compiler (Level 10) ✅
 - [x] GitHub Issue Reference Parsing Fix ✅
 
-### 🔴 NEXT PRIORITIES
+### 🔴 NEXT PRIORITIES - OPERATIONAL EXECUTION PHASE
+
+#### Level 10.1: TaskMemoryManager (Memory Ledger)
+**Status**: 🎯 NEXT TO IMPLEMENT
+- [ ] Create `TaskMemoryManager.ts` - Persist task execution ledger
+- [ ] Implement `.reasoning/task_memory.jsonl` - Immutable action log
+- [ ] Add `CognitiveRoadmap.md` generation - Auto-summary of progress
+- [ ] Integrate with SelfReviewEngine - Complete the feedback loop
+
+#### Level 10.2: Execute Action Plan (8 Actions)
+**Status**: ✅ PLAN VALIDATED, READY FOR EXECUTION
+
+**Goal 1: Reduce correlation duplication** (PRIORITY HIGH)
+- [ ] 1.1. Create `CorrelationDeduplicator.ts` - Modular deduplication logic
+- [ ] 1.2. Update `CorrelationEngine.ts` - Integrate deduplicator, purge duplicates
+
+**Goal 2: Reduce thematic bias** (PRIORITY MEDIUM)
+- [ ] 2.1. Update `ForecastEngine.ts` - Add category limiter (max 3/category)
+- [ ] 2.2. Create `HistoricalBalancer.ts` - Re-sample historical data for theme balance
+
+**Goal 3: Improve pattern diversity** (PRIORITY MEDIUM)
+- [ ] 3.1. Create `PatternMutationEngine.ts` - Generate pattern mutations (target: 5+ patterns, novelty >0.6)
+- [ ] 3.2. Create `PatternEvaluator.ts` - Evaluate novelty and quality metrics
+- [ ] 3.3. Create `PatternPruner.ts` - Remove redundant patterns (cosine similarity <0.4)
+- [ ] 3.4. Create `tests/PatternMutationEngine.test.ts` - Validate mutation cycle
+
+**🧠 Execution Order (Critical Path)**:
+1. CorrelationDeduplicator → 2. CorrelationEngine → 3. ForecastEngine → 
+4. HistoricalBalancer → 5. PatternMutationEngine → 6. PatternEvaluator → 
+7. PatternPruner → 8. Tests
+
+**Logic**: Purify past → Correct present → Enrich future
+
+---
 
 #### 1. VS Code Commands (Quick Win - 30 min)
 Add commands to make the reasoning layer accessible via VS Code:
