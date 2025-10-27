@@ -722,6 +722,89 @@ ${adr.evidenceIds.length} evidence(s) linked
             })
         );
 
+        // Human Context Commands
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.contributors.extract', async () => {
+                if (!workspaceRoot) {
+                    vscode.window.showErrorMessage('No workspace found');
+                    return;
+                }
+
+                const progressOptions: vscode.ProgressOptions = {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Extracting contributors from Git history',
+                    cancellable: false
+                };
+
+                vscode.window.withProgress(progressOptions, async () => {
+                    try {
+                        const { HumanContextManager } = await import('./core/HumanContextManager');
+                        const humanContext = new HumanContextManager(workspaceRoot, (msg: string) => persistence?.logWithEmoji('👥', msg));
+                        
+                        const contributors = await humanContext.extractContributors();
+                        
+                        if (contributors.length === 0) {
+                            vscode.window.showInformationMessage('No contributors found in Git history.');
+                        } else {
+                            // Save to .reasoning/human-context.json
+                            const contextPath = path.join(workspaceRoot, '.reasoning', 'human-context.json');
+                            const contextData = humanContext.exportHumanContext(contributors);
+                            fs.writeFileSync(contextPath, JSON.stringify(contextData, null, 2));
+                            
+                            vscode.window.showInformationMessage(
+                                `✅ Extracted ${contributors.length} contributors. Saved to .reasoning/human-context.json`
+                            );
+                            
+                            // Show top contributors
+                            const top = humanContext.getTopContributors(3);
+                            const topList = top.map((c, i) => `${i + 1}. ${c.name} (${c.commitCount} commits)`).join('\n');
+                            vscode.window.showInformationMessage(`Top contributors:\n${topList}`);
+                        }
+                    } catch (error) {
+                        const errorMsg = error instanceof Error ? error.message : String(error);
+                        vscode.window.showErrorMessage(`Failed to extract contributors: ${errorMsg}`);
+                        persistence?.logWithEmoji('❌', `Contributor extraction error: ${errorMsg}`);
+                    }
+                });
+            })
+        );
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.contributors.list', async () => {
+                if (!workspaceRoot) {
+                    vscode.window.showErrorMessage('No workspace found');
+                    return;
+                }
+
+                const contextPath = path.join(workspaceRoot, '.reasoning', 'human-context.json');
+                if (!fs.existsSync(contextPath)) {
+                    vscode.window.showInformationMessage(
+                        'No contributor data found. Run "Extract Contributors from Git" first.'
+                    );
+                    return;
+                }
+
+                try {
+                    const contextData = JSON.parse(fs.readFileSync(contextPath, 'utf-8'));
+                    const contributors = contextData.contributors;
+
+                    if (contributors.length === 0) {
+                        vscode.window.showInformationMessage('No contributors data available.');
+                    } else {
+                        const list = contributors.map((c: any, i: number) => 
+                            `${i + 1}. ${c.name} - ${c.activity.commitCount} commits - ${c.expertise.join(', ')}`
+                        ).join('\n');
+                        
+                        vscode.window.showInformationMessage(
+                            `Contributors (${contributors.length}):\n${list}`
+                        );
+                    }
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to read contributor data: ${error}`);
+                }
+            })
+        );
+
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
 

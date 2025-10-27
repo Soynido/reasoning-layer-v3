@@ -126,6 +126,16 @@
         "command": "reasoning.adr.score",
         "title": "📊 Score ADR Rationale Quality",
         "category": "Reasoning ADR"
+      },
+      {
+        "command": "reasoning.contributors.extract",
+        "title": "👥 Extract Contributors from Git",
+        "category": "Reasoning Human"
+      },
+      {
+        "command": "reasoning.contributors.list",
+        "title": "📋 List Contributors",
+        "category": "Reasoning Human"
       }
     ]
   },
