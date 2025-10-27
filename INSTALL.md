@@ -57,3 +57,4 @@ If the command doesn't appear:
 2. **Check extension is active**: Output panel → "Reasoning Layer V3"
 3. **Verify command registration**: Extensions panel → search "Reasoning Layer V3"
 
+
