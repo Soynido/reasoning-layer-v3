@@ -120,9 +120,14 @@
    - [x] Generate proposals.index.json for pending ADRs ✅
    - [ ] VS Code command: Validate ADR Forecasts 🔴 PRIORITY
 
-5. **Bias Monitor** - ⏳ **PENDING**
-   - [ ] Detect reasoning biases and divergences
-   - [ ] Generate alerts for potential decision errors
+5. **Bias Monitor** - ⏳ **IN PROGRESS**
+   - [ ] Pattern repetition detection (same pattern → >3 ADRs)
+   - [ ] Contradiction detection (opposing ADRs)
+   - [ ] Correlation divergence (declining patterns)
+   - [ ] Temporal bias (recent ADRs concentration)
+   - [ ] Thematic bias (single category focus)
+   - [ ] Generate alerts.json
+   - [ ] VS Code command: Analyze Biases
 
 **📦 Expected Deliverables:**
 - [x] `PatternLearningEngine.ts` → `patterns.json` ✅
