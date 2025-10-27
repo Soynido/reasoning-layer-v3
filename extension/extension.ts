@@ -129,6 +129,21 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         }, 5000); // Delayed activation of 5 seconds
         
+        // STEP 6.5: GitHubCaptureEngine (Priority 5)
+        setTimeout(async () => {
+            if (!persistence || !eventAggregator) return;
+            
+            try {
+                const { GitHubCaptureEngine } = await import('./core/GitHubCaptureEngine');
+                const githubCapture = new GitHubCaptureEngine(workspaceRoot, persistence, eventAggregator);
+                githubCapture.start();
+                persistence.logWithEmoji('🐙', 'GitHubCaptureEngine started - GitHub integration active');
+            } catch (githubError) {
+                console.warn('⚠️ GitHubCaptureEngine failed to start:', githubError);
+                persistence.logWithEmoji('⚠️', 'GitHubCaptureEngine disabled');
+            }
+        }, 5500); // Delayed activation of 5.5 seconds
+        
         // STEP 7: RBOMEngine asynchronous activation via dynamic import
         setTimeout(async () => {
             console.log('🧠 Extension RBOM entrypoint reached (deferred load)');
@@ -256,6 +271,34 @@ export async function activate(context: vscode.ExtensionContext) {
                     vscode.window.showInformationMessage('✅ GitHub token cleared');
                 } catch (error) {
                     vscode.window.showErrorMessage(`Failed to clear token: ${error}`);
+                }
+            })
+        );
+
+        // GitHub Test Command
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.github.test', async () => {
+                try {
+                    const { GitHubTokenManager } = await import('./core/GitHubTokenManager');
+                    const { GitHubCaptureEngine } = await import('./core/GitHubCaptureEngine');
+                    
+                    if (!persistence || !eventAggregator) {
+                        vscode.window.showErrorMessage('❌ Persistence or EventAggregator not initialized');
+                        return;
+                    }
+
+                    const token = GitHubTokenManager.getToken();
+                    if (!token) {
+                        vscode.window.showWarningMessage('⚠️ No GitHub token found. Please setup token first.');
+                        return;
+                    }
+
+                    vscode.window.showInformationMessage('🧪 Testing GitHub integration...');
+                    const githubCapture = new GitHubCaptureEngine(workspaceRoot!, persistence, eventAggregator);
+                    githubCapture.start();
+                    vscode.window.showInformationMessage('✅ GitHub integration test complete! Check output logs.');
+                } catch (error) {
+                    vscode.window.showErrorMessage(`❌ Test failed: ${error}`);
                 }
             })
         );
