@@ -30,11 +30,17 @@ export class CodeAnalyzer {
         const classesModified: string[] = [];
         const importsChanged: string[] = [];
         
+        // Skip non-code files (markdown, JSON, config files, etc.)
+        const codeExtensions = ['.ts', '.js', '.tsx', '.jsx', '.py', '.java', '.go', '.rs', '.cpp', '.c', '.h'];
+        const hasCodeExtension = codeExtensions.some(ext => filePath.endsWith(ext));
+        if (!hasCodeExtension) {
+            return { functionsAffected, classesModified, importsChanged };
+        }
+        
         // Detect function definitions in modified lines
         const functionPatterns = [
             /function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g,           // function name()
-            /(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:async\s*)?\(/g,  // arrow functions
-            /([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g                      // method calls in modified lines
+            /(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:async\s*)?\(/g  // arrow functions
         ];
         
         for (const pattern of functionPatterns) {
