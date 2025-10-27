@@ -111,7 +111,7 @@
 - ✅ Single unified OutputChannel
 - ✅ Auto-generated manifest with consistency
 
-## 🔄 NEXT TASK
+## 🔄 NEXT TASKS
 
 ### ✅ Day 14: 100% English Translation - COMPLETED
 
@@ -189,13 +189,15 @@ git add test.ts && git commit -m "test"
 - ✅ 594 events captured without error
 - ✅ Extension: 55 KiB (stable)
 
-### 🚀 Layer 2: Cognitive Layer (J+12 → J+20) - NEXT
-- [ ] RBOMEngine with progressive approach (avoid crash)
-- [ ] EvidenceMapper for Capture → RBOM interface
-- [ ] Zod schema for ADR validation
-- [ ] VS Code commands for CRUD ADRs
-- [ ] Automatic decision detection (DecisionSynthesizer)
-- [ ] Layer 2 Validation
+### 🚀 Layer 2: Cognitive Layer (J+12 → J+20) - ✅ ACTIVE
+- [x] RBOMEngine with progressive approach ✅
+- [x] EvidenceMapper for Capture → RBOM interface ✅
+- [x] Zod schema for ADR validation ✅
+- [x] VS Code commands for CRUD ADRs ✅
+- [x] Automatic decision detection (DecisionSynthesizer) ✅
+- [ ] Layer 2 Testing & Validation ⏳
+
+**Status**: Layer 2 implemented and active. Next: Testing phase.
 
 ### 📋 Layer 3: Perceptual Layer (J+20 → J+30) - PLANNED
 - [ ] Vanilla HTML/CSS/JS Webview
@@ -203,6 +205,26 @@ git add test.ts && git commit -m "test"
 - [ ] Interactive ADR interface
 - [ ] Tests & Documentation
 - [ ] V2 → V3 Migration
+
+### 🚀 Phase 1: Core Enhancements (Day 15-20) - NEXT
+**Priority**: High - Essential for decision context
+
+**1. Diff Summary Enhancement** ⭐
+- [ ] Parse insertions/deletions per file
+- [ ] Detect functions impacted by commit
+- [ ] Track dependencies modified
+
+**2. PR/Issue Integration** ⭐
+- [ ] Create GitHubCaptureEngine
+- [ ] Link PRs to ADRs via evidence
+- [ ] Capture issue context
+
+**3. Evidence Quality Scoring**
+- [ ] Count PRs, issues, commits, benchmarks
+- [ ] Track evidence freshness
+- [ ] Calculate diversity of sources
+
+**See ROADMAP.md for complete 7-level vision**
 
 ---
 
@@ -240,6 +262,12 @@ git add test.ts && git commit -m "test"
 ---
 
 ## 📅 CHANGELOG
+
+### 2025-01-27 (Day 14 evening) - ROADMAP & PLANNING
+- ✅ **Feature roadmap documented** - Complete 7-level vision in ROADMAP.md
+- ✅ Layer 2 marked as ACTIVE in TASKS.md
+- ✅ Phase 1 priorities defined (Diff Summary, PR/Issue, Evidence Quality)
+- ✅ Commits: `4275565`, `6c1d7da`
 
 ### 2025-01-27 (Day 14) - 100% ENGLISH TRANSLATION
 - ✅ **Complete English translation** of all code, ADRs, and documentation
