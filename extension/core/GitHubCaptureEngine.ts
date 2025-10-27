@@ -106,10 +106,10 @@ export class GitHubCaptureEngine {
         const prs: number[] = [];
         const issues: number[] = [];
         
-        // Match patterns like: Fixes #123, Closes #456, Resolves #789
+        // Only match well-formed closing patterns, ignore standalone #numbers
         const closePatterns = [
-            /(?:fix|fixes|fixed|resolve|resolves|resolved|close|closes|closed)\s*#(\d+)/gi,
-            /#(\d+)/g  // Generic #number pattern
+            /(?:fix|fixes|fixed|resolve|resolves|resolved|close|closes|closed)\s+#(\d+)/gi,
+            /(?:referenc|relat|see)\s*to\s+#(\d+)/gi
         ];
         
         for (const pattern of closePatterns) {
