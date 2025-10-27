@@ -106,10 +106,12 @@ export class GitHubCaptureEngine {
         const prs: number[] = [];
         const issues: number[] = [];
         
-        // Only match well-formed closing patterns, ignore standalone #numbers
+        // Only match well-formed closing patterns with strong context
+        // Avoid matching "Goal #1", "Issue #1" as standalone items
         const closePatterns = [
-            /(?:fix|fixes|fixed|resolve|resolves|resolved|close|closes|closed)\s+#(\d+)/gi,
-            /(?:referenc|relat|see)\s*to\s+#(\d+)/gi
+            /(?:fix|fixes|fixed|resolve|resolves|resolved|close|closes|closed)\s+(?:issue|issues)?\s*#(\d+)/gi,
+            /(?:referenc|relat|see)\s+(?:to|issue)\s*#(\d+)/gi,
+            /(?:connect|connecte|refs?)\s*#(\d+)/gi
         ];
         
         for (const pattern of closePatterns) {
@@ -122,7 +124,7 @@ export class GitHubCaptureEngine {
             }
         }
         
-        // Also check for explicit PR references (rare but possible)
+        // Explicit PR references
         const prPattern = /PR\s*#?(\d+)/gi;
         const prMatches = message.matchAll(prPattern);
         for (const match of prMatches) {
