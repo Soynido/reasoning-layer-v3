@@ -9,7 +9,7 @@ export class SBOMCaptureEngine {
     private lastYarnLockHash: string | null = null;
     private lastRequirementsHash: string | null = null;
     private watchers: NodeJS.Timeout[] = [];
-    private lastCapture: number = 0; // ✅ Timestamp pour éviter la redondance
+    private lastCapture: number = 0; // Timestamp to avoid redundancy
 
     constructor(
         private workspaceRoot: string,
@@ -25,13 +25,13 @@ export class SBOMCaptureEngine {
         this.startRequirementsWatcher();
         this.startCargoWatcher();
         
-        // Capture initial
+        // Initial capture
         this.captureAllDependencies();
         
         this.persistence.logWithEmoji('🚀', 'SBOMCaptureEngine started');
     }
 
-    // ✅ Priorité 1: package-lock.json
+    // Priority 1: package-lock.json
     private startPackageLockWatcher(): void {
         const packageLockPath = path.join(this.workspaceRoot, 'package-lock.json');
         
@@ -42,7 +42,7 @@ export class SBOMCaptureEngine {
 
         const watcher = setInterval(() => {
             try {
-                // ✅ Éviter la redondance - ne capturer que toutes les 3 secondes max
+                // Avoid redundancy - capture at most every 3 seconds
                 if (Date.now() - this.lastCapture < 3000) {
                     return;
                 }

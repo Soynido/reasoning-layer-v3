@@ -24,7 +24,7 @@ export class PersistenceManager {
         // Initialize tracesPath
         this.tracesPath = path.join(tracesDir, `${new Date().toISOString().split('T')[0]}.json`);
 
-        // Créer structure
+        // Create structure
         if (!fs.existsSync(reasoningDir)) {
             fs.mkdirSync(reasoningDir, { recursive: true });
             this.logWithEmoji('📁', `Created .reasoning directory: ${reasoningDir}`);
@@ -48,17 +48,17 @@ export class PersistenceManager {
             fs.writeFileSync(manifestFile, JSON.stringify(this.manifest, null, 2));
         }
 
-        // Auto-save toutes les 30 secondes
+        // Auto-save every 30 seconds
         this.autoSaveInterval = setInterval(() => {
             this.saveManifest();
             this.logWithEmoji('💾', 'Auto-save completed');
         }, 30000);
 
-        // Logs détaillés comme V2
+        // Detailed logs like V2
         this.outputChannel.appendLine('🔄 === REASONING LAYER V3 INITIALIZATION ===');
         const createdDate = new Date(this.manifest.createdAt);
-        // Afficher en heure locale correcte
-        this.outputChannel.appendLine(`📅 Created: ${createdDate.toLocaleString('fr-FR')} (Local)`);
+        // Display in correct local time
+        this.outputChannel.appendLine(`📅 Created: ${createdDate.toLocaleString('en-US')} (Local)`);
         this.outputChannel.appendLine(`📊 Project: ${this.manifest.projectName}`);
         this.outputChannel.appendLine(`📊 Total Events: ${this.manifest.totalEvents}`);
         this.outputChannel.appendLine(`📊 Version: ${this.manifest.version}`);
@@ -68,7 +68,7 @@ export class PersistenceManager {
         this.logWithEmoji('✅', 'PersistenceManager initialized');
     }
 
-    // ✅ COPIÉ V2 - Logging avec emojis
+    // Copied from V2 - Logging with emojis
     public logWithEmoji(emoji: string, message: string): void {
         const timestamp = new Date().toISOString();
         const logMessage = `${emoji} [${timestamp}] ${message}`;
@@ -83,7 +83,7 @@ export class PersistenceManager {
         this.outputChannel.appendLine(message);
     }
 
-    // ✅ NOUVEAU - Rotation par date
+    // NEW - Rotation by date
     public saveEvent(event: CaptureEvent): void {
         const dateKey = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
         const tracesDir = path.join(this.workspaceRoot, '.reasoning', 'traces');
@@ -113,7 +113,7 @@ export class PersistenceManager {
         return [];
     }
 
-    // ✅ CRITIQUE - Sérialisation explicite
+    // CRITICAL - Explicit serialization
     public getSerializable(): SerializableData {
         return JSON.parse(JSON.stringify({
             events: this.loadEvents(),
