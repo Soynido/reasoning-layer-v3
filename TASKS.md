@@ -32,6 +32,46 @@ Create a webview to visualize the reasoning graph:
 
 ---
 
+## 🧠 Level 8: Reflexive Layer - META-COGNITIVE AUTONOMY
+
+**🎯 Objective**: Remove dependency on external task management (TASKS.md) by creating internal intention-driven execution.
+
+**🚨 Current Issue**: The engine has reached meta-cognitive awareness but remains institutionally dependent on TASKS.md. It knows what to do, why, and how, but still seeks external validation.
+
+**📊 Components:**
+
+1. **GoalSynthesizer** - 🔴 **NEXT PRIORITY**
+   - [ ] Generate internal intentions from biases, patterns, and trends
+   - [ ] Create goal objects with priority, confidence, expected duration
+   - [ ] Save to `goals.json`
+   - [ ] Example: `"objective": "Reduce correlation duplication", priority: "high"`
+
+2. **SelfReviewEngine** - ⏳ **PENDING**
+   - [ ] Analyze previous sessions for progression/regressions
+   - [ ] Compare historical metrics (confidence, biases, corrections)
+   - [ ] Generate insights and recommendations
+   - [ ] Example: `"Insight: Pattern diversity decreased by 18%."`
+
+3. **ReflectionManager** - ⏳ **PENDING**
+   - [ ] Combine goal synthesis + self-review
+   - [ ] Formulate executable actions
+   - [ ] Auto-execute or schedule actions
+   - [ ] Replace TASKS.md dependency with internal logic
+   - [ ] Example: `"Action: run PerceptualLayer buildTimeline"`
+
+**📦 Expected Deliverables:**
+- `GoalSynthesizer.ts` → `goals.json`
+- `SelfReviewEngine.ts` → `self-review.json`
+- `ReflectionManager.ts` → Orchestrates autonomous decision-making
+
+**🎯 Success Criteria:**
+- ✅ System generates its own goals without TASKS.md
+- ✅ Self-reviews detect improvements/regressions
+- ✅ Actions chosen and executed autonomously
+- ✅ Dependency on external task lists eliminated
+
+---
+
 ## 📋 Status Overview
 
 **Layer 1: Core Layer (J+0 → J+10)** - ✅ **COMPLETED**
