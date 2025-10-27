@@ -4,6 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Dashboard from './views/Dashboard';
+import GoalBoard from './views/GoalBoard';
 import './App.css';
 
 interface AppProps {
@@ -45,6 +46,10 @@ const App: React.FC<AppProps> = ({ vscode }) => {
     switch (currentView) {
       case 'dashboard':
         return <Dashboard cognitiveState={cognitiveState} />;
+      case 'goals':
+        // Load goals - using goals_list if available from extension
+        const goalsList = cognitiveState?.goals_list || [];
+        return <GoalBoard goals={goalsList} />;
       default:
         return <div>View not implemented yet</div>;
     }
@@ -68,7 +73,7 @@ const App: React.FC<AppProps> = ({ vscode }) => {
       
       <nav className="app-nav">
         <button onClick={() => setCurrentView('dashboard')}>Dashboard</button>
-        <button>Goals</button>
+        <button onClick={() => setCurrentView('goals')}>Goals</button>
         <button>Patterns</button>
         <button>Correlations</button>
         <button>Memory</button>

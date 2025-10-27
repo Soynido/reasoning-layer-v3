@@ -1166,8 +1166,17 @@ ${adr.evidenceIds.length} evidence(s) linked
 
                 // Load cognitive state and send to UI
                 const cognitiveManifestPath = path.join(workspaceRoot, '.reasoning', 'CognitiveManifest.json');
+                const goalsPath = path.join(workspaceRoot, '.reasoning', 'goals.json');
+                
                 if (fs.existsSync(cognitiveManifestPath)) {
                     const cognitiveState = JSON.parse(fs.readFileSync(cognitiveManifestPath, 'utf-8'));
+                    
+                    // Load goals if exists
+                    if (fs.existsSync(goalsPath)) {
+                        const goalsData = JSON.parse(fs.readFileSync(goalsPath, 'utf-8'));
+                        cognitiveState.cognitive_state.goals_list = goalsData.active_goals || [];
+                    }
+                    
                     panel.webview.postMessage({
                         command: 'cognitiveStateUpdate',
                         data: cognitiveState.cognitive_state
@@ -1177,8 +1186,18 @@ ${adr.evidenceIds.length} evidence(s) linked
                 // Listen for messages from UI
                 panel.webview.onDidReceiveMessage(message => {
                     if (message.command === 'requestCognitiveState') {
+                        const cognitiveManifestPath = path.join(workspaceRoot, '.reasoning', 'CognitiveManifest.json');
+                        const goalsPath = path.join(workspaceRoot, '.reasoning', 'goals.json');
+                        
                         if (fs.existsSync(cognitiveManifestPath)) {
                             const cognitiveState = JSON.parse(fs.readFileSync(cognitiveManifestPath, 'utf-8'));
+                            
+                            // Load goals if exists
+                            if (fs.existsSync(goalsPath)) {
+                                const goalsData = JSON.parse(fs.readFileSync(goalsPath, 'utf-8'));
+                                cognitiveState.cognitive_state.goals_list = goalsData.active_goals || [];
+                            }
+                            
                             panel.webview.postMessage({
                                 command: 'cognitiveStateUpdate',
                                 data: cognitiveState.cognitive_state
