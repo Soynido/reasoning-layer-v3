@@ -668,6 +668,60 @@ ${adr.evidenceIds.length} evidence(s) linked
             })
         );
 
+        // Rationale Scorer Command
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.adr.score', async () => {
+                if (!rbomEngine) {
+                    vscode.window.showErrorMessage('RBOM Engine not initialized');
+                    return;
+                }
+
+                const allADRs = rbomEngine.listADRs();
+                if (allADRs.length === 0) {
+                    vscode.window.showInformationMessage('No ADRs found. Create some ADRs first.');
+                    return;
+                }
+
+                interface ADRChoice {
+                    label: string;
+                    adr: any;
+                }
+                
+                const adrChoices: ADRChoice[] = allADRs.map((adr: any) => ({ label: `${adr.title} (${adr.status})`, adr }));
+                const selected = await vscode.window.showQuickPick(adrChoices, {
+                    placeHolder: 'Select an ADR to score its rationale quality'
+                });
+
+                if (selected && selected.adr) {
+                    // Dynamic import of RationaleScorer
+                    const { RationaleScorer } = await import('./core/rbom/RationaleScorer');
+                    const scorer = new RationaleScorer();
+                    
+                    const score = scorer.calculateScore(selected.adr);
+                    const label = scorer.getQualityLabel(score.overall);
+                    const suggestions = scorer.suggestImprovements(selected.adr);
+
+                    const report = [
+                        `📊 Rationale Quality Score: ${(score.overall * 100).toFixed(0)}% (${label})`,
+                        '',
+                        `Evidence: ${(score.evidence * 100).toFixed(0)}%`,
+                        `Trade-offs: ${(score.tradeoffs * 100).toFixed(0)}%`,
+                        `Alternatives: ${(score.alternatives * 100).toFixed(0)}%`,
+                        `Assumptions: ${(score.assumptions * 100).toFixed(0)}%`,
+                        `Risks: ${(score.risks * 100).toFixed(0)}%`,
+                        `Mitigations: ${(score.mitigations * 100).toFixed(0)}%`,
+                        `Completeness: ${(score.completeness * 100).toFixed(0)}%`,
+                    ];
+
+                    if (suggestions.length > 0) {
+                        report.push('', '💡 Suggestions:', ...suggestions.map(s => `  • ${s}`));
+                    }
+
+                    vscode.window.showInformationMessage(report.join('\n'));
+                }
+            })
+        );
+
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
 

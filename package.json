@@ -121,6 +121,11 @@
         "command": "reasoning.adr.suggest",
         "title": "💡 Suggest Superseding Relationships",
         "category": "Reasoning ADR"
+      },
+      {
+        "command": "reasoning.adr.score",
+        "title": "📊 Score ADR Rationale Quality",
+        "category": "Reasoning ADR"
       }
     ]
   },
