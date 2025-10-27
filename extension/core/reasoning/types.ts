@@ -11,6 +11,7 @@ export interface DecisionPattern {
     confidence: number; // 0-1, reliability of the pattern
     impact: 'Stability' | 'Performance' | 'Security' | 'Cost' | 'User_Experience' | 'Technical_Debt';
     category: 'structural' | 'cognitive' | 'contextual';
+    tags?: string[]; // Tags for correlation matching
     firstSeen: string; // ISO timestamp
     lastSeen: string; // ISO timestamp
     evidenceIds: string[]; // Related evidence IDs
@@ -20,14 +21,13 @@ export interface DecisionPattern {
 
 export interface Correlation {
     id: string;
-    type: 'pattern_match' | 'divergence' | 'reinforcement';
-    sourcePatternId: string;
-    targetPatternId?: string;
-    relatedEvidence: string[]; // Evidence IDs
-    adrImpact?: string[]; // ADR IDs
-    confidence: number;
+    pattern_id: string;
+    event_id: string;
+    correlation_score: number;
+    direction: 'confirming' | 'diverging' | 'emerging';
+    tags: string[];
+    impact: string;
     timestamp: string;
-    description: string;
 }
 
 export interface Forecast {

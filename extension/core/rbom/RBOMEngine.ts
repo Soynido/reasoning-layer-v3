@@ -17,6 +17,7 @@ export class RBOMEngine {
     private uuidModule: any = null; // Chargé dynamiquement
     private integrityEngine: any = null; // Level 5: Integrity engine
     private patternLearningEngine: any = null; // Level 7: Pattern Learning engine
+    private correlationEngine: any = null; // Level 7: Correlation engine
     private log: ((msg: string) => void) | null = null;
     private warn: ((msg: string) => void) | null = null;
     private workspaceRoot: string;
@@ -60,6 +61,11 @@ export class RBOMEngine {
             this.loadPatternLearningEngine().catch((err) => {
                 if (this.warn) {
                     this.warn(`Pattern Learning engine load failed: ${String(err)}`);
+                }
+            }),
+            this.loadCorrelationEngine().catch((err) => {
+                if (this.warn) {
+                    this.warn(`Correlation engine load failed: ${String(err)}`);
                 }
             })
         ]).catch(() => {
@@ -153,6 +159,25 @@ export class RBOMEngine {
         } catch (e: any) {
             if (this.warn) {
                 this.warn(`Failed to load Pattern Learning Engine: ${e?.message ?? e}`);
+            }
+        }
+    }
+
+    /**
+     * Load Correlation Engine (Level 7)
+     */
+    private async loadCorrelationEngine(): Promise<void> {
+        if (this.correlationEngine) return;
+        
+        try {
+            const { CorrelationEngine } = await import('../reasoning/CorrelationEngine');
+            this.correlationEngine = new CorrelationEngine(this.workspaceRoot);
+            if (this.log) {
+                this.log('🔗 Correlation Engine loaded');
+            }
+        } catch (e: any) {
+            if (this.warn) {
+                this.warn(`Failed to load Correlation Engine: ${e?.message ?? e}`);
             }
         }
     }
