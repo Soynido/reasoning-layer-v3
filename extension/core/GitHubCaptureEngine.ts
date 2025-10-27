@@ -1,4 +1,6 @@
 import * as https from 'https';
+import * as fs from 'fs';
+import * as path from 'path';
 import { PersistenceManager } from './PersistenceManager';
 import { EventAggregator } from './EventAggregator';
 
@@ -56,8 +58,6 @@ export class GitHubCaptureEngine {
      */
     private detectGitHubRepo(): void {
         try {
-            const fs = require('fs');
-            const path = require('path');
             const gitConfigPath = path.join(this.workspaceRoot, '.git', 'config');
             
             if (!fs.existsSync(gitConfigPath)) {

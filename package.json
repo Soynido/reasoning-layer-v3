@@ -42,6 +42,16 @@
         "category": "Reasoning"
       },
       {
+        "command": "reasoning.github.setup",
+        "title": "🔗 Setup GitHub Integration",
+        "category": "Reasoning"
+      },
+      {
+        "command": "reasoning.github.clear",
+        "title": "🔓 Clear GitHub Token",
+        "category": "Reasoning"
+      },
+      {
         "command": "reasoning.refreshTraces",
         "title": "🔄 Refresh Traces",
         "category": "Reasoning"

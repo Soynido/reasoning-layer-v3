@@ -235,6 +235,31 @@ export async function activate(context: vscode.ExtensionContext) {
             })
         );
 
+        // GitHub Setup Command
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.github.setup', async () => {
+                try {
+                    const { GitHubTokenManager } = await import('./core/GitHubTokenManager');
+                    await GitHubTokenManager.showSetupDialog();
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to setup GitHub: ${error}`);
+                }
+            })
+        );
+
+        // GitHub Clear Token Command
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.github.clear', async () => {
+                try {
+                    const { GitHubTokenManager } = await import('./core/GitHubTokenManager');
+                    await GitHubTokenManager.clearToken();
+                    vscode.window.showInformationMessage('✅ GitHub token cleared');
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to clear token: ${error}`);
+                }
+            })
+        );
+
         context.subscriptions.push(
             vscode.commands.registerCommand('reasoning.showSchema', () => {
                 if (schemaManager) {
