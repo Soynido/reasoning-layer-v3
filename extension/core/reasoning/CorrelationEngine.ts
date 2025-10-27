@@ -100,6 +100,8 @@ export class CorrelationEngine {
 
         // Save correlations
         await this.saveCorrelations(correlations);
+        
+        console.log(`✅ Correlation deduplication complete`);
 
         // Append to ledger
         for (const correlation of correlations) {
@@ -273,13 +275,42 @@ export class CorrelationEngine {
     }
 
     /**
-     * Save correlations to correlations.json
+     * Save correlations to correlations.json with deduplication
      */
-    private async saveCorrelations(correlations: Correlation[]): Promise<void> {
+    private async saveCorrelations(newCorrelations: Correlation[]): Promise<void> {
         try {
+            // Load existing correlations
+            let existingCorrelations: Correlation[] = [];
+            if (fs.existsSync(this.correlationsPath)) {
+                const existing = JSON.parse(fs.readFileSync(this.correlationsPath, 'utf-8'));
+                existingCorrelations = Array.isArray(existing) ? existing : [];
+            }
+
+            // Deduplicate against existing correlations
+            const seen = new Map<string, boolean>();
+            for (const corr of existingCorrelations) {
+                const key = `${corr.pattern_id}:${corr.event_id}:${corr.correlation_score}`;
+                seen.set(key, true);
+            }
+
+            // Add new correlations only if not duplicates
+            const uniqueNewCorrelations: Correlation[] = [];
+            for (const corr of newCorrelations) {
+                const key = `${corr.pattern_id}:${corr.event_id}:${corr.correlation_score}`;
+                if (!seen.has(key)) {
+                    seen.set(key, true);
+                    uniqueNewCorrelations.push(corr);
+                }
+            }
+
+            // Combine and save
+            const allCorrelations = [...existingCorrelations, ...uniqueNewCorrelations];
+            
+            console.log(`💾 Saving ${allCorrelations.length} correlations (${uniqueNewCorrelations.length} new, ${existingCorrelations.length} existing)`);
+
             fs.writeFileSync(
                 this.correlationsPath,
-                JSON.stringify(correlations, null, 2),
+                JSON.stringify(allCorrelations, null, 2),
                 'utf-8'
             );
         } catch (error) {
