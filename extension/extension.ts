@@ -26,6 +26,11 @@ let rbomEngine: any = null; // RBOMEngine dynamically loaded
 let evidenceMapper: any = null; // EvidenceMapper dynamically loaded
 let decisionSynthesizer: any = null; // DecisionSynthesizer dynamically loaded
 
+// Level 5: Security components
+let integrityEngine: any = null; // IntegrityEngine dynamically loaded
+let snapshotManager: any = null; // SnapshotManager dynamically loaded
+let lifecycleManager: any = null; // LifecycleManager dynamically loaded
+
 // Debounce map to prevent event multiplication
 const fileDebounceMap = new Map<string, NodeJS.Timeout>();
 
@@ -867,6 +872,95 @@ ${adr.evidenceIds.length} evidence(s) linked
                         const errorMsg = error instanceof Error ? error.message : String(error);
                         vscode.window.showErrorMessage(`Failed to generate evidence report: ${errorMsg}`);
                     }
+                }
+            })
+        );
+
+        // Level 5: Security Commands
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.verify.integrity', async () => {
+                try {
+                    const { IntegrityEngine } = await import('./core/security/IntegrityEngine');
+                    
+                    integrityEngine = new IntegrityEngine(workspaceRoot);
+                    const result = integrityEngine.verifyLedgerIntegrity();
+                    
+                    if (result.valid) {
+                        vscode.window.showInformationMessage('✅ Integrity Chain: Valid ✓');
+                    } else {
+                        vscode.window.showErrorMessage(`❌ Integrity Chain Invalid:\n${result.errors.join('\n')}`);
+                    }
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to verify integrity: ${error}`);
+                }
+            })
+        );
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.snapshot.create', async () => {
+                try {
+                    if (!rbomEngine) {
+                        vscode.window.showErrorMessage('RBOM Engine not initialized');
+                        return;
+                    }
+
+                    const { IntegrityEngine } = await import('./core/security/IntegrityEngine');
+                    const { SnapshotManager } = await import('./core/security/SnapshotManager');
+                    
+                    integrityEngine = new IntegrityEngine(workspaceRoot);
+                    snapshotManager = new SnapshotManager(workspaceRoot, integrityEngine);
+                    
+                    const allADRs = rbomEngine.listADRs();
+                    
+                    const tracesDir = path.join(workspaceRoot, '.reasoning', 'traces');
+                    let allEvents: any[] = [];
+                    if (fs.existsSync(tracesDir)) {
+                        const traceFiles = fs.readdirSync(tracesDir).filter(f => f.endsWith('.json'));
+                        for (const file of traceFiles) {
+                            try {
+                                const filePath = path.join(tracesDir, file);
+                                const traceEvents = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+                                if (Array.isArray(traceEvents)) { allEvents.push(...traceEvents); }
+                            } catch (error) { /* Ignore corrupted files */ }
+                        }
+                    }
+                    
+                    const snapshot = await snapshotManager.generateSnapshot(allADRs, allEvents);
+                    
+                    vscode.window.showInformationMessage(
+                        `✅ Snapshot created: ${snapshot.snapshot_id}\n` +
+                        `📊 ADRs: ${snapshot.adr_count}, Evidence: ${snapshot.evidence_count}`
+                    );
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to create snapshot: ${error}`);
+                }
+            })
+        );
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.snapshot.list', async () => {
+                try {
+                    const { IntegrityEngine } = await import('./core/security/IntegrityEngine');
+                    const { SnapshotManager } = await import('./core/security/SnapshotManager');
+                    
+                    integrityEngine = new IntegrityEngine(workspaceRoot);
+                    snapshotManager = new SnapshotManager(workspaceRoot, integrityEngine);
+                    
+                    const snapshots = snapshotManager.listSnapshots();
+                    
+                    if (snapshots.length === 0) {
+                        vscode.window.showInformationMessage('No snapshots found.');
+                        return;
+                    }
+                    
+                    const choices = snapshots.map((snap: any) => ({
+                        label: snap.snapshot_id,
+                        detail: `${snap.adr_count} ADRs, ${snap.evidence_count} evidence - ${new Date(snap.created_at).toLocaleDateString()}`
+                    }));
+                    
+                    await vscode.window.showQuickPick(choices, { placeHolder: 'Select a snapshot to view details' });
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to list snapshots: ${error}`);
                 }
             })
         );

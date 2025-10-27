@@ -141,6 +141,21 @@
         "command": "reasoning.evidence.report",
         "title": "📊 Show ADR Evidence Report",
         "category": "Reasoning Evidence"
+      },
+      {
+        "command": "reasoning.verify.integrity",
+        "title": "🔐 Verify Integrity Chain",
+        "category": "Reasoning Security"
+      },
+      {
+        "command": "reasoning.snapshot.create",
+        "title": "📸 Create Snapshot",
+        "category": "Reasoning Security"
+      },
+      {
+        "command": "reasoning.snapshot.list",
+        "title": "📋 List Snapshots",
+        "category": "Reasoning Security"
       }
     ]
   },
