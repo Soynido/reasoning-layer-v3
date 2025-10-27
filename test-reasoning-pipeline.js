@@ -21,6 +21,7 @@ const { ForecastEngine } = require('./out/core/reasoning/ForecastEngine');
 const { ADRGeneratorV2 } = require('./out/core/reasoning/ADRGeneratorV2');
 const { BiasMonitor } = require('./out/core/reasoning/BiasMonitor');
 const { GoalSynthesizer } = require('./out/core/reasoning/GoalSynthesizer');
+const { ReflectionManager } = require('./out/core/reasoning/ReflectionManager');
 
 async function runCompletePipeline() {
     console.log('='.repeat(80));
@@ -30,21 +31,21 @@ async function runCompletePipeline() {
 
     try {
         // Step 1: Pattern Learning Engine
-        console.log('📊 Step 1/6: Pattern Learning Engine');
+        console.log('📊 Step 1/7: Pattern Learning Engine');
         console.log('-'.repeat(80));
         const ple = new PatternLearningEngine(workspaceRoot);
         const patterns = await ple.analyzePatterns();
         console.log(`✅ Patterns learned: ${patterns.length}\n`);
 
         // Step 2: Correlation Engine
-        console.log('🔗 Step 2/6: Correlation Engine');
+        console.log('🔗 Step 2/7: Correlation Engine');
         console.log('-'.repeat(80));
         const correlationEngine = new CorrelationEngine(workspaceRoot);
         const correlations = await correlationEngine.analyze();
         console.log(`✅ Correlations detected: ${correlations.length}\n`);
 
         // Step 3: Forecast Engine
-        console.log('🔮 Step 3/6: Forecast Engine');
+        console.log('🔮 Step 3/7: Forecast Engine');
         console.log('-'.repeat(80));
         const forecastEngine = new ForecastEngine(workspaceRoot);
         const forecasts = await forecastEngine.generate();
@@ -57,25 +58,32 @@ async function runCompletePipeline() {
         console.log(`✅ Adaptive regulation applied\n`);
 
         // Step 4: ADR Synthesizer
-        console.log('🧩 Step 4/6: ADR Synthesizer V2');
+        console.log('🧩 Step 4/7: ADR Synthesizer V2');
         console.log('-'.repeat(80));
         const adrGenerator = new ADRGeneratorV2(workspaceRoot);
         const proposals = await adrGenerator.generateProposals();
         console.log(`✅ ADR proposals created: ${proposals.length}\n`);
 
         // Step 5: Bias Monitor
-        console.log('🧠 Step 5/6: Bias Monitor');
+        console.log('🧠 Step 5/7: Bias Monitor');
         console.log('-'.repeat(80));
         const biasMonitor = new BiasMonitor(workspaceRoot);
         const biases = await biasMonitor.analyze();
         console.log(`✅ Biases detected: ${biases.length}\n`);
 
         // Step 6: Goal Synthesizer (Level 8)
-        console.log('🎯 Step 6/6: Goal Synthesizer (Level 8)');
+        console.log('🎯 Step 6/7: Goal Synthesizer (Level 8)');
         console.log('-'.repeat(80));
         const goalSynthesizer = new GoalSynthesizer(workspaceRoot);
         const goals = await goalSynthesizer.synthesizeGoals();
         console.log(`✅ Goals generated: ${goals.length}\n`);
+
+        // Step 7: Reflection Manager (Level 8.5)
+        console.log('🪞 Step 7/7: Reflection Manager (Level 8.5)');
+        console.log('-'.repeat(80));
+        const reflectionManager = new ReflectionManager(workspaceRoot);
+        await reflectionManager.executeGoals();
+        console.log('✅ Reflection cycle complete\n');
 
         // Summary
         console.log('='.repeat(80));
