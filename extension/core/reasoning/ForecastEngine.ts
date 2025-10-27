@@ -89,15 +89,53 @@ export class ForecastEngine {
 
         console.log(`🎯 ${forecasts.length} forecasts generated (${decisionForecasts} decision, ${riskForecasts} risk, ${opportunityForecasts} opportunity)`);
 
+        // Apply deduplication
+        const dedupedForecasts = this.deduplicateForecasts(forecasts);
+        console.log(`✅ Forecast deduplication applied (${dedupedForecasts.length} unique forecasts from ${forecasts.length} total).`);
+
         // Save forecasts
-        await this.saveForecasts(forecasts);
+        await this.saveForecasts(dedupedForecasts);
 
         // Append to ledger
-        for (const forecast of forecasts) {
+        for (const forecast of dedupedForecasts) {
             await this.appendToLedger(forecast);
         }
 
-        return forecasts;
+        return dedupedForecasts;
+    }
+
+    /**
+     * Deduplicate forecasts (remove identical predictions)
+     */
+    private deduplicateForecasts(forecasts: Forecast[]): Forecast[] {
+        const deduped: Forecast[] = [];
+        const seen = new Map<string, boolean>();
+
+        for (const forecast of forecasts) {
+            const key = this.getForecastKey(forecast);
+            
+            if (seen.has(key)) {
+                console.log(`⚠️  Duplicate forecast detected: ${forecast.predicted_decision}`);
+                continue;
+            }
+            
+            seen.set(key, true);
+            deduped.push(forecast);
+        }
+
+        return deduped;
+    }
+
+    /**
+     * Generate unique key for forecast deduplication
+     */
+    private getForecastKey(forecast: Forecast): string {
+        const decision = forecast.predicted_decision.toLowerCase().trim();
+        const patternId = forecast.related_patterns?.[0] || 'none';
+        const timeframe = forecast.suggested_timeframe || 'none';
+        
+        // Consider forecasts duplicates if they have same decision, pattern, and timeframe
+        return `${decision}:${patternId}:${timeframe}`;
     }
 
     /**
