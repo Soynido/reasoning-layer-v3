@@ -2,23 +2,33 @@
 
 ## 🚨 URGENT PRIORITIES - This Week
 
-### 🔴 ADR Synthesizer 2.0 - CRITICAL PATH
-**Why**: This completes the Level 7 reasoning loop - transforming forecasts into actionable proposals.
+### ✅ COMPLETED
+- [x] ADR Synthesizer 2.0 ✅
+- [x] LEVEL_7_REPORT.md ✅
+- [x] Forecast Deduplication ✅
+- [x] Duplicate Decision Detection ✅
+- [x] Adaptive Cognitive Regulation ✅
 
-**Must Do**:
-1. Create `extension/core/reasoning/ADRGeneratorV2.ts`
-2. Read `forecasts.json` and generate proposed ADRs
-3. Save to `.reasoning/adrs/auto/*.json`
-4. Create `proposals.index.json` for pending ADRs
-5. Add VS Code command: "Validate ADR Forecasts"
-6. Generate `LEVEL_7_REPORT.md` summarizing all reasoning outputs
+### 🔴 NEXT PRIORITIES
 
-**Success Criteria**:
-- ✅ See 2-3 auto-proposed ADRs in `.reasoning/adrs/auto/`
-- ✅ All proposals have `requires_human_validation: true`
-- ✅ Generated ADRs referenced in `LEVEL_7_REPORT.md`
+#### 1. VS Code Commands (Quick Win - 30 min)
+Add commands to make the reasoning layer accessible via VS Code:
+- [ ] `Reasoning: Validate ADR Forecasts` - Check forecast/ADR consistency
+- [ ] `Reasoning: Analyze Biases` - Run bias detection and show results
+- [ ] `Reasoning: Run Complete Pipeline` - Execute all 7 layers
 
-**Testing**: After each component, run validation to ensure semantic coherence.
+#### 2. Perceptual Layer - Visual Reasoning UI (Short Term - 2-3 weeks)
+Create a webview to visualize the reasoning graph:
+- [ ] HTML/CSS/JS WebView (`extension/webview/PerceptualLayer.html`)
+- [ ] Timeline visualization (decision nodes over time)
+- [ ] Pattern graph (interconnections between patterns)
+- [ ] ADR proposals (pending vs accepted)
+- [ ] Bias alerts dashboard
+
+#### 3. Medium Term Improvements (1-2 months)
+- [ ] Enhanced ADR Schema (tradeoffs, risks, mitigations)
+- [ ] Better PR/Issue Linking (parsing commit references)
+- [ ] Agent Integration (Claude/GPT/Dust for analysis)
 
 ---
 
