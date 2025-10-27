@@ -272,6 +272,16 @@ git add test.ts && git commit -m "test"
 ### 2025-01-27 (Day 14) - 100% ENGLISH TRANSLATION
 - ✅ **Complete English translation** of all code, ADRs, and documentation
 - ✅ DecisionSynthesizer.ts, PersistenceManager.ts, extension.ts fully translated
+- ✅ Commits: `1cf1b84`, `b1e6f20`, `f0dab50`, `e336035`, `fb3959f`, `c46d614`, `d2548d3`
+
+### 2025-01-28 (Day 15) - PHASE 1: GITHUB INTEGRATION ✅
+- ✅ **GitHubCaptureEngine created** - PR/Issue data capture
+- ✅ **GitHubTokenManager implemented** - Secure token storage
+- ✅ **Configuration registered** - Window scope with Global target
+- ✅ **Commands added** - Setup, Clear, Test GitHub Integration
+- ✅ **Token configured** - Successfully saved in User settings
+- ✅ **GitHubCaptureEngine active** - Automatic PR/Issue capture on commits
+- ✅ Commits: `95b3a79`, `6320a91`, `e76ef1f`
 - ✅ All 8 ADRs translated with English titles, contexts, decisions
 - ✅ TASKS.md translated (Strate → Layer, all French removed)
 - ✅ Internal doc excluded from Git and VSIX
