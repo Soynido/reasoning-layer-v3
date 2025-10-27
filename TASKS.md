@@ -2,49 +2,49 @@
 
 ## 📋 Status Overview
 
-**Strate 1: Core Layer (J+0 → J+10)** - ✅ **COMPLETED**
+**Layer 1: Core Layer (J+0 → J+10)** - ✅ **COMPLETED**
 - [x] Day 1: Infrastructure Setup & GitHub Repository
 - [x] Day 2-3: Base Types & PersistenceManager
 - [x] Day 4-5: CaptureEngine (EventAggregator)
 - [x] Day 6-7: Capture Engines (SBOM, Config, Test, Git)
 - [x] Day 8: SchemaManager & Manifest Generation
 - [x] Day 9: Extension Entry Point & Commands
-- [x] Day 10: Strate 1 Validation & Stabilisation
+- [x] Day 10: Layer 1 Validation & Stabilization
 - [x] Day 11: Debug & Fix (OutputChannel duplicate)
-- [x] Day 13: Layer 1 Stabilisation finale (RBOM disabled)
+- [x] Day 13: Layer 1 Final Stabilization (RBOM disabled)
 
-**Strate 2: Cognitive Layer (J+12 → J+20)** - ⏸️ **SUSPENDED**
+**Layer 2: Cognitive Layer (J+12 → J+20)** - ⏸️ **SUSPENDED**
 - [x] Day 12: RBOM Types consolidation ✅
 - [x] Day 13: Zod Validation v3.23.8 ✅
 - [x] Day 13: EvidenceMapper created ✅
 - [ ] Day 14-15: RBOMEngine activation (ON HOLD)
 - [ ] Day 16-17: Evidence → RBOM integration (ON HOLD)
 - [ ] Day 18-19: VS Code RBOM Commands (ON HOLD)
-- [ ] Day 20: Strate 2 Validation (ON HOLD)
+- [ ] Day 20: Layer 2 Validation (ON HOLD)
 
-**NOTE**: RBOMEngine est compilé et prêt mais **désactivé** pour stabiliser Layer 1.
+**NOTE**: RBOMEngine is compiled and ready but **disabled** to stabilize Layer 1.
 
-**Strate 3: Perceptual Layer (J+20 → J+30)** - ⏳ **PENDING**
+**Layer 3: Perceptual Layer (J+20 → J+30)** - ⏳ **PENDING**
 - [ ] Day 21-25: Vanilla HTML/CSS/JS Webview
 - [ ] Day 26-28: V2 → V3 Migration
 - [ ] Day 29-30: Tests & Documentation
-- [ ] Day 30: Strate 3 Validation
+- [ ] Day 30: Layer 3 Validation
 
 ---
 
 ## ✅ COMPLETED TASKS
 
-### Day 13: Désactivation RBOM Engine - Stabilisation ✅
+### Day 13: RBOM Engine Deactivation - Stabilization ✅
 
 **Status**: ✅ **COMPLETED**
 
 **Achievements**:
-- [x] ✅ Extension fonctionne après désactivation RBOM
-- [x] ✅ Layer 1 stable (Strate 1 production-ready)
-- [x] ✅ RBOM reste désactivé jusqu'à correction crash
-- [x] ✅ Commit & push stabilisation: `e40bd7f`
+- [x] ✅ Extension works after RBOM deactivation
+- [x] ✅ Layer 1 stable (production-ready)
+- [x] ✅ RBOM remains disabled until crash fix
+- [x] ✅ Commit & push stabilization: `e40bd7f`
 
-**Note**: RBOMEngine compilé mais cause crash au démarrage.
+**Note**: RBOMEngine compiled but causes crash on startup.
 
 ---
 
@@ -96,40 +96,40 @@
 
 ## 🎯 CURRENT STATE
 
-### Strate 1 - Core Layer ✅ COMPLETED
+### Layer 1 - Core Layer ✅ COMPLETED
 
-**Date**: 26 octobre 2025  
+**Date**: October 26, 2025  
 **Status**: ✅ **PRODUCTION-READY**  
-**Extension Size**: 55 KiB (184 KB avec assets)
+**Extension Size**: 55 KiB (184 KB with assets)
 
 **Achievements**:
-- ✅ Extension stable, 0 crash
-- ✅ 594 événements capturés avec succès
-- ✅ 4 Capture Engines fonctionnels
-- ✅ PersistenceManager + SchemaManager opérationnels
-- ✅ Un seul OutputChannel unifié
-- ✅ Manifest auto-généré avec cohérence
+- ✅ Extension stable, 0 crashes
+- ✅ 594 events successfully captured
+- ✅ 4 Capture Engines functional
+- ✅ PersistenceManager + SchemaManager operational
+- ✅ Single unified OutputChannel
+- ✅ Auto-generated manifest with consistency
 
 ## 🔄 NEXT TASK
 
-### Day 12: Préparer Layer 2 - RBOM Engine
+### Day 12: Prepare Layer 2 - RBOM Engine
 
 **Status**: ⏳ **READY TO START**
 
-**Objective**: Implémenter RBOM Engine avec approche progressive et sûre
+**Objective**: Implement RBOM Engine with progressive and safe approach
 
-**Tâches à faire**:
-- [ ] Valider les types RBOM existants
-- [ ] Réimplémenter RBOMEngine de manière progressive
-- [ ] Tester chaque composant individuellement
-- [ ] Créer EvidenceMapper (interface Capture → RBOM)
-- [ ] Implémenter commandes VS Code pour ADRs
+**Tasks to do**:
+- [ ] Validate existing RBOM types
+- [ ] Re-implement RBOMEngine progressively
+- [ ] Test each component individually
+- [ ] Create EvidenceMapper (Capture → RBOM interface)
+- [ ] Implement VS Code commands for ADRs
 
 ---
 
 ## 📊 SUCCESS METRICS
 
-### Strate 1 - Validation Criteria (Day 10)
+### Layer 1 - Validation Criteria (Day 10)
 
 **Extension**:
 - ✅ Extension installable in < 2s
@@ -166,30 +166,30 @@ git add test.ts && git commit -m "test"
 
 ## 🎯 NEXT STEPS
 
-### ✅ Strate 1: Core Layer - COMPLETED & STABLE
-- ✅ PersistenceManager + SchemaManager opérationnels
-- ✅ EventAggregator avec debounce fonctionnel
+### ✅ Layer 1: Core Layer - COMPLETED & STABLE
+- ✅ PersistenceManager + SchemaManager operational
+- ✅ EventAggregator with functional debouncing
 - ✅ 4 Capture Engines: SBOM, Config, Test, Git
-- ✅ Logs détaillés avec emojis via un seul OutputChannel
-- ✅ GitMetadataEngine avec diff summary complet
-- ✅ Manifest auto-généré avec intégrité SHA256
-- ✅ 594 événements capturés sans erreur
+- ✅ Detailed logs with emojis via single OutputChannel
+- ✅ GitMetadataEngine with complete diff summary
+- ✅ Auto-generated manifest with SHA256 integrity
+- ✅ 594 events captured without error
 - ✅ Extension: 55 KiB (stable)
 
-### 🚀 Strate 2: Cognitive Layer (J+12 → J+20) - NEXT
-- [ ] RBOMEngine avec approche progressive (éviter crash)
-- [ ] EvidenceMapper pour interface Capture → RBOM
-- [ ] Schema Zod pour validation ADRs
-- [ ] Commandes VS Code pour CRUD ADRs
-- [ ] Détection automatique de décisions (DecisionSynthesizer)
-- [ ] Validation Strate 2
+### 🚀 Layer 2: Cognitive Layer (J+12 → J+20) - NEXT
+- [ ] RBOMEngine with progressive approach (avoid crash)
+- [ ] EvidenceMapper for Capture → RBOM interface
+- [ ] Zod schema for ADR validation
+- [ ] VS Code commands for CRUD ADRs
+- [ ] Automatic decision detection (DecisionSynthesizer)
+- [ ] Layer 2 Validation
 
-### 📋 Strate 3: Perceptual Layer (J+20 → J+30) - PLANNED
-- [ ] Webview HTML/CSS/JS Vanilla
-- [ ] Dashboard visualisation traces
-- [ ] Interface ADR interactive
+### 📋 Layer 3: Perceptual Layer (J+20 → J+30) - PLANNED
+- [ ] Vanilla HTML/CSS/JS Webview
+- [ ] Traces visualization dashboard
+- [ ] Interactive ADR interface
 - [ ] Tests & Documentation
-- [ ] Migration V2 → V3
+- [ ] V2 → V3 Migration
 
 ---
 
@@ -200,7 +200,7 @@ git add test.ts && git commit -m "test"
 **Applied pattern**:
 - ✅ Serialization with `JSON.stringify()` everywhere
 - ✅ Direct reading from `.reasoning/` without server
-- ✅ Exportable as portable `.reasonpack` (Strate 3)
+- ✅ Exportable as portable `.reasonpack` (Layer 3)
 
 **Validated advantages**:
 - ✅ Zero configuration: works immediately
@@ -228,43 +228,43 @@ git add test.ts && git commit -m "test"
 
 ## 📅 CHANGELOG
 
-### 2025-01-27 (Jour 13) - STABILISATION FINALE
-- ✅ **RBOM Engine désactivé** pour stabiliser Layer 1
-- ✅ Downgrade Zod v4 → v3.23.8 (compatibilité)
-- ✅ Fix schema.ts (z.string() au lieu de .datetime())
-- ✅ Extension stable et fonctionnelle
-- ✅ Layer 1 complètement opérationnel
+### 2025-01-27 (Day 13) - FINAL STABILIZATION
+- ✅ **RBOM Engine disabled** to stabilize Layer 1
+- ✅ Downgrade Zod v4 → v3.23.8 (compatibility)
+- ✅ Fix schema.ts (z.string() instead of .datetime())
+- ✅ Extension stable and functional
+- ✅ Layer 1 fully operational
 
-### 2025-10-26 (Jour 11)
-- ✅ Fix: Retrait du Logger du GitMetadataEngine pour éviter duplication OutputChannel
-- ✅ Extension stable: 55 KiB, 594 événements capturés
-- ✅ Un seul OutputChannel unifié
-- ✅ Strate 1 complétée et production-ready
+### 2025-10-26 (Day 11)
+- ✅ Fix: Removed Logger from GitMetadataEngine to avoid OutputChannel duplication
+- ✅ Extension stable: 55 KiB, 594 events captured
+- ✅ Single unified OutputChannel
+- ✅ Layer 1 completed and production-ready
 
-### 2025-10-26 (Jour 10)
-- ✅ Stabilisation Layer 1
-- ✅ Désactivation RBOM Engine (rollback pour éviter crash)
-- ✅ PersistenceManager + SchemaManager opérationnels
-- ✅ 4 Capture Engines fonctionnels
+### 2025-10-26 (Day 10)
+- ✅ Layer 1 stabilization
+- ✅ RBOM Engine deactivation (rollback to avoid crash)
+- ✅ PersistenceManager + SchemaManager operational
+- ✅ 4 Capture Engines functional
 
-### 2025-10-26 (Jour 8-9)
-- ✅ Intégration GitMetadataEngine avec diff summary
-- ✅ Manifest auto-généré avec intégrité
-- ✅ EventAggregator avec validation schema
+### 2025-10-26 (Day 8-9)
+- ✅ GitMetadataEngine integration with diff summary
+- ✅ Auto-generated manifest with integrity
+- ✅ EventAggregator with schema validation
 
-### 2025-10-26 (Jour 6-7)
+### 2025-10-26 (Day 6-7)
 - ✅ SBOMCaptureEngine, ConfigCaptureEngine, TestCaptureEngine
 - ✅ Capture dependencies, configs, tests
 
-### 2025-10-26 (Jour 4-5)
-- ✅ EventAggregator avec debounce
+### 2025-10-26 (Day 4-5)
+- ✅ EventAggregator with debouncing
 - ✅ VS Code file watchers
 
-### 2025-10-26 (Jour 1-3)
-- ✅ Infrastructure complète
-- ✅ PersistenceManager opérationnel
-- ✅ Types de base définis
+### 2025-10-26 (Day 1-3)
+- ✅ Complete infrastructure
+- ✅ PersistenceManager operational
+- ✅ Base types defined
 
 ---
 
-*Last update: 2025-01-27 - Layer 1 STABLE - Extension fonctionne sans RBOM - État stable confirmé*
+*Last update: 2025-01-27 - Layer 1 STABLE - Extension works without RBOM - Stable state confirmed*
