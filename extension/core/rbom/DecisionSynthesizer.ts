@@ -36,7 +36,7 @@ interface ADRFromSummary {
     confidence: number; // 0-1
 }
 
-// ✅ DecisionPattern pour la détection heuristique
+// DecisionPattern for heuristic detection
 interface DecisionPattern {
     type: 'Dependency' | 'Config' | 'Refactor' | 'Test' | 'Feature' | 'Architecture';
     confidence: number; // 0-1
@@ -52,13 +52,13 @@ interface DecisionPattern {
     };
     dependencies?: string[];
     configFiles?: string[];
-    score: number; // Score calculé
+    score: number; // Calculated score
 }
 
 /**
- * DecisionSynthesizer - Analyse historique complète et génère des ADRs
+ * DecisionSynthesizer - Complete historical analysis and ADR generation
  * 
- * Utilise une approche "long-form reasoning" sur tout l'historique
+ * Uses a "long-form reasoning" approach on the entire history
  */
 export class DecisionSynthesizer {
     private lastSynthesis: number = 0;
@@ -72,8 +72,8 @@ export class DecisionSynthesizer {
     }
 
     /**
-     * Auto-synthèse rapide sur les 250 derniers événements
-     * Détection heuristique avec score ≥ 0.6
+     * Fast auto-synthesis on the last 250 events
+     * Heuristic detection with score ≥ 0.6
      */
     public async runAutoSynthesis(): Promise<void> {
         try {
@@ -125,7 +125,7 @@ export class DecisionSynthesizer {
         const files = fs.readdirSync(tracesDir)
             .filter(f => f.endsWith('.json'))
             .sort()
-            .reverse(); // Plus récents en premier
+            .reverse(); // Most recent first
 
         for (const file of files) {
             try {
@@ -142,8 +142,8 @@ export class DecisionSynthesizer {
     }
 
     /**
-     * Détection heuristique des patterns de décision
-     * Score ≥ 0.6 = ADR probable
+     * Heuristic detection of decision patterns
+     * Score ≥ 0.6 = probable ADR
      */
     private detectDecisionPatterns(events: CaptureEvent[]): DecisionPattern[] {
         const patterns: DecisionPattern[] = [];
@@ -178,7 +178,7 @@ export class DecisionSynthesizer {
             // Score final
             score = Math.min(1, score);
             
-            // Si score ≥ 0.6, c'est une décision probable
+            // If score ≥ 0.6, it's a probable decision
             if (score >= 0.6) {
                 let type: DecisionPattern['type'] = 'Feature';
                 if (hasDependencyChange) type = 'Dependency';
@@ -204,7 +204,7 @@ export class DecisionSynthesizer {
     }
 
     /**
-     * Grouper les événements par commit
+     * Group events by commit
      */
     private groupByCommit(events: CaptureEvent[]): Array<{
         hash: string;
@@ -226,10 +226,10 @@ export class DecisionSynthesizer {
         }>();
         
         for (const event of events) {
-            // Accepter à la fois git_commit ET file_change avec metadata.commit
+            // Accept both git_commit AND file_change with metadata.commit
             if ((event.type === 'git_commit' || event.type === 'file_change') && event.metadata?.commit) {
                 const commitData = event.metadata.commit as any;
-                // Extraire le hash depuis source ou commit
+                // Extract hash from source or commit
                 let hash = '';
                 if (event.source.includes(':') && event.source.includes('git:')) {
                     hash = event.source.split(':')[1];
@@ -250,7 +250,7 @@ export class DecisionSynthesizer {
                         deletions: commitData.deletions || 0
                     });
                 } else {
-                    // Fusionner les fichiers
+                    // Merge files
                     const existing = commits.get(hash)!;
                     const newFiles = commitData.files || commitData.files_changed || [];
                     existing.filesChanged = [...new Set([...existing.filesChanged, ...newFiles])];
@@ -264,7 +264,7 @@ export class DecisionSynthesizer {
     }
 
     /**
-     * Générer un ADR à partir d'un pattern détecté
+     * Generate an ADR from a detected pattern
      */
     private generateADR(pattern: DecisionPattern, events: CaptureEvent[]): {
         title: string;
@@ -281,7 +281,7 @@ export class DecisionSynthesizer {
         const decision = this.inferDecision(pattern);
         const consequences = this.inferConsequences(pattern);
         
-        // Trouver les preuves (events liés au commit)
+        // Find evidence (events linked to the commit)
         const evidenceIds = events
             .filter(e => e.source.includes(pattern.commit?.hash || ''))
             .map(e => e.id)
@@ -358,13 +358,13 @@ export class DecisionSynthesizer {
 
     public async synthesizeHistoricalDecisions(): Promise<void> {
         const now = Date.now();
-        if (now - this.lastSynthesis < 300000) { // Synthèse toutes les 5 minutes
+        if (now - this.lastSynthesis < 300000) { // Synthesis every 5 minutes
             return;
         }
         this.lastSynthesis = now;
 
         try {
-            // ✅ Étape 1 : Lire toutes les traces
+            // Step 1: Read all traces
             const allEvents = this.loadAllEvents();
             if (allEvents.length === 0) {
                 this.persistence.logWithEmoji('⚠️', 'No historical events found');
@@ -373,15 +373,15 @@ export class DecisionSynthesizer {
 
             this.persistence.logWithEmoji('📚', `Analyzing ${allEvents.length} historical events...`);
 
-            // ✅ Étape 2 : Pré-filtrage intelligent
+            // Step 2: Intelligent pre-filtering
             const summary = this.createIntelligentSummary(allEvents);
             
             this.persistence.logWithEmoji('🔍', `Summary: ${summary.totalEvents} events, ${summary.majorChanges.length} major changes`);
 
-            // ✅ Étape 3 : Raisonnement architectural
+            // Step 3: Architectural reasoning
             const adrCandidates = this.reasonArchitecturalDecisions(summary, allEvents);
 
-            // ✅ Étape 4 : Générer les ADRs
+            // Step 4: Generate ADRs
             if (adrCandidates.length > 0) {
                 this.persistence.logWithEmoji('🎯', `Generated ${adrCandidates.length} architectural decisions`);
                 for (const candidate of adrCandidates) {
@@ -489,8 +489,8 @@ export class DecisionSynthesizer {
     private reasonArchitecturalDecisions(summary: EventSummary, events: CaptureEvent[]): ADRFromSummary[] {
         const decisions: ADRFromSummary[] = [];
 
-        // ✅ Pattern 1: Structure de persistance établie
-        // Intent: Détecter la décision humaine de stabiliser un contrat de persistance
+        // Pattern 1: Persistence structure established
+        // Intent: Detect human decision to stabilize a persistence contract
         if (summary.byFile['PersistenceManager.ts'] > 3 || summary.byFile['ManifestGenerator.ts'] > 2) {
             const persistenceEvents = events.filter(e => 
                 e.source.includes('PersistenceManager') || 
@@ -499,10 +499,10 @@ export class DecisionSynthesizer {
             );
 
             decisions.push({
-                title: 'Stabilisation du contrat de persistance via manifest versionné',
-                context: `Le développeur a itéré ${summary.byFile['PersistenceManager.ts'] || 0} fois sur PersistenceManager et ${summary.byFile['ManifestGenerator.ts'] || 0} fois sur ManifestGenerator. L'intention implicite était de garantir la cohérence des données capturées.`,
-                decision: 'Le choix fait: implémenter un moteur de persistance local-first avec manifest versionné et schéma Zod pour validation. Cette décision visait à éviter la corruption de données et faciliter le debugging.',
-                consequences: 'Impact observable: architecture locale sans dépendance serveur, validation systématique des événements, manifest toujours en cohérence avec les traces.',
+                title: 'Stabilizing the persistence contract via versioned manifest',
+                context: `The developer iterated ${summary.byFile['PersistenceManager.ts'] || 0} times on PersistenceManager and ${summary.byFile['ManifestGenerator.ts'] || 0} times on ManifestGenerator. The implicit intention was to guarantee the consistency of captured data.`,
+                decision: 'The choice made: implement a local-first persistence engine with versioned manifest and Zod schema for validation. This decision aimed to avoid data corruption and facilitate debugging.',
+                consequences: 'Observable impact: local architecture without server dependency, systematic event validation, manifest always consistent with traces.',
                 components: ['PersistenceManager.ts', 'ManifestGenerator.ts', 'SchemaManager.ts'],
                 evidenceIds: persistenceEvents.map(e => e.id).slice(0, 5),
                 tags: ['decision', 'persistence', 'data-integrity'],
@@ -510,7 +510,7 @@ export class DecisionSynthesizer {
             });
         }
 
-        // ✅ Pattern 2: Capture d'événements multi-capteurs
+        // Pattern 2: Multi-capture event capture
         const captureEngines = ['SBOMCaptureEngine', 'ConfigCaptureEngine', 'TestCaptureEngine', 'GitMetadataEngine'];
         const enginesDetected = captureEngines.filter(engine => {
             return Object.keys(summary.byFile).some(file => file.includes(engine.replace('Engine', '')));
@@ -518,10 +518,10 @@ export class DecisionSynthesizer {
 
         if (enginesDetected.length >= 2) {
             decisions.push({
-                title: 'Adoption d\'une architecture modulaire par capteur spécialisé',
-                context: `Le développement montre la création de ${enginesDetected.length} engines séparés (${enginesDetected.join(', ')}). L'intention était de découpler les responsabilités de capture par domaine technique.`,
-                decision: 'Le choix fait: un engine par type de métadonnée plutôt qu\'un capteur monolithique. Cette décision visait à améliorer la maintenabilité et tester chaque capteur indépendamment.',
-                consequences: 'Impact observable: le code est plus modulaire, chaque engine peut évoluer sans affecter les autres. Cela facilite l\'ajout de nouveaux capteurs.',
+                title: 'Adoption of a modular architecture through specialized capture engines',
+                context: `Development shows the creation of ${enginesDetected.length} separate engines (${enginesDetected.join(', ')}). The intention was to decouple capture responsibilities by technical domain.`,
+                decision: 'The choice made: one engine per metadata type rather than a monolithic capture system. This decision aimed to improve maintainability and test each capture engine independently.',
+                consequences: 'Observable impact: code is more modular, each engine can evolve without affecting others. This facilitates the addition of new capture engines.',
                 components: enginesDetected,
                 evidenceIds: events.slice(0, 10).map(e => e.id),
                 tags: ['decision', 'architecture', 'modularity'],
@@ -535,10 +535,10 @@ export class DecisionSynthesizer {
         );
         if (strategicDeps.length > 0) {
             decisions.push({
-                title: `Adoption de librairies externes pour ${strategicDeps.join(', ')}`,
-                context: `Le projet a ajouté les dépendances ${strategicDeps.join(' et ')} dans package-lock.json. L'intention était d'utiliser des solutions matures plutôt que de réinventer.`,
-                decision: `Le choix fait: utiliser ${strategicDeps.map(d => `${d} (${this.getDepPurpose(d)})`).join(' et ')}. Cette décision visait à gagner du temps et éviter les bugs.`,
-                consequences: 'Impact observable: code plus stable, moins de maintenance, mais dépendance de communauté externe.',
+                title: `Adoption of external libraries for ${strategicDeps.join(', ')}`,
+                context: `The project added dependencies ${strategicDeps.join(' and ')} in package-lock.json. The intention was to use mature solutions rather than reinventing.`,
+                decision: `The choice made: use ${strategicDeps.map(d => `${d} (${this.getDepPurpose(d)})`).join(' and ')}. This decision aimed to save time and avoid bugs.`,
+                consequences: 'Observable impact: more stable code, less maintenance, but external community dependency.',
                 components: ['package-lock.json'],
                 evidenceIds: events.filter(e => e.type === 'dependencies').map(e => e.id).slice(0, 5),
                 tags: ['decision', 'dependencies', 'trade-off'],
@@ -552,10 +552,10 @@ export class DecisionSynthesizer {
             if (totalCommits > 10) {
                 const authors = Object.keys(summary.gitEvolution.commitsByAuthor);
                 decisions.push({
-                    title: 'Usage de Git pour traçabilité des décisions via historique',
-                    context: `${totalCommits} commits détectés, ${authors.length} contributeur(s). Le développement montre l'utilisation de Git comme outil de traçabilité.`,
-                    decision: 'Le choix fait: maintenir un historique Git complet avec commits structurés. Cette décision visait à documenter naturellement les changements.',
-                    consequences: 'Impact observable: L\'historique Git devient source de vérité pour comprendre l\'évolution du projet.',
+                    title: 'Using Git for decision traceability via history',
+                    context: `${totalCommits} commits detected, ${authors.length} contributor(s). Development shows Git used as a traceability tool.`,
+                    decision: 'The choice made: maintain a complete Git history with structured commits. This decision aimed to document changes naturally.',
+                    consequences: 'Observable impact: Git history becomes source of truth for understanding project evolution.',
                     components: ['git'],
                     evidenceIds: events.filter(e => e.type === 'git_commit').map(e => e.id).slice(0, 5),
                     tags: ['decision', 'git', 'traceability'],
@@ -564,7 +564,7 @@ export class DecisionSynthesizer {
             }
         }
 
-        // ✅ Pattern 5: Refactor majeur détecté
+        // Pattern 5: Major refactor detected
         if (summary.majorChanges.length > 0) {
             const biggestChange = summary.majorChanges.sort((a, b) => b.count - a.count)[0];
             if (biggestChange.count >= 10) {
@@ -573,10 +573,10 @@ export class DecisionSynthesizer {
                 );
 
                 decisions.push({
-                    title: `Refactor majeur de ${path.basename(biggestChange.files[0]?.split('/')[0] || 'unknown')}`,
-                    context: `${biggestChange.count} modifications détectées sur ${biggestChange.files.length} fichiers dans ${biggestChange.description}. Le développeur a choisi de refactoriser plutôt que d'ajouter des patches.`,
-                    decision: 'Le choix fait: refactoriser plutôt que d\'ajouter des workarounds. Cette décision visait à améliorer la maintenabilité à long terme.',
-                    consequences: 'Impact observable: code plus propre, architecture plus claire, mais risque de breaking changes à court terme.',
+                    title: `Major refactor of ${path.basename(biggestChange.files[0]?.split('/')[0] || 'unknown')}`,
+                    context: `${biggestChange.count} modifications detected across ${biggestChange.files.length} files in ${biggestChange.description}. The developer chose to refactor rather than add patches.`,
+                    decision: 'The choice made: refactor rather than add workarounds. This decision aimed to improve long-term maintainability.',
+                    consequences: 'Observable impact: cleaner code, clearer architecture, but risk of short-term breaking changes.',
                     components: biggestChange.files,
                     evidenceIds: changeEvents.map(e => e.id).slice(0, 10),
                     tags: ['decision', 'refactor', 'trade-off'],
