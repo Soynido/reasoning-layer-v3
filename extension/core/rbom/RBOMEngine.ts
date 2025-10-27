@@ -15,10 +15,13 @@ export class RBOMEngine {
     private adrs: Map<string, ADR> = new Map();
     private validatorModule: any = null;
     private uuidModule: any = null; // Chargé dynamiquement
+    private integrityEngine: any = null; // Level 5: Integrity engine
     private log: ((msg: string) => void) | null = null;
     private warn: ((msg: string) => void) | null = null;
+    private workspaceRoot: string;
 
     constructor(workspaceRoot: string, logFn?: (msg: string) => void, warnFn?: (msg: string) => void) {
+        this.workspaceRoot = workspaceRoot;
         this.adrsDir = path.join(workspaceRoot, '.reasoning', 'adrs');
         this.adrsIndexPath = path.join(this.adrsDir, 'index.json');
         this.log = logFn || null;
@@ -46,6 +49,11 @@ export class RBOMEngine {
             this.loadValidatorModule().catch((err) => {
                 if (this.warn) {
                     this.warn(`RBOMEngine deferred validation disabled: ${String(err)}`);
+                }
+            }),
+            this.loadIntegrityEngine().catch((err) => {
+                if (this.warn) {
+                    this.warn(`Integrity engine load failed: ${String(err)}`);
                 }
             })
         ]).catch(() => {
@@ -102,6 +110,62 @@ export class RBOMEngine {
                 this.warn(`❌ RBOMEngine could not load schema: ${e?.message ?? e}`);
             }
             // Garde le validateur basique
+        }
+    }
+
+    /**
+     * Load Integrity Engine (Level 5)
+     */
+    private async loadIntegrityEngine(): Promise<void> {
+        if (this.integrityEngine) return;
+        
+        try {
+            const { IntegrityEngine } = await import('../security/IntegrityEngine');
+            this.integrityEngine = new IntegrityEngine(this.workspaceRoot);
+            if (this.log) {
+                this.log('🔐 Integrity Engine loaded');
+            }
+        } catch (e: any) {
+            if (this.warn) {
+                this.warn(`Failed to load Integrity Engine: ${e?.message ?? e}`);
+            }
+        }
+    }
+
+    /**
+     * Sign ADR automatically with integrity engine (Level 5)
+     */
+    private async signADR(adr: ADR): Promise<void> {
+        if (!this.integrityEngine) {
+            // Try to load if not loaded
+            try {
+                await this.loadIntegrityEngine();
+            } catch (e) {
+                return; // Silent fail
+            }
+        }
+        
+        if (!this.integrityEngine) return;
+        
+        try {
+            // Sign the ADR
+            const signed = this.integrityEngine.signArtifact(adr.id, 'ADR', adr);
+            
+            // Add signature to ledger
+            this.integrityEngine.appendToLedger({
+                type: 'ADR',
+                target_id: adr.id,
+                current_hash: signed.hash.hash,
+                signature: signed.signature?.signature
+            });
+            
+            if (this.log) {
+                this.log(`🔐 Signed ADR: ${adr.id}`);
+            }
+        } catch (error) {
+            if (this.warn) {
+                this.warn(`Failed to sign ADR: ${error}`);
+            }
         }
     }
 
@@ -176,6 +240,9 @@ export class RBOMEngine {
             this.saveADR(adr);
             this.adrs.set(adr.id, adr);
             this.saveIndex();
+            
+            // Level 5: Sign ADR automatically (fire-and-forget)
+            void this.signADR(adr).catch(() => {});
 
             return adr;
         } catch (error) {
