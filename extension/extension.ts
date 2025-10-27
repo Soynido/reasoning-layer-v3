@@ -1072,6 +1072,80 @@ ${adr.evidenceIds.length} evidence(s) linked
             })
         );
 
+        // Level 7: Pattern Learning & Correlation Commands
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.pattern.analyze', async () => {
+                try {
+                    const { PatternLearningEngine } = await import('./core/reasoning/PatternLearningEngine');
+                    const ple = new PatternLearningEngine(workspaceRoot);
+                    
+                    vscode.window.showInformationMessage('🔍 Analyzing patterns from ledger...');
+                    const patterns = await ple.analyzePatterns();
+                    
+                    vscode.window.showInformationMessage(
+                        `🧠 Pattern Analysis Complete:\n` +
+                        `📊 Found ${patterns.length} patterns\n` +
+                        patterns.slice(0, 3).map(p => `  • ${p.pattern} (conf: ${Math.round(p.confidence * 100)}%)`).join('\n')
+                    );
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to analyze patterns: ${error}`);
+                }
+            })
+        );
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.correlation.analyze', async () => {
+                try {
+                    const { CorrelationEngine } = await import('./core/reasoning/CorrelationEngine');
+                    const corrEngine = new CorrelationEngine(workspaceRoot);
+                    
+                    vscode.window.showInformationMessage('🔗 Analyzing correlations...');
+                    const correlations = await corrEngine.analyze();
+                    
+                    const strong = correlations.filter(c => c.correlation_score >= 0.75);
+                    
+                    vscode.window.showInformationMessage(
+                        `🔗 Correlation Analysis Complete:\n` +
+                        `📊 Found ${correlations.length} correlations\n` +
+                        `🎯 ${strong.length} strong correlations (≥0.75)\n` +
+                        strong.slice(0, 3).map(c => `  • ${c.direction} (score: ${Math.round(c.correlation_score * 100)}%)`).join('\n')
+                    );
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to analyze correlations: ${error}`);
+                }
+            })
+        );
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.forecast.generate', async () => {
+                try {
+                    const { ForecastEngine } = await import('./core/reasoning/ForecastEngine');
+                    const forecastEngine = new ForecastEngine(workspaceRoot);
+                    
+                    vscode.window.showInformationMessage('🔮 Generating forecasts...');
+                    const forecasts = await forecastEngine.generate();
+                    
+                    const byType = {
+                        ADR_Proposal: forecasts.filter(f => f.decision_type === 'ADR_Proposal').length,
+                        Risk_Alert: forecasts.filter(f => f.decision_type === 'Risk_Alert').length,
+                        Opportunity: forecasts.filter(f => f.decision_type === 'Opportunity').length,
+                        Refactor: forecasts.filter(f => f.decision_type === 'Refactor').length
+                    };
+                    
+                    vscode.window.showInformationMessage(
+                        `🔮 Forecast Generation Complete:\n` +
+                        `📊 Generated ${forecasts.length} forecasts\n` +
+                        `• ${byType.ADR_Proposal} decisions\n` +
+                        `• ${byType.Risk_Alert} risks\n` +
+                        `• ${byType.Opportunity} opportunities\n` +
+                        `• ${byType.Refactor} refactors`
+                    );
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to generate forecasts: ${error}`);
+                }
+            })
+        );
+
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
 

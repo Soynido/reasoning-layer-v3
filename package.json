@@ -171,6 +171,21 @@
         "command": "reasoning.external.linkADR",
         "title": "🔗 Link External Evidence to ADR",
         "category": "Reasoning External"
+      },
+      {
+        "command": "reasoning.pattern.analyze",
+        "title": "🔍 Analyze Decision Patterns",
+        "category": "Reasoning Pattern"
+      },
+      {
+        "command": "reasoning.correlation.analyze",
+        "title": "🔗 Analyze Correlations",
+        "category": "Reasoning Correlation"
+      },
+      {
+        "command": "reasoning.forecast.generate",
+        "title": "🔮 Generate Forecasts",
+        "category": "Reasoning Forecast"
       }
     ]
   },
