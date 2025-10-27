@@ -98,8 +98,8 @@ export class CorrelationEngine {
      * score = (semantic_similarity × 0.6) + (temporal_proximity × 0.3) + (impact_match × 0.1)
      */
     private computeCorrelation(event: LedgerEntry, pattern: DecisionPattern): number {
-        // Semantic similarity (tag overlap)
-        const eventTags = event.data?.tags || [];
+        // Extract tags from event based on type
+        const eventTags = this.extractEventTags(event);
         const patternTags = pattern.tags || [];
         
         const semanticScore = this.cosineSimilarity(eventTags, patternTags);
@@ -115,6 +115,33 @@ export class CorrelationEngine {
         const score = (semanticScore * 0.6) + (temporalScore * 0.3) + (impactScore * 0.1);
         
         return Math.min(1, Math.max(0, score)); // Clamp to [0, 1]
+    }
+
+    /**
+     * Extract tags from a ledger entry based on its structure
+     */
+    private extractEventTags(event: LedgerEntry): string[] {
+        const tags: string[] = [];
+        
+        // For external evidence with nested data array
+        if (event.type === 'EXTERNAL_EVIDENCE' && Array.isArray(event.data?.data)) {
+            for (const item of event.data.data) {
+                if (Array.isArray(item.tags)) {
+                    tags.push(...item.tags);
+                }
+            }
+        }
+        // For direct tags property
+        else if (Array.isArray(event.data?.tags)) {
+            tags.push(...event.data.tags);
+        }
+        
+        // Add type as tag
+        if (event.data?.type) {
+            tags.push(event.data.type);
+        }
+        
+        return tags;
     }
 
     /**
