@@ -20,6 +20,17 @@
   ],
   "main": "out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Reasoning Layer V3",
+      "properties": {
+        "reasoningLayer.githubToken": {
+          "type": "string",
+          "default": null,
+          "description": "GitHub Personal Access Token for PR and Issue integration",
+          "scope": "application"
+        }
+      }
+    },
     "commands": [
       {
         "command": "reasoning.init",
