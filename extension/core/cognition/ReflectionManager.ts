@@ -118,7 +118,7 @@ export class ReflectionManager {
      */
     private async executeCorrelationDedup(): Promise<void> {
         try {
-            const { CorrelationEngine } = await import('./CorrelationEngine');
+            const { CorrelationEngine } = await import('../base/CorrelationEngine');
             const engine = new CorrelationEngine(this.workspaceRoot);
             
             // Re-analyze correlations (this will deduplicate)
@@ -135,7 +135,7 @@ export class ReflectionManager {
      */
     private async executeBiasRebalancing(): Promise<void> {
         try {
-            const { BiasMonitor } = await import('./BiasMonitor');
+            const { BiasMonitor } = await import('../base/BiasMonitor');
             const monitor = new BiasMonitor(this.workspaceRoot);
             
             // Re-analyze biases
@@ -152,7 +152,7 @@ export class ReflectionManager {
      */
     private async executePatternStimulation(): Promise<void> {
         try {
-            const { PatternLearningEngine } = await import('./PatternLearningEngine');
+            const { PatternLearningEngine } = await import('../base/PatternLearningEngine');
             const engine = new PatternLearningEngine(this.workspaceRoot);
             
             // Re-learn patterns with wider time window

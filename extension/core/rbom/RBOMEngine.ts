@@ -157,7 +157,7 @@ export class RBOMEngine {
         if (this.patternLearningEngine) return;
         
         try {
-            const { PatternLearningEngine } = await import('../reasoning/PatternLearningEngine');
+            const { PatternLearningEngine } = await import('../base/PatternLearningEngine');
             this.patternLearningEngine = new PatternLearningEngine(this.workspaceRoot);
             if (this.log) {
                 this.log('🧠 Pattern Learning Engine loaded');
@@ -176,7 +176,7 @@ export class RBOMEngine {
         if (this.correlationEngine) return;
         
         try {
-            const { CorrelationEngine } = await import('../reasoning/CorrelationEngine');
+            const { CorrelationEngine } = await import('../base/CorrelationEngine');
             this.correlationEngine = new CorrelationEngine(this.workspaceRoot);
             if (this.log) {
                 this.log('🔗 Correlation Engine loaded');
@@ -195,7 +195,7 @@ export class RBOMEngine {
         if (this.forecastEngine) return;
         
         try {
-            const { ForecastEngine } = await import('../reasoning/ForecastEngine');
+            const { ForecastEngine } = await import('../base/ForecastEngine');
             this.forecastEngine = new ForecastEngine(this.workspaceRoot);
             if (this.log) {
                 this.log('🔮 Forecast Engine loaded');

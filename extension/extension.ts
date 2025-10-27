@@ -1076,7 +1076,7 @@ ${adr.evidenceIds.length} evidence(s) linked
         context.subscriptions.push(
             vscode.commands.registerCommand('reasoning.pattern.analyze', async () => {
                 try {
-                    const { PatternLearningEngine } = await import('./core/reasoning/PatternLearningEngine');
+                    const { PatternLearningEngine } = await import('./core/base/PatternLearningEngine');
                     const ple = new PatternLearningEngine(workspaceRoot);
                     
                     vscode.window.showInformationMessage('🔍 Analyzing patterns from ledger...');
@@ -1096,7 +1096,7 @@ ${adr.evidenceIds.length} evidence(s) linked
         context.subscriptions.push(
             vscode.commands.registerCommand('reasoning.correlation.analyze', async () => {
                 try {
-                    const { CorrelationEngine } = await import('./core/reasoning/CorrelationEngine');
+                    const { CorrelationEngine } = await import('./core/base/CorrelationEngine');
                     const corrEngine = new CorrelationEngine(workspaceRoot);
                     
                     vscode.window.showInformationMessage('🔗 Analyzing correlations...');
@@ -1119,7 +1119,7 @@ ${adr.evidenceIds.length} evidence(s) linked
         context.subscriptions.push(
             vscode.commands.registerCommand('reasoning.forecast.generate', async () => {
                 try {
-                    const { ForecastEngine } = await import('./core/reasoning/ForecastEngine');
+                    const { ForecastEngine } = await import('./core/base/ForecastEngine');
                     const forecastEngine = new ForecastEngine(workspaceRoot);
                     
                     vscode.window.showInformationMessage('🔮 Generating forecasts...');
