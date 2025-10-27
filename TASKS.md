@@ -39,6 +39,13 @@
 - [x] Top Evidence Display - Highest quality items first
 - [x] VS Code Command - Show ADR Evidence Report
 
+**Level 5: Integrity & Persistence Layer** - ⏳ **IN PROGRESS**
+- [ ] Day 1: Hash & Signature Engine (BLAKE3 + Ed25519)
+- [ ] Day 2: Integrity Chain Ledger (append-only JSONL)
+- [ ] Day 3: Sign ADRs automatically
+- [ ] Day 4: Snapshot Manifest generation
+- [ ] Day 5: Commands (verify.integrity, export.secure)
+
 **Layer 3: Perceptual Layer (J+20 → J+30)** - ⏳ **PENDING**
 - [ ] Day 21-25: Vanilla HTML/CSS/JS Webview
 - [ ] Day 26-28: V2 → V3 Migration
