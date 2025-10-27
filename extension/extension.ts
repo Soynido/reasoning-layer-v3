@@ -31,6 +31,9 @@ let integrityEngine: any = null; // IntegrityEngine dynamically loaded
 let snapshotManager: any = null; // SnapshotManager dynamically loaded
 let lifecycleManager: any = null; // LifecycleManager dynamically loaded
 
+// Level 7: Reasoning components
+let patternLearningEngine: any = null; // PatternLearningEngine dynamically loaded
+
 // Debounce map to prevent event multiplication
 const fileDebounceMap = new Map<string, NodeJS.Timeout>();
 

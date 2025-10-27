@@ -16,6 +16,7 @@ export class RBOMEngine {
     private validatorModule: any = null;
     private uuidModule: any = null; // Chargé dynamiquement
     private integrityEngine: any = null; // Level 5: Integrity engine
+    private patternLearningEngine: any = null; // Level 7: Pattern Learning engine
     private log: ((msg: string) => void) | null = null;
     private warn: ((msg: string) => void) | null = null;
     private workspaceRoot: string;
@@ -54,6 +55,11 @@ export class RBOMEngine {
             this.loadIntegrityEngine().catch((err) => {
                 if (this.warn) {
                     this.warn(`Integrity engine load failed: ${String(err)}`);
+                }
+            }),
+            this.loadPatternLearningEngine().catch((err) => {
+                if (this.warn) {
+                    this.warn(`Pattern Learning engine load failed: ${String(err)}`);
                 }
             })
         ]).catch(() => {
@@ -128,6 +134,25 @@ export class RBOMEngine {
         } catch (e: any) {
             if (this.warn) {
                 this.warn(`Failed to load Integrity Engine: ${e?.message ?? e}`);
+            }
+        }
+    }
+
+    /**
+     * Load Pattern Learning Engine (Level 7)
+     */
+    private async loadPatternLearningEngine(): Promise<void> {
+        if (this.patternLearningEngine) return;
+        
+        try {
+            const { PatternLearningEngine } = await import('../reasoning/PatternLearningEngine');
+            this.patternLearningEngine = new PatternLearningEngine(this.workspaceRoot);
+            if (this.log) {
+                this.log('🧠 Pattern Learning Engine loaded');
+            }
+        } catch (e: any) {
+            if (this.warn) {
+                this.warn(`Failed to load Pattern Learning Engine: ${e?.message ?? e}`);
             }
         }
     }
