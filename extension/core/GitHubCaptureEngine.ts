@@ -61,9 +61,78 @@ export class GitHubCaptureEngine {
         this.checkCommits();
     }
 
-    private checkCommits(): void {
-        // Get recent commits
-        // TODO: Implement commit checking
+    private async checkCommits(): Promise<void> {
+        if (!this.githubToken || !this.repoOwner || !this.repoName) {
+            return;
+        }
+
+        try {
+            // Fetch recent commits from GitHub API
+            const url = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/commits?per_page=10&page=1`;
+            const commits = await this.apiRequest(url);
+            
+            if (!Array.isArray(commits)) {
+                return;
+            }
+
+            // Parse each commit for PR/Issue references
+            for (const commit of commits) {
+                const message = commit.commit.message;
+                const refs = this.parseCommitReferences(message);
+                
+                if (refs.prs.length > 0 || refs.issues.length > 0) {
+                    this.persistence.logWithEmoji('🔗', `Commit #${commit.sha.substring(0, 7)}: ${refs.prs.length} PRs, ${refs.issues.length} Issues`);
+                    
+                    // Fetch and link PRs
+                    for (const prNumber of refs.prs) {
+                        await this.fetchPR(prNumber);
+                    }
+                    
+                    // Fetch and link Issues
+                    for (const issueNumber of refs.issues) {
+                        await this.fetchIssue(issueNumber);
+                    }
+                }
+            }
+        } catch (error) {
+            // Silent error - don't spam logs
+        }
+    }
+
+    /**
+     * Parse PR and Issue references from commit message
+     */
+    public parseCommitReferences(message: string): { prs: number[]; issues: number[] } {
+        const prs: number[] = [];
+        const issues: number[] = [];
+        
+        // Match patterns like: Fixes #123, Closes #456, Resolves #789
+        const closePatterns = [
+            /(?:fix|fixes|fixed|resolve|resolves|resolved|close|closes|closed)\s*#(\d+)/gi,
+            /#(\d+)/g  // Generic #number pattern
+        ];
+        
+        for (const pattern of closePatterns) {
+            const matches = message.matchAll(pattern);
+            for (const match of matches) {
+                const num = parseInt(match[1]);
+                if (!prs.includes(num) && !issues.includes(num)) {
+                    issues.push(num);
+                }
+            }
+        }
+        
+        // Also check for explicit PR references (rare but possible)
+        const prPattern = /PR\s*#?(\d+)/gi;
+        const prMatches = message.matchAll(prPattern);
+        for (const match of prMatches) {
+            const num = parseInt(match[1]);
+            if (!prs.includes(num)) {
+                prs.push(num);
+            }
+        }
+        
+        return { prs, issues };
     }
 
     /**
@@ -203,15 +272,6 @@ export class GitHubCaptureEngine {
         }
     }
 
-    /**
-     * Parse PR/Issue numbers from commit message
-     */
-    public parsePRReferences(message: string): number[] {
-        const prMatches = message.match(/#(\d+)/g);
-        if (!prMatches) return [];
-        
-        return prMatches.map(m => parseInt(m.substring(1)));
-    }
 
     /**
      * Generic API request helper
