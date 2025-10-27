@@ -14,16 +14,16 @@
 - [x] Day 13: Layer 1 Final Stabilization (RBOM disabled)
 - [x] Day 14: 100% English Translation - All code, ADRs, docs
 
-**Layer 2: Cognitive Layer (J+12 → J+20)** - ⏸️ **SUSPENDED**
+**Layer 2: Cognitive Layer (J+12 → J+20)** - ✅ **ACTIVE**
 - [x] Day 12: RBOM Types consolidation ✅
 - [x] Day 13: Zod Validation v3.23.8 ✅
 - [x] Day 13: EvidenceMapper created ✅
-- [ ] Day 14-15: RBOMEngine activation (ON HOLD)
-- [ ] Day 16-17: Evidence → RBOM integration (ON HOLD)
-- [ ] Day 18-19: VS Code RBOM Commands (ON HOLD)
-- [ ] Day 20: Layer 2 Validation (ON HOLD)
+- [x] Day 14-15: RBOMEngine activation (deferred load) ✅
+- [x] Day 16-17: Evidence → RBOM integration ✅
+- [x] Day 18-19: VS Code RBOM Commands ✅
+- [x] Day 20: DecisionSynthesizer & Evidence Quality Scoring ✅
 
-**NOTE**: RBOMEngine is compiled and ready but **disabled** to stabilize Layer 1.
+**NOTE**: Layer 2 is **ACTIVE** - RBOMEngine, DecisionSynthesizer, and Evidence Quality Scoring operational.
 
 **Layer 3: Perceptual Layer (J+20 → J+30)** - ⏳ **PENDING**
 - [ ] Day 21-25: Vanilla HTML/CSS/JS Webview
