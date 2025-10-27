@@ -840,12 +840,22 @@ ${adr.evidenceIds.length} evidence(s) linked
                         const { ADREvidenceManager } = await import('./core/rbom/ADREvidenceManager');
                         const evidenceManager = new ADREvidenceManager();
                         
-                        // Load all events
-                        const eventsPath = path.join(workspaceRoot, '.reasoning', 'events.json');
+                        // Load all events from traces directory
+                        const tracesDir = path.join(workspaceRoot, '.reasoning', 'traces');
                         let allEvents: any[] = [];
-                        if (fs.existsSync(eventsPath)) {
-                            const eventsData = JSON.parse(fs.readFileSync(eventsPath, 'utf-8'));
-                            allEvents = eventsData.events || [];
+                        if (fs.existsSync(tracesDir)) {
+                            const traceFiles = fs.readdirSync(tracesDir).filter(f => f.endsWith('.json'));
+                            for (const file of traceFiles) {
+                                try {
+                                    const filePath = path.join(tracesDir, file);
+                                    const traceEvents = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+                                    if (Array.isArray(traceEvents)) {
+                                        allEvents.push(...traceEvents);
+                                    }
+                                } catch (error) {
+                                    // Ignore corrupted files
+                                }
+                            }
                         }
                         
                         const report = evidenceManager.generateEvidenceReport(selected.adr, allEvents);
