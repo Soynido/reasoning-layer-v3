@@ -93,7 +93,10 @@ export class ForecastEngine {
         const dedupedForecasts = this.deduplicateForecasts(forecasts);
         console.log(`✅ Forecast deduplication applied (${dedupedForecasts.length} unique forecasts from ${forecasts.length} total).`);
 
-        // Save forecasts
+        // Save both raw and deduplicated forecasts for adaptive regulation
+        await this.saveRawForecasts(forecasts);
+        
+        // Save deduplicated forecasts
         await this.saveForecasts(dedupedForecasts);
 
         // Append to ledger
@@ -373,6 +376,22 @@ export class ForecastEngine {
         } catch (error) {
             console.error('Failed to load market signals:', error);
             return [];
+        }
+    }
+
+    /**
+     * Save raw forecasts (before deduplication) for adaptive regulation
+     */
+    private async saveRawForecasts(forecasts: Forecast[]): Promise<void> {
+        try {
+            const rawForecastsPath = path.join(this.workspaceRoot, '.reasoning', 'forecasts.raw.json');
+            fs.writeFileSync(
+                rawForecastsPath,
+                JSON.stringify(forecasts, null, 2),
+                'utf-8'
+            );
+        } catch (error) {
+            console.error('Failed to save raw forecasts:', error);
         }
     }
 

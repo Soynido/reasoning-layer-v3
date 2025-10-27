@@ -62,6 +62,78 @@ export class PatternLearningEngine {
     }
 
     /**
+     * Apply adaptive regulation to existing patterns (call after forecasts are generated)
+     */
+    public async applyAdaptiveRegulationToPatterns(): Promise<void> {
+        const patterns = this.loadPatterns();
+        const adjustedPatterns = await this.applyAdaptiveRegulation(patterns);
+        
+        if (adjustedPatterns.length > 0) {
+            this.savePatterns(adjustedPatterns);
+        }
+    }
+
+    /**
+     * Apply adaptive regulation - reduce confidence for patterns that generate duplicates
+     */
+    private async applyAdaptiveRegulation(patterns: DecisionPattern[]): Promise<DecisionPattern[]> {
+        // Read raw forecasts (before deduplication) to detect duplicates
+        const rawForecastsPath = path.join(this.workspaceRoot, '.reasoning', 'forecasts.raw.json');
+        
+        if (!fs.existsSync(rawForecastsPath)) {
+            return patterns;
+        }
+
+        try {
+            const forecasts = JSON.parse(fs.readFileSync(rawForecastsPath, 'utf-8'));
+            
+            // Count duplicates per pattern
+            const patternDuplicateCount = new Map<string, number>();
+            
+            // Check for duplicate forecasts per pattern
+            const seenKeys = new Map<string, string>();
+            for (const forecast of forecasts) {
+                const key = `${forecast.predicted_decision}:${forecast.related_patterns?.[0]}`;
+                
+                if (seenKeys.has(key)) {
+                    // Duplicate found
+                    const patternId = forecast.related_patterns?.[0];
+                    if (patternId) {
+                        patternDuplicateCount.set(patternId, (patternDuplicateCount.get(patternId) || 0) + 1);
+                    }
+                } else {
+                    seenKeys.set(key, forecast.forecast_id);
+                }
+            }
+
+            // Apply confidence penalty for patterns with too many duplicates
+            const adjustedPatterns = patterns.map(pattern => {
+                const duplicateCount = patternDuplicateCount.get(pattern.id) || 0;
+                
+                if (duplicateCount > 2) {
+                    const penalty = 0.95; // 5% reduction per excess duplicate
+                    const timesToApply = Math.min(duplicateCount - 2, 5); // Cap at 5 applications
+                    const adjustedConfidence = pattern.confidence * Math.pow(penalty, timesToApply);
+                    
+                    console.log(`\n🧠 Adaptive regulation: Pattern ${pattern.id.substring(0, 30)}... reduced confidence ${pattern.confidence.toFixed(3)} → ${adjustedConfidence.toFixed(3)} (${duplicateCount} duplicates, ${pattern.pattern.substring(0, 50)})`);
+                    
+                    return {
+                        ...pattern,
+                        confidence: Math.max(0.5, adjustedConfidence) // Don't go below 0.5
+                    };
+                }
+                
+                return pattern;
+            });
+
+            return adjustedPatterns;
+        } catch (error) {
+            console.error('Error applying adaptive regulation:', error);
+            return patterns;
+        }
+    }
+
+    /**
      * Load all entries from ledger files
      */
     private async loadAllLedgerEntries(): Promise<LedgerEntry[]> {

@@ -49,6 +49,12 @@ async function runCompletePipeline() {
         const forecasts = await forecastEngine.generate();
         console.log(`✅ Forecasts generated: ${forecasts.length}\n`);
 
+        // Step 3.5: Adaptive Regulation
+        console.log('🧠 Step 3.5: Adaptive Regulation');
+        console.log('-'.repeat(80));
+        await ple.applyAdaptiveRegulationToPatterns();
+        console.log(`✅ Adaptive regulation applied\n`);
+
         // Step 4: ADR Synthesizer
         console.log('🧩 Step 4/5: ADR Synthesizer V2');
         console.log('-'.repeat(80));
