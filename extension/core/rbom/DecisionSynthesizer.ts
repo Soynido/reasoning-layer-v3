@@ -4,6 +4,7 @@ import { PersistenceManager } from '../PersistenceManager';
 import { RBOMEngine } from './RBOMEngine';
 import { CaptureEvent, GitCommitData } from '../types';
 import { ADR } from './types';
+import { EvidenceQualityScorer } from '../EvidenceQualityScorer';
 
 interface EventSummary {
     totalEvents: number;
@@ -62,13 +63,15 @@ interface DecisionPattern {
  */
 export class DecisionSynthesizer {
     private lastSynthesis: number = 0;
+    private qualityScorer: EvidenceQualityScorer;
 
     constructor(
         private workspaceRoot: string,
         private persistence: PersistenceManager,
         private rbomEngine: RBOMEngine
     ) {
-        this.persistence.logWithEmoji('🧠', 'DecisionSynthesizer initialized with historical analysis');
+        this.qualityScorer = new EvidenceQualityScorer();
+        this.persistence.logWithEmoji('🧠', 'DecisionSynthesizer initialized with historical analysis and evidence quality scoring');
     }
 
     /**
@@ -85,7 +88,23 @@ export class DecisionSynthesizer {
 
             this.persistence.logWithEmoji('🔍', `Auto-synthesis: analyzing ${events.length} recent events...`);
             
-            const patterns = this.detectDecisionPatterns(events);
+            // Score evidence quality
+            const qualityScores = this.qualityScorer.scoreEvidenceSet(events);
+            const qualitySummary = this.qualityScorer.getQualitySummary(qualityScores);
+            this.persistence.logWithEmoji('📊', `Evidence quality: ${qualitySummary}`);
+            
+            // Filter high-quality evidence only
+            const highQualityEventIds = this.qualityScorer.filterHighQuality(qualityScores).map(q => q.eventId);
+            const highQualityEvents = events.filter(e => highQualityEventIds.includes(e.id));
+            
+            if (highQualityEvents.length === 0) {
+                this.persistence.logWithEmoji('⚠️', 'No high-quality evidence found - skipping synthesis');
+                return;
+            }
+            
+            this.persistence.logWithEmoji('✅', `Using ${highQualityEvents.length} high-quality evidence items`);
+            
+            const patterns = this.detectDecisionPatterns(highQualityEvents);
             if (patterns.length === 0) {
                 this.persistence.logWithEmoji('✓', 'No decision patterns detected (confidence < 0.6)');
                 return;
