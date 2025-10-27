@@ -46,6 +46,13 @@
 - [x] Day 4: Snapshot Manifest generation ✅
 - [x] Day 5: Commands (verify.integrity, snapshot.create, snapshot.list) ✅
 
+**Level 6 Creature: External Context Layer** - ⏳ **IN PROGRESS**
+- [ ] External Evidence Schema (Product Metrics, Feedback, Compliance, Market, Incidents)
+- [ ] ExternalIntegrator Engine
+- [ ] Sources: MetricsSource, FeedbackSource, ComplianceSource, MarketSource, IncidentSource
+- [ ] External evidence injection into RBOM
+- [ ] VS Code Commands: sync, status, linkADR
+
 **Layer 3: Perceptual Layer (J+20 → J+30)** - ⏳ **PENDING**
 - [ ] Day 21-25: Vanilla HTML/CSS/JS Webview
 - [ ] Day 26-28: V2 → V3 Migration
