@@ -50,7 +50,20 @@ export class GitHubCaptureEngine {
             return;
         }
 
-        this.persistence.logWithEmoji('🚀', 'GitHubCaptureEngine started');
+        this.persistence.logWithEmoji('🚀', 'GitHubCaptureEngine started - polling for commits');
+        
+        // Poll for commits every 30 seconds
+        setInterval(() => {
+            this.checkCommits();
+        }, 30000);
+        
+        // Also check immediately
+        this.checkCommits();
+    }
+
+    private checkCommits(): void {
+        // Get recent commits
+        // TODO: Implement commit checking
     }
 
     /**
@@ -81,12 +94,15 @@ export class GitHubCaptureEngine {
      * Load GitHub token from environment or config
      */
     private loadGitHubToken(): void {
-        this.githubToken = process.env.GITHUB_TOKEN || null;
+        // Load from VS Code settings
+        const vscode = require('vscode');
+        const config = vscode.workspace.getConfiguration('reasoningLayer');
+        this.githubToken = config.get('githubToken', null);
         
         if (!this.githubToken) {
-            this.persistence.logWithEmoji('⚠️', 'GitHub token not found in environment (GITHUB_TOKEN)');
+            this.persistence.logWithEmoji('⚠️', 'GitHub token not found in settings - please configure via command');
         } else {
-            this.persistence.logWithEmoji('🔑', 'GitHub token loaded');
+            this.persistence.logWithEmoji('🔑', 'GitHub token loaded from settings');
         }
     }
 
