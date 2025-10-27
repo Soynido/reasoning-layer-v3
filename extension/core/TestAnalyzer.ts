@@ -24,3 +24,4 @@ export class TestClass {
 export function createTestInstance() {
     return TestClass.getInstance();
 }
+// Another test
