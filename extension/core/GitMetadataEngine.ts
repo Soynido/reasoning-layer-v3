@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import { PersistenceManager } from './PersistenceManager';
 import { EventAggregator } from './EventAggregator';
 import { getGitDiffSummary, GitDiffSummary } from './gitUtils';
+import { CodeAnalyzer, CodeImpact } from './CodeAnalyzer';
 // ❌ Logger retiré pour éviter duplication d'OutputChannel
 
 const execAsync = promisify(exec);
@@ -39,13 +40,15 @@ export class GitMetadataEngine {
     private lastCommitHash: string | null = null;
     private lastBranchHash: string | null = null;
     private watchers: NodeJS.Timeout[] = [];
+    private codeAnalyzer: CodeAnalyzer;
 
     constructor(
         private workspaceRoot: string,
         private persistence: PersistenceManager,
         private eventAggregator: EventAggregator
     ) {
-        this.persistence.logWithEmoji('🌿', 'GitMetadataEngine initialized');
+        this.codeAnalyzer = new CodeAnalyzer();
+        this.persistence.logWithEmoji('🌿', 'GitMetadataEngine initialized with CodeAnalyzer');
     }
 
     public async start(): Promise<void> {
@@ -142,6 +145,16 @@ export class GitMetadataEngine {
         try {
             const commit = await this.getCommitDetails(commitHash);
             const diffs = await this.getCommitDiffs(commitHash);
+            
+            // ✅ Analyze code impact for each file changed
+            const codeImpacts: Record<string, CodeImpact> = {};
+            for (const diff of diffs) {
+                const impact = this.codeAnalyzer.parseDiff(diff.changes.join('\n'), diff.file);
+                if (impact.functionsAffected.length > 0 || impact.classesModified.length > 0) {
+                    codeImpacts[diff.file] = impact;
+                    this.persistence.logWithEmoji('🔍', `File ${diff.file}: ${impact.functionsAffected.length} functions, ${impact.classesModified.length} classes affected`);
+                }
+            }
             
             // ✅ Enrichir avec diff summary via gitUtils (proven working)
             let diffSummary: GitDiffSummary | null = null;
