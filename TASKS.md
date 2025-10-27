@@ -263,12 +263,19 @@ git add test.ts && git commit -m "test"
 
 ## 📅 CHANGELOG
 
+### 2025-01-28 (Day 21 evening) - PHASE 2 COMPLETE ✅
+- ✅ **Enhanced ADR Schema** - Added trade-offs, risks, mitigations, rejected options
+- ✅ **Better PR/Issue Linking** - Auto-link PRs/issues to ADRs via evidence
+- ✅ **AST Parser (CodeAnalyzer)** - Detect functions/classes impacted by commits (47 functions detected in test)
+- ✅ **CodeAnalyzer operational** - Parses file content to extract code impact analysis
+- ✅ Commits: `4987b3f`, `c4e91df`
+
 ### 2025-01-27 (Day 20 evening) - PHASE 1 COMPLETE ✅
 - ✅ **Evidence Quality Scoring implemented** - quality scorer with freshness, source, completeness
 - ✅ **Scoring thresholds adjusted** - 73 high-quality evidence items, 7 ADRs auto-generated
 - ✅ **DecisionSynthesizer operational** - 8 decision patterns detected with high confidence
 - ✅ **Layer 2 ACTIVE** - RBOM, DecisionSynthesizer, Evidence Quality fully operational
-- ✅ Commits: `64a4310`, `910831d`, `372ed36`
+- ✅ Commits: `Door closed`, `910831d`, `372ed36`
 
 ### 2025-01-27 (Day 14 evening) - ROADMAP & PLANNING
 - ✅ **Feature roadmap documented** - Complete 7-level vision in ROADMAP.md
