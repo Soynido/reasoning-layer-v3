@@ -39,12 +39,12 @@
 - [x] Top Evidence Display - Highest quality items first
 - [x] VS Code Command - Show ADR Evidence Report
 
-**Level 5: Integrity & Persistence Layer** - ⏳ **IN PROGRESS**
-- [ ] Day 1: Hash & Signature Engine (BLAKE3 + Ed25519)
-- [ ] Day 2: Integrity Chain Ledger (append-only JSONL)
-- [ ] Day 3: Sign ADRs automatically
-- [ ] Day 4: Snapshot Manifest generation
-- [ ] Day 5: Commands (verify.integrity, export.secure)
+**Level 5: Integrity & Persistence Layer** - ✅ **COMPLETED**
+- [x] Day 1: Hash & Signature Engine (SHA256 + RSA) ✅
+- [x] Day 2: Integrity Chain Ledger (append-only JSONL) ✅
+- [x] Day 3: Sign ADRs automatically ✅
+- [x] Day 4: Snapshot Manifest generation ✅
+- [x] Day 5: Commands (verify.integrity, snapshot.create, snapshot.list) ✅
 
 **Layer 3: Perceptual Layer (J+20 → J+30)** - ⏳ **PENDING**
 - [ ] Day 21-25: Vanilla HTML/CSS/JS Webview
@@ -296,6 +296,16 @@ git add test.ts && git commit -m "test"
 ---
 
 ## 📅 CHANGELOG
+
+### 2025-10-27 (Day 27) - LEVEL 5 COMPLETE ✅
+- ✅ **Integrity Engine** - SHA256 hashing & RSA signing
+- ✅ **Ledger Chain** - Append-only JSONL integrity tracking
+- ✅ **Snapshot Manager** - Signed manifests with hash chains
+- ✅ **Lifecycle Manager** - Retention policies & status tracking
+- ✅ **Auto-sign ADRs** - Every ADR automatically signed
+- ✅ **VS Code Commands** - verify.integrity, snapshot.create, snapshot.list
+- **Tested & Validated** - Ledger verified ✓, Snapshots created successfully
+- Version v1.0.26 - Stable production
 
 ### 2025-01-28 (Day 22 evening) - LEVEL 4 COMPLETE ✅
 - ✅ **ADR Evidence Manager** - Evidence quality reports

@@ -15,3 +15,4 @@ REASONING_LAYER_V2_V3_TRANSFER.md
 # VS Code settings (contains sensitive tokens)
 .vscode/settings.json
 
+.reasoning/
