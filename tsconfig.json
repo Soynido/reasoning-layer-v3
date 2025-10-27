@@ -12,5 +12,5 @@
     "resolveJsonModule": true
   },
   "include": ["extension/**/*"],
-  "exclude": ["node_modules", "out"]
+  "exclude": ["node_modules", "out", "extension/webview/ui"]
 }

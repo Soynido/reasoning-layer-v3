@@ -186,6 +186,11 @@
         "command": "reasoning.forecast.generate",
         "title": "🔮 Generate Forecasts",
         "category": "Reasoning Forecast"
+      },
+      {
+        "command": "reasoning.perceptual.open",
+        "title": "🎨 Open Perceptual Layer",
+        "category": "Reasoning UI"
       }
     ]
   },

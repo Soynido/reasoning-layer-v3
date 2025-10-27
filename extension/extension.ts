@@ -1146,6 +1146,51 @@ ${adr.evidenceIds.length} evidence(s) linked
             })
         );
 
+        // Perceptual Layer (Level 11)
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.perceptual.open', () => {
+                const panel = vscode.window.createWebviewPanel(
+                    'reasoningPerceptualLayer',
+                    '🧠 Reasoning Layer - Perceptual View',
+                    vscode.ViewColumn.One,
+                    {
+                        enableScripts: true,
+                        retainContextWhenHidden: true
+                    }
+                );
+
+                // Load the built UI
+                const uiPath = path.join(context.extensionPath, 'webview', 'ui', 'dist', 'index.html');
+                const htmlContent = fs.readFileSync(uiPath, 'utf-8');
+                panel.webview.html = htmlContent;
+
+                // Load cognitive state and send to UI
+                const cognitiveManifestPath = path.join(workspaceRoot, '.reasoning', 'CognitiveManifest.json');
+                if (fs.existsSync(cognitiveManifestPath)) {
+                    const cognitiveState = JSON.parse(fs.readFileSync(cognitiveManifestPath, 'utf-8'));
+                    panel.webview.postMessage({
+                        command: 'cognitiveStateUpdate',
+                        data: cognitiveState.cognitive_state
+                    });
+                }
+
+                // Listen for messages from UI
+                panel.webview.onDidReceiveMessage(message => {
+                    if (message.command === 'requestCognitiveState') {
+                        if (fs.existsSync(cognitiveManifestPath)) {
+                            const cognitiveState = JSON.parse(fs.readFileSync(cognitiveManifestPath, 'utf-8'));
+                            panel.webview.postMessage({
+                                command: 'cognitiveStateUpdate',
+                                data: cognitiveState.cognitive_state
+                            });
+                        }
+                    }
+                });
+
+                persistence?.logWithEmoji('🎨', 'Perceptual Layer opened');
+            })
+        );
+
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
 
