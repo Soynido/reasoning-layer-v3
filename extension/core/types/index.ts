@@ -2,7 +2,7 @@
 export interface CaptureEvent {
     id: string;              // UUID
     timestamp: string;       // ISO 8601
-    type: 'file_change' | 'git_commit' | 'git_branch' | 'dependencies' | 'config' | 'test';
+    type: 'file_change' | 'git_commit' | 'git_branch' | 'dependencies' | 'config' | 'test' | 'pr_linked' | 'issue_linked';
     source: string;          // Chemin fichier ou commit hash
     metadata: Record<string, any>;
 }
