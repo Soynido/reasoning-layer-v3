@@ -156,6 +156,21 @@
         "command": "reasoning.snapshot.list",
         "title": "📋 List Snapshots",
         "category": "Reasoning Security"
+      },
+      {
+        "command": "reasoning.external.sync",
+        "title": "🌐 Sync External Evidence",
+        "category": "Reasoning External"
+      },
+      {
+        "command": "reasoning.external.status",
+        "title": "📊 Show External Evidence Status",
+        "category": "Reasoning External"
+      },
+      {
+        "command": "reasoning.external.linkADR",
+        "title": "🔗 Link External Evidence to ADR",
+        "category": "Reasoning External"
       }
     ]
   },

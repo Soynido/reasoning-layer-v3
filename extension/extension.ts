@@ -965,6 +965,110 @@ ${adr.evidenceIds.length} evidence(s) linked
             })
         );
 
+        // Level 6: External Evidence Commands
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.external.sync', async () => {
+                try {
+                    const { ExternalIntegrator } = await import('./core/external/ExternalIntegrator');
+                    const integrator = new ExternalIntegrator(workspaceRoot);
+                    
+                    vscode.window.showInformationMessage('🔄 Syncing external evidence...');
+                    const results = await integrator.syncAll();
+                    
+                    const summary = results.map(r => 
+                        `✅ ${r.source}: ${r.evidenceCount} evidence (${r.status})`
+                    ).join('\n');
+                    
+                    vscode.window.showInformationMessage(
+                        `✅ External Evidence Synced:\n${summary}`
+                    );
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to sync: ${error}`);
+                }
+            })
+        );
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.external.status', async () => {
+                try {
+                    const { ExternalIntegrator } = await import('./core/external/ExternalIntegrator');
+                    const integrator = new ExternalIntegrator(workspaceRoot);
+                    
+                    const results = await integrator.syncAll();
+                    const allEvidence = integrator.getAllExternalEvidence();
+                    
+                    const status = `📊 External Evidence Status:\n\n` +
+                        results.map(r => `• ${r.source}: ${r.evidenceCount} items - ${r.status}`).join('\n') +
+                        `\n\n📦 Total Evidence: ${allEvidence.length}`;
+                    
+                    vscode.window.showInformationMessage(status);
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to get status: ${error}`);
+                }
+            })
+        );
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.external.linkADR', async () => {
+                try {
+                    if (!rbomEngine) {
+                        vscode.window.showErrorMessage('RBOM Engine not initialized');
+                        return;
+                    }
+
+                    const { ExternalIntegrator } = await import('./core/external/ExternalIntegrator');
+                    const integrator = new ExternalIntegrator(workspaceRoot);
+                    
+                    // Select ADR
+                    const allADRs = rbomEngine.listADRs();
+                    if (allADRs.length === 0) {
+                        vscode.window.showInformationMessage('No ADRs found.');
+                        return;
+                    }
+
+                    const adrChoices = allADRs.map((adr: any) => ({
+                        label: adr.title,
+                        adr
+                    }));
+                    
+                    const selectedADR: any = await vscode.window.showQuickPick(adrChoices, {
+                        placeHolder: 'Select ADR to link external evidence'
+                    });
+
+                    if (!selectedADR) { return; }
+
+                    // Select evidence
+                    const allEvidence = integrator.getAllExternalEvidence();
+                    if (allEvidence.length === 0) {
+                        vscode.window.showInformationMessage('No external evidence found. Run sync first.');
+                        return;
+                    }
+
+                    const evidenceChoices = allEvidence.map(ev => ({
+                        label: `${ev.type}: ${ev.source}`,
+                        evidence: ev
+                    }));
+
+                    const selected = await vscode.window.showQuickPick(evidenceChoices, {
+                        placeHolder: 'Select evidence to link',
+                        canPickMany: true
+                    });
+
+                    if (!selected || selected.length === 0) { return; }
+
+                    // Link evidence to ADR
+                    const evidenceIds = selected.map(s => s.evidence.id);
+                    await integrator.linkToADR(selectedADR.adr.id, evidenceIds);
+                    
+                    vscode.window.showInformationMessage(
+                        `✅ Linked ${evidenceIds.length} evidence to ADR: ${selectedADR.adr?.title || 'Unknown'}`
+                    );
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to link evidence: ${error}`);
+                }
+            })
+        );
+
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
 
