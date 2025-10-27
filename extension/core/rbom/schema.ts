@@ -24,8 +24,8 @@ export const ADRSchema = z.object({
     components: z.array(z.string()),
     relatedADRs: z.array(z.string()),
     
-    // Liens avec Evidence
-    evidenceIds: z.array(z.string().uuid()),
+    // Liens avec Evidence (IDs de traces, pas nécessairement des UUID)
+    evidenceIds: z.array(z.string().min(1)),
     
     // Génération automatique
     lastSyncedAt: z.string().optional(), // ISO 8601 format
@@ -41,7 +41,9 @@ export function validateADR(data: unknown): ADR | null {
         return validated as ADR;
     } catch (error) {
         if (error instanceof z.ZodError) {
-            console.error('ADR validation failed:', JSON.stringify(error.issues, null, 2));
+            const issues = error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join(', ');
+            console.error('ADR validation failed:', issues);
+            console.error('Failed data:', JSON.stringify(data, null, 2));
         }
         return null;
     }
