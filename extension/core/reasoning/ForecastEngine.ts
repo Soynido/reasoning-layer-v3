@@ -64,21 +64,24 @@ export class ForecastEngine {
 
         // Analyze correlations for forecasting with category diversity
         const categoryForecastCount = new Map<string, number>();
-        const maxForecastsPerCategory = 3; // Limit forecasts per category
+        const maxForecastsPerCategory = 3; // Limit forecasts per category to reduce thematic bias
+        
+        // Sort correlations by score (descending) to prioritize strongest correlations
+        const sortedCorrelations = [...correlations].sort((a, b) => b.correlation_score - a.correlation_score);
 
-        for (const correlation of correlations) {
+        for (const correlation of sortedCorrelations) {
             // Only consider strong correlations (≥ 0.75)
             if (correlation.correlation_score < 0.75) continue;
 
             const pattern = patterns.find(p => p.id === correlation.pattern_id);
             if (!pattern) continue;
 
-            // Check category diversity limit
+            // Check category diversity limit (Goal 2: Reduce thematic bias)
             const category = pattern.impact || 'Other';
             const categoryCount = categoryForecastCount.get(category) || 0;
             
             if (categoryCount >= maxForecastsPerCategory) {
-                console.log(`🔄 Skipping forecast for category '${category}' (limit reached: ${categoryCount}/${maxForecastsPerCategory})`);
+                console.log(`🔄 [Thematic Bias Reduction] Skipping forecast for category '${category}' (limit reached: ${categoryCount}/${maxForecastsPerCategory})`);
                 continue;
             }
 
