@@ -99,10 +99,10 @@ export class CorrelationEngine {
      */
     private computeCorrelation(event: LedgerEntry, pattern: DecisionPattern): number {
         // Semantic similarity (tag overlap)
-        const semanticScore = this.cosineSimilarity(
-            event.data?.tags || [],
-            pattern.tags || []
-        );
+        const eventTags = event.data?.tags || [];
+        const patternTags = pattern.tags || [];
+        
+        const semanticScore = this.cosineSimilarity(eventTags, patternTags);
 
         // Temporal proximity (exponential decay over 7 days)
         const daysDiff = this.daysDiff(event.timestamp, pattern.lastSeen || new Date().toISOString());
@@ -121,15 +121,15 @@ export class CorrelationEngine {
      * Calculate cosine similarity between two tag arrays
      */
     private cosineSimilarity(tagsA: string[], tagsB: string[]): number {
-        if (tagsA.length === 0 || tagsB.length === 0) return 0;
+        if (!tagsA || !tagsB || tagsA.length === 0 || tagsB.length === 0) return 0;
 
-        const setA = new Set(tagsA.map(t => t.toLowerCase()));
-        const setB = new Set(tagsB.map(t => t.toLowerCase()));
+        const setA = new Set(tagsA.map(t => String(t).toLowerCase()));
+        const setB = new Set(tagsB.map(t => String(t).toLowerCase()));
 
         const intersection = new Set([...setA].filter(t => setB.has(t)));
         const union = new Set([...setA, ...setB]);
 
-        return intersection.size / union.size; // Jaccard similarity (simplified)
+        return union.size > 0 ? intersection.size / union.size : 0; // Jaccard similarity (simplified)
     }
 
     /**
@@ -184,7 +184,16 @@ export class CorrelationEngine {
             }
 
             const data = fs.readFileSync(this.patternsPath, 'utf-8');
-            return JSON.parse(data);
+            const parsed = JSON.parse(data);
+            
+            // Handle both direct array and object with patterns property
+            if (Array.isArray(parsed)) {
+                return parsed;
+            } else if (parsed.patterns && Array.isArray(parsed.patterns)) {
+                return parsed.patterns;
+            }
+            
+            return [];
         } catch (error) {
             console.error('Failed to load patterns:', error);
             return [];

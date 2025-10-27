@@ -289,7 +289,16 @@ export class ForecastEngine {
                 return [];
             }
             const data = fs.readFileSync(this.patternsPath, 'utf-8');
-            return JSON.parse(data);
+            const parsed = JSON.parse(data);
+            
+            // Handle both direct array and object with patterns property
+            if (Array.isArray(parsed)) {
+                return parsed;
+            } else if (parsed.patterns && Array.isArray(parsed.patterns)) {
+                return parsed.patterns;
+            }
+            
+            return [];
         } catch (error) {
             console.error('Failed to load patterns:', error);
             return [];
