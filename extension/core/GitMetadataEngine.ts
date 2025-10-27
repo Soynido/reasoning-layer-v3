@@ -1,5 +1,7 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import * as fs from 'fs';
+import * as path from 'path';
 import { PersistenceManager } from './PersistenceManager';
 import { EventAggregator } from './EventAggregator';
 import { getGitDiffSummary, GitDiffSummary } from './gitUtils';
@@ -149,10 +151,19 @@ export class GitMetadataEngine {
             // ✅ Analyze code impact for each file changed
             const codeImpacts: Record<string, CodeImpact> = {};
             for (const diff of diffs) {
-                const impact = this.codeAnalyzer.parseDiff(diff.changes.join('\n'), diff.file);
-                if (impact.functionsAffected.length > 0 || impact.classesModified.length > 0) {
-                    codeImpacts[diff.file] = impact;
-                    this.persistence.logWithEmoji('🔍', `File ${diff.file}: ${impact.functionsAffected.length} functions, ${impact.classesModified.length} classes affected`);
+                // Get actual file content for new/modified files (diff.changes is empty in getCommitDiffs)
+                try {
+                    const filePath = path.join(this.workspaceRoot, diff.file);
+                    if (fs.existsSync(filePath)) {
+                        const content = fs.readFileSync(filePath, 'utf-8');
+                        const impact = this.codeAnalyzer.parseDiff(content, diff.file);
+                        if (impact.functionsAffected.length > 0 || impact.classesModified.length > 0) {
+                            codeImpacts[diff.file] = impact;
+                            this.persistence.logWithEmoji('🔍', `File ${diff.file}: ${impact.functionsAffected.length} functions, ${impact.classesModified.length} classes affected`);
+                        }
+                    }
+                } catch (error) {
+                    // Silent - couldn't read file
                 }
             }
             
