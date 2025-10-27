@@ -25,6 +25,7 @@ const { ReflectionManager } = require('./out/core/reasoning/ReflectionManager');
 const { HistoryManager } = require('./out/core/reasoning/HistoryManager');
 const { SelfReviewEngine } = require('./out/core/reasoning/SelfReviewEngine');
 const { TaskSynthesizer } = require('./out/core/reasoning/TaskSynthesizer');
+const { AutoTaskSynthesizer } = require('./out/core/reasoning/AutoTaskSynthesizer');
 
 async function runCompletePipeline() {
     const startTime = Date.now();
@@ -36,21 +37,21 @@ async function runCompletePipeline() {
 
     try {
         // Step 1: Pattern Learning Engine
-        console.log('📊 Step 1/9: Pattern Learning Engine');
+        console.log('📊 Step 1/10: Pattern Learning Engine');
         console.log('-'.repeat(80));
         const ple = new PatternLearningEngine(workspaceRoot);
         const patterns = await ple.analyzePatterns();
         console.log(`✅ Patterns learned: ${patterns.length}\n`);
 
         // Step 2: Correlation Engine
-        console.log('🔗 Step 2/9: Correlation Engine');
+        console.log('🔗 Step 2/10: Correlation Engine');
         console.log('-'.repeat(80));
         const correlationEngine = new CorrelationEngine(workspaceRoot);
         const correlations = await correlationEngine.analyze();
         console.log(`✅ Correlations detected: ${correlations.length}\n`);
 
         // Step 3: Forecast Engine
-        console.log('🔮 Step 3/9: Forecast Engine');
+        console.log('🔮 Step 3/10: Forecast Engine');
         console.log('-'.repeat(80));
         const forecastEngine = new ForecastEngine(workspaceRoot);
         const forecasts = await forecastEngine.generate();
@@ -63,42 +64,49 @@ async function runCompletePipeline() {
         console.log(`✅ Adaptive regulation applied\n`);
 
         // Step 4: ADR Synthesizer
-        console.log('🧩 Step 4/9: ADR Synthesizer V2');
+        console.log('🧩 Step 4/10: ADR Synthesizer V2');
         console.log('-'.repeat(80));
         const adrGenerator = new ADRGeneratorV2(workspaceRoot);
         const proposals = await adrGenerator.generateProposals();
         console.log(`✅ ADR proposals created: ${proposals.length}\n`);
 
         // Step 5: Bias Monitor
-        console.log('🧠 Step 5/9: Bias Monitor');
+        console.log('🧠 Step 5/10: Bias Monitor');
         console.log('-'.repeat(80));
         const biasMonitor = new BiasMonitor(workspaceRoot);
         const biases = await biasMonitor.analyze();
         console.log(`✅ Biases detected: ${biases.length}\n`);
 
         // Step 6: Goal Synthesizer (Level 8)
-        console.log('🎯 Step 6/9: Goal Synthesizer (Level 8)');
+        console.log('🎯 Step 6/10: Goal Synthesizer (Level 8)');
         console.log('-'.repeat(80));
         const goalSynthesizer = new GoalSynthesizer(workspaceRoot);
         const goals = await goalSynthesizer.synthesizeGoals();
         console.log(`✅ Goals generated: ${goals.length}\n`);
 
         // Step 7: Task Synthesizer (Level 8.75)
-        console.log('🎯 Step 7/9: Task Synthesizer (Level 8.75)');
+        console.log('🎯 Step 7/10: Task Synthesizer (Level 8.75)');
         console.log('-'.repeat(80));
         const taskSynthesizer = new TaskSynthesizer(workspaceRoot);
         const synthesizedTasks = await taskSynthesizer.synthesizeTasks();
         console.log(`✅ Task synthesis complete (${synthesizedTasks.reduce((sum, g) => sum + g.tasks.length, 0)} tasks generated)\n`);
 
-        // Step 8: Reflection Manager (Level 8.5)
-        console.log('🪞 Step 8/9: Reflection Manager (Level 8.5)');
+        // Step 8: Auto Task Synthesizer (Level 9.5)
+        console.log('🧠 Step 8/10: Auto Task Synthesizer (Level 9.5)');
+        console.log('-'.repeat(80));
+        const autoTaskSynthesizer = new AutoTaskSynthesizer(workspaceRoot);
+        const autoTasks = await autoTaskSynthesizer.synthesize();
+        console.log(`✅ Auto task synthesis complete (${autoTasks.length} tasks from historical context)\n`);
+
+        // Step 9: Reflection Manager (Level 8.5)
+        console.log('🪞 Step 9/10: Reflection Manager (Level 8.5)');
         console.log('-'.repeat(80));
         const reflectionManager = new ReflectionManager(workspaceRoot);
         await reflectionManager.executeGoals();
         console.log('✅ Reflection cycle complete\n');
 
-        // Step 9: Record cycle and generate self-review (Level 9)
-        console.log('🔄 Step 9/9: Self-Review Engine (Level 9)');
+        // Step 10: Record cycle and generate self-review (Level 9)
+        console.log('🔄 Step 10/10: Self-Review Engine (Level 9)');
         console.log('-'.repeat(80));
         const duration = Date.now() - startTime;
         
