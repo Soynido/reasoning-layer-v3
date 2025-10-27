@@ -151,17 +151,20 @@ export class EvolutionManager {
     }
 
     private calculateSimilarity(adr1: ADR, adr2: ADR): number {
-        // Simple keyword-based similarity
+        // Jaccard similarity: intersection / union
         const text1 = `${adr1.title} ${adr1.context} ${adr1.decision}`.toLowerCase();
         const text2 = `${adr2.title} ${adr2.context} ${adr2.decision}`.toLowerCase();
         
-        const words1 = text1.split(/\s+/);
-        const words2 = text2.split(/\s+/);
+        // Get unique words (length > 3) from each ADR
+        const words1 = new Set(text1.split(/\s+/).filter(w => w.length > 3));
+        const words2 = new Set(text2.split(/\s+/).filter(w => w.length > 3));
         
-        const commonWords = words1.filter(word => words2.includes(word) && word.length > 3);
-        const allUniqueWords = [...new Set([...words1, ...words2])].filter(w => w.length > 3);
+        // Calculate intersection and union
+        const intersection = new Set([...words1].filter(w => words2.has(w)));
+        const union = new Set([...words1, ...words2]);
         
-        return commonWords.length / allUniqueWords.length;
+        // Jaccard similarity: intersection over union
+        return intersection.size / union.size;
     }
 
     /**
