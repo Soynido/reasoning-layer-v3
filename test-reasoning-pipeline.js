@@ -27,6 +27,11 @@ const { SelfReviewEngine } = require('./out/core/reasoning/SelfReviewEngine');
 const { TaskSynthesizer } = require('./out/core/reasoning/TaskSynthesizer');
 const { AutoTaskSynthesizer } = require('./out/core/reasoning/AutoTaskSynthesizer');
 const { runGoalToActionCompiler } = require('./out/core/reasoning/GoalToActionCompiler');
+const { PatternMutationEngine } = require('./out/core/reasoning/PatternMutationEngine');
+const { PatternEvaluator } = require('./out/core/reasoning/PatternEvaluator');
+const { PatternPruner } = require('./out/core/reasoning/PatternPruner');
+const { HistoricalBalancer } = require('./out/core/reasoning/HistoricalBalancer');
+const { CorrelationDeduplicator } = require('./out/core/reasoning/CorrelationDeduplicator');
 
 async function runCompletePipeline() {
     const startTime = Date.now();
@@ -50,6 +55,13 @@ async function runCompletePipeline() {
         const correlationEngine = new CorrelationEngine(workspaceRoot);
         const correlations = await correlationEngine.analyze();
         console.log(`✅ Correlations detected: ${correlations.length}\n`);
+
+        // Step 2.5: Correlation Deduplicator
+        console.log('🔍 Step 2.5: Correlation Deduplicator');
+        console.log('-'.repeat(80));
+        const correlationDeduplicator = new CorrelationDeduplicator(workspaceRoot);
+        await correlationDeduplicator.run();
+        console.log('✅ Correlation deduplication applied.\n');
 
         // Step 3: Forecast Engine
         console.log('🔮 Step 3/11: Forecast Engine');
@@ -77,6 +89,34 @@ async function runCompletePipeline() {
         const biasMonitor = new BiasMonitor(workspaceRoot);
         const biases = await biasMonitor.analyze();
         console.log(`✅ Biases detected: ${biases.length}\n`);
+
+        // Step 5.5: Historical Balancer
+        console.log('⚖️ Step 5.5: Historical Balancer');
+        console.log('-'.repeat(80));
+        const historicalBalancer = new HistoricalBalancer(workspaceRoot);
+        await historicalBalancer.run();
+        console.log('✅ Historical balance checked.\n');
+
+        // Step 5.75: Pattern Mutation Engine
+        console.log('🧬 Step 5.75: Pattern Mutation Engine');
+        console.log('-'.repeat(80));
+        const patternMutationEngine = new PatternMutationEngine(workspaceRoot);
+        const mutations = await patternMutationEngine.generateMutations();
+        console.log(`✅ Generated ${mutations.length} pattern mutations\n`);
+
+        // Step 5.8: Pattern Evaluator
+        console.log('🔍 Step 5.8: Pattern Evaluator');
+        console.log('-'.repeat(80));
+        const patternEvaluator = new PatternEvaluator(workspaceRoot);
+        await patternEvaluator.run();
+        console.log('✅ Pattern evaluation complete.\n');
+
+        // Step 5.9: Pattern Pruner
+        console.log('✂️ Step 5.9: Pattern Pruner');
+        console.log('-'.repeat(80));
+        const patternPruner = new PatternPruner(workspaceRoot);
+        await patternPruner.run();
+        console.log('✅ Pattern pruning complete.\n');
 
         // Step 6: Goal Synthesizer (Level 8)
         console.log('🎯 Step 6/11: Goal Synthesizer (Level 8)');
