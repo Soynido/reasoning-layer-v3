@@ -9,3 +9,6 @@ dist/
 .DS_Store
 test-project/
 
+# Internal documentation (not published)
+REASONING_LAYER_V2_V3_TRANSFER.md
+
