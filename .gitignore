@@ -12,3 +12,6 @@ test-project/
 # Internal documentation (not published)
 REASONING_LAYER_V2_V3_TRANSFER.md
 
+# VS Code settings (contains sensitive tokens)
+.vscode/settings.json
+
