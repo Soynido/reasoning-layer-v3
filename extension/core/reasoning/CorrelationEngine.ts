@@ -63,6 +63,7 @@ export class CorrelationEngine {
 
         // Find correlations
         const correlations: Correlation[] = [];
+        const seenCorrelations = new Map<string, boolean>();
 
         for (const event of recentEvents) {
             for (const pattern of patterns) {
@@ -76,6 +77,15 @@ export class CorrelationEngine {
                 
                 if (score >= 0.6) { // Lowered threshold for more correlations
                     const correlation = this.createCorrelation(event, pattern, score);
+                    
+                    // Deduplication: Check if we've already seen this correlation
+                    const correlationKey = `${pattern.id}:${event.entry_id}:${score.toFixed(2)}`;
+                    if (seenCorrelations.has(correlationKey)) {
+                        console.log(`⚠️ Duplicate correlation detected: ${pattern.pattern} ↔ ${event.type}`);
+                        continue;
+                    }
+                    
+                    seenCorrelations.set(correlationKey, true);
                     correlations.push(correlation);
                 }
             }

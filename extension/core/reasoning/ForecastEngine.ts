@@ -62,13 +62,25 @@ export class ForecastEngine {
 
         const forecasts: Forecast[] = [];
 
-        // Analyze correlations for forecasting
+        // Analyze correlations for forecasting with category diversity
+        const categoryForecastCount = new Map<string, number>();
+        const maxForecastsPerCategory = 3; // Limit forecasts per category
+
         for (const correlation of correlations) {
             // Only consider strong correlations (≥ 0.75)
             if (correlation.correlation_score < 0.75) continue;
 
             const pattern = patterns.find(p => p.id === correlation.pattern_id);
             if (!pattern) continue;
+
+            // Check category diversity limit
+            const category = pattern.impact || 'Other';
+            const categoryCount = categoryForecastCount.get(category) || 0;
+            
+            if (categoryCount >= maxForecastsPerCategory) {
+                console.log(`🔄 Skipping forecast for category '${category}' (limit reached: ${categoryCount}/${maxForecastsPerCategory})`);
+                continue;
+            }
 
             // Match with market signals
             const signal = this.matchMarketSignal(pattern, marketSignals);
@@ -79,6 +91,7 @@ export class ForecastEngine {
             if (confidence >= 0.7) {
                 const forecast = this.createForecast(pattern, correlation, signal, confidence);
                 forecasts.push(forecast);
+                categoryForecastCount.set(category, categoryCount + 1);
             }
         }
 
