@@ -12,6 +12,7 @@
 - [x] Day 10: Layer 1 Validation & Stabilization
 - [x] Day 11: Debug & Fix (OutputChannel duplicate)
 - [x] Day 13: Layer 1 Final Stabilization (RBOM disabled)
+- [x] Day 14: 100% English Translation - All code, ADRs, docs
 
 **Layer 2: Cognitive Layer (J+12 → J+20)** - ⏸️ **SUSPENDED**
 - [x] Day 12: RBOM Types consolidation ✅
@@ -112,18 +113,30 @@
 
 ## 🔄 NEXT TASK
 
-### Day 12: Prepare Layer 2 - RBOM Engine
+### ✅ Day 14: 100% English Translation - COMPLETED
 
-**Status**: ⏳ **READY TO START**
+**Status**: ✅ **COMPLETED**
+
+**Achievements**:
+- [x] ✅ All TypeScript code translated (extension.ts, DecisionSynthesizer, PersistenceManager, etc.)
+- [x] ✅ All 8 ADRs translated (titles, contexts, decisions, consequences)
+- [x] ✅ TASKS.md fully translated (Strate → Layer)
+- [x] ✅ Internal doc (REASONING_LAYER_V2_V3_TRANSFER.md) excluded from Git and VSIX
+- [x] ✅ VSIX package: 199 files, 413 KB - 100% English
+- [x] ✅ Commit: `c46d614`
+
+### ⏸️ Day 14-15: RBOM Engine Activation (ON HOLD)
+
+**Status**: ⏸️ **ON HOLD** - Layer 1 stable, RBOM ready but disabled
 
 **Objective**: Implement RBOM Engine with progressive and safe approach
 
 **Tasks to do**:
-- [ ] Validate existing RBOM types
-- [ ] Re-implement RBOMEngine progressively
+- [ ] Validate existing RBOM types (already done ✅)
+- [ ] Re-implement RBOMEngine progressively (already done ✅)
 - [ ] Test each component individually
-- [ ] Create EvidenceMapper (Capture → RBOM interface)
-- [ ] Implement VS Code commands for ADRs
+- [ ] Create EvidenceMapper (Capture → RBOM interface) (already done ✅)
+- [ ] Implement VS Code commands for ADRs (ready in code ✅)
 
 ---
 
@@ -228,6 +241,15 @@ git add test.ts && git commit -m "test"
 
 ## 📅 CHANGELOG
 
+### 2025-01-27 (Day 14) - 100% ENGLISH TRANSLATION
+- ✅ **Complete English translation** of all code, ADRs, and documentation
+- ✅ DecisionSynthesizer.ts, PersistenceManager.ts, extension.ts fully translated
+- ✅ All 8 ADRs translated with English titles, contexts, decisions
+- ✅ TASKS.md translated (Strate → Layer, all French removed)
+- ✅ Internal doc excluded from Git and VSIX
+- ✅ VSIX: 199 files, 413 KB - production-ready
+- ✅ Commits: `1cf1b84`, `b1e6f20`, `f0dab50`, `e336035`, `fb3959f`, `c46d614`
+
 ### 2025-01-27 (Day 13) - FINAL STABILIZATION
 - ✅ **RBOM Engine disabled** to stabilize Layer 1
 - ✅ Downgrade Zod v4 → v3.23.8 (compatibility)
@@ -267,4 +289,4 @@ git add test.ts && git commit -m "test"
 
 ---
 
-*Last update: 2025-01-27 - Layer 1 STABLE - Extension works without RBOM - Stable state confirmed*
+*Last update: 2025-01-27 - Layer 1 STABLE + 100% English - Extension production-ready - Ready for Layer 2 activation*
