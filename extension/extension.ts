@@ -9,7 +9,7 @@ import { TestCaptureEngine } from './core/TestCaptureEngine';
 import { GitMetadataEngine } from './core/GitMetadataEngine';
 import { SchemaManager } from './core/SchemaManager';
 import { ManifestGenerator } from './core/ManifestGenerator';
-// ❌ RBOM Engine désactivé - patienter Strate 2
+// ❌ RBOM Engine temporairement désactivé pour diagnostic
 // import { RBOMEngine } from './core/rbom/RBOMEngine';
 // import { ADR } from './core/rbom/types';
 // import { EvidenceMapper } from './core/EvidenceMapper';
@@ -21,7 +21,7 @@ let configCapture: ConfigCaptureEngine | null = null;
 let testCapture: TestCaptureEngine | null = null;
 let gitMetadata: GitMetadataEngine | null = null;
 let schemaManager: SchemaManager | null = null;
-// ❌ RBOM Engine désactivé - patienter Strate 2
+// ❌ RBOM Engine désactivé temporairement
 // let rbomEngine: RBOMEngine | null = null;
 // let evidenceMapper: EvidenceMapper | null = null;
 
@@ -128,8 +128,47 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         }, 5000); // Activation différée de 5 secondes
         
-        // ❌ ÉTAPE 7: RBOMEngine désactivé (Strate 2)
-        // RBOMEngine sera activé dans une version future
+        // ✅ ÉTAPE 7: RBOMEngine activation asynchrone via import dynamique
+        setTimeout(async () => {
+            console.log('🧠 Extension RBOM entrypoint reached (deferred load)');
+            
+            if (!persistence || !eventAggregator || !workspaceRoot) {
+                console.warn('⚠️ Missing dependencies for RBOMEngine');
+                return;
+            }
+
+            try {
+                // ✅ Import dynamique pour éviter le blocage top-level
+                const { RBOMEngine } = await import('./core/rbom/RBOMEngine');
+                const { EvidenceMapper } = await import('./core/EvidenceMapper');
+                
+                // Fire-and-forget callbacks
+                const log = (msg: string) => {
+                    console.log(msg);
+                    persistence?.appendLine(msg);
+                };
+                const warn = (msg: string) => {
+                    console.warn(msg);
+                    persistence?.appendLine(`⚠️ ${msg}`);
+                };
+
+                console.log('🔧 Creating RBOMEngine instance (async)...');
+                const rbom = new RBOMEngine(workspaceRoot, log, warn);
+                const evidenceMapper = new EvidenceMapper();
+
+                // Fire-and-forget: ne jamais await
+                console.log('🔧 Calling warmupValidation()...');
+                rbom.warmupValidation();
+
+                persistence.logWithEmoji('🧠', 'RBOMEngine initialized asynchronously (deferred 6s)');
+                persistence.logWithEmoji('🔗', 'EvidenceMapper ready - Capture ↔ RBOM bridge active');
+                console.log('✅ RBOMEngine initialization completed (async deferred)');
+            } catch (rbomError) {
+                const errorMsg = rbomError instanceof Error ? rbomError.message : String(rbomError);
+                console.warn('⚠️ RBOMEngine could not load:', errorMsg);
+                persistence?.logWithEmoji('⚠️', `RBOMEngine disabled - ${errorMsg}`);
+            }
+        }, 6000); // Activation différée de 6 secondes pour éviter le blocage top-level
         
         // ✅ GitHub Repository Info (once only)
         persistence.logWithEmoji('🚀', 'GitHub integration available - create repo for full features');

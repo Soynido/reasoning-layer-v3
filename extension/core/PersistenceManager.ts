@@ -78,6 +78,10 @@ export class PersistenceManager {
     public show(): void {
         this.outputChannel.show();
     }
+    
+    public appendLine(message: string): void {
+        this.outputChannel.appendLine(message);
+    }
 
     // ✅ NOUVEAU - Rotation par date
     public saveEvent(event: CaptureEvent): void {

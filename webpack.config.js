@@ -12,8 +12,8 @@ module.exports = {
   externals: {
     vscode: 'commonjs vscode',
     chokidar: 'commonjs chokidar',
-    'simple-git': 'commonjs simple-git',
-    uuid: 'commonjs uuid'
+    'simple-git': 'commonjs simple-git'
+    // uuid: retiré pour que webpack le bundlise
   },
   resolve: {
     extensions: ['.ts', '.js']
