@@ -27,11 +27,11 @@ export class EvidenceQualityScorer {
             completeness: this.calculateCompleteness(event)
         };
 
-        // Weighted average
+        // Weighted average - prioritize freshness for recent events
         const score = (
-            factors.freshness * 0.4 +   // Freshness is most important
+            factors.freshness * 0.5 +   // Freshness is most important
             factors.source * 0.3 +       // Source reliability
-            factors.completeness * 0.3   // Data completeness
+            factors.completeness * 0.2   // Data completeness
         );
 
         const confidence = this.mapScoreToConfidence(score);
@@ -118,8 +118,8 @@ export class EvidenceQualityScorer {
      * Map score to confidence level
      */
     private mapScoreToConfidence(score: number): 'low' | 'medium' | 'high' {
-        if (score >= 0.7) return 'high';
-        if (score >= 0.4) return 'medium';
+        if (score >= 0.5) return 'high';  // Allow medium-high scores as high quality
+        if (score >= 0.3) return 'medium';
         return 'low';
     }
 
