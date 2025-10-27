@@ -9,7 +9,7 @@ import { TestCaptureEngine } from './core/TestCaptureEngine';
 import { GitMetadataEngine } from './core/GitMetadataEngine';
 import { SchemaManager } from './core/SchemaManager';
 import { ManifestGenerator } from './core/ManifestGenerator';
-// ❌ RBOM Engine temporairement désactivé pour diagnostic
+// RBOM Engine temporarily disabled for diagnostics
 // import { RBOMEngine } from './core/rbom/RBOMEngine';
 // import { ADR } from './core/rbom/types';
 // import { EvidenceMapper } from './core/EvidenceMapper';
@@ -21,12 +21,12 @@ let configCapture: ConfigCaptureEngine | null = null;
 let testCapture: TestCaptureEngine | null = null;
 let gitMetadata: GitMetadataEngine | null = null;
 let schemaManager: SchemaManager | null = null;
-// ✅ RBOM Engine activé (initialisé de manière asynchrone)
-let rbomEngine: any = null; // RBOMEngine chargé dynamiquement
-let evidenceMapper: any = null; // EvidenceMapper chargé dynamiquement
-let decisionSynthesizer: any = null; // DecisionSynthesizer chargé dynamiquement
+// RBOM Engine enabled (asynchronously initialized)
+let rbomEngine: any = null; // RBOMEngine dynamically loaded
+let evidenceMapper: any = null; // EvidenceMapper dynamically loaded
+let decisionSynthesizer: any = null; // DecisionSynthesizer dynamically loaded
 
-// ✅ Debounce map pour éviter la multiplication d'événements
+// Debounce map to prevent event multiplication
 const fileDebounceMap = new Map<string, NodeJS.Timeout>();
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -39,21 +39,21 @@ export async function activate(context: vscode.ExtensionContext) {
     }
     
     try {
-        // ✅ ÉTAPE 1: PersistenceManager (core stable)
+        // STEP 1: PersistenceManager (core stable)
         persistence = new PersistenceManager(workspaceRoot);
         persistence.logWithEmoji('🧠', 'Reasoning Layer V3 - Activated successfully!');
         
-        // ✅ ÉTAPE 1.5: SchemaManager (persistence contract)
+        // STEP 1.5: SchemaManager (persistence contract)
         schemaManager = new SchemaManager(workspaceRoot, persistence);
         persistence.logWithEmoji('📋', 'SchemaManager initialized - persistence contract v1.0');
         
-        // ✅ Auto-générer le manifest initial (DÉSACTIVÉ)
+        // Auto-generate initial manifest (DISABLED)
         
-        // ✅ ÉTAPE 2: EventAggregator (centralisation + debounce)
+        // STEP 2: EventAggregator (centralization + debounce)
         eventAggregator = new EventAggregator();
         console.log('EventAggregator created successfully');
         
-        // ✅ ÉTAPE 2: Connecter EventAggregator au PersistenceManager avec validation schema
+        // STEP 2: Connect EventAggregator to PersistenceManager with schema validation
         eventAggregator.on('eventCaptured', (event) => {
             if (schemaManager) {
                 const validatedEvent = schemaManager.validateEvent(event);
@@ -66,14 +66,14 @@ export async function activate(context: vscode.ExtensionContext) {
         });
         console.log('EventAggregator connected to persistence manager with schema validation');
         
-        // Forcer la création du dossier .reasoning
+        // Force creation of .reasoning directory
         persistence.logWithEmoji('📁', 'Creating .reasoning directory structure...');
         
-        // ✅ ÉTAPE 2: VS Code Watchers via EventAggregator
+        // STEP 2: VS Code Watchers via EventAggregator
         setupVSCodeWatchers();
         persistence.logWithEmoji('👀', 'VS Code file watchers started');
         
-        // ✅ ÉTAPE 3: SBOMCaptureEngine (Priorité 1)
+        // STEP 3: SBOMCaptureEngine (Priority 1)
         setTimeout(() => {
             if (!persistence || !eventAggregator) return;
             
@@ -85,9 +85,9 @@ export async function activate(context: vscode.ExtensionContext) {
                 console.warn('⚠️ SBOMCaptureEngine failed to start:', sbomError);
                 persistence.logWithEmoji('⚠️', 'SBOMCaptureEngine disabled');
             }
-        }, 2000); // Activation différée de 2 secondes
+        }, 2000); // Delayed activation of 2 seconds
         
-        // ✅ ÉTAPE 4: ConfigCaptureEngine (Priorité 2)
+        // STEP 4: ConfigCaptureEngine (Priority 2)
         setTimeout(() => {
             if (!persistence || !eventAggregator) return;
             
@@ -99,9 +99,9 @@ export async function activate(context: vscode.ExtensionContext) {
                 console.warn('⚠️ ConfigCaptureEngine failed to start:', configError);
                 persistence.logWithEmoji('⚠️', 'ConfigCaptureEngine disabled');
             }
-        }, 3000); // Activation différée de 3 secondes
+        }, 3000); // Delayed activation of 3 seconds
         
-        // ✅ ÉTAPE 5: TestCaptureEngine (Priorité 3)
+        // STEP 5: TestCaptureEngine (Priority 3)
         setTimeout(() => {
             if (!persistence || !eventAggregator) return;
             
@@ -113,9 +113,9 @@ export async function activate(context: vscode.ExtensionContext) {
                 console.warn('⚠️ TestCaptureEngine failed to start:', testError);
                 persistence.logWithEmoji('⚠️', 'TestCaptureEngine disabled');
             }
-        }, 4000); // Activation différée de 4 secondes
+        }, 4000); // Delayed activation of 4 seconds
         
-        // ✅ ÉTAPE 6: GitMetadataEngine (Priorité 4)
+        // STEP 6: GitMetadataEngine (Priority 4)
         setTimeout(async () => {
             if (!persistence || !eventAggregator) return;
             
@@ -127,9 +127,9 @@ export async function activate(context: vscode.ExtensionContext) {
                 console.warn('⚠️ GitMetadataEngine failed to start:', gitError);
                 persistence.logWithEmoji('⚠️', 'GitMetadataEngine disabled');
             }
-        }, 5000); // Activation différée de 5 secondes
+        }, 5000); // Delayed activation of 5 seconds
         
-        // ✅ ÉTAPE 7: RBOMEngine activation asynchrone via import dynamique
+        // STEP 7: RBOMEngine asynchronous activation via dynamic import
         setTimeout(async () => {
             console.log('🧠 Extension RBOM entrypoint reached (deferred load)');
             
@@ -139,7 +139,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }
 
             try {
-                // ✅ Import dynamique pour éviter le blocage top-level
+                // Dynamic import to avoid top-level blocking
                 const { RBOMEngine } = await import('./core/rbom/RBOMEngine');
                 const { EvidenceMapper } = await import('./core/EvidenceMapper');
                 const { DecisionSynthesizer } = await import('./core/rbom/DecisionSynthesizer');
@@ -159,7 +159,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 evidenceMapper = new EvidenceMapper();
                 decisionSynthesizer = new DecisionSynthesizer(workspaceRoot, persistence, rbomEngine);
 
-                // Fire-and-forget: ne jamais await
+                // Fire-and-forget: never await
                 console.log('🔧 Calling warmupValidation()...');
                 rbomEngine.warmupValidation();
 
@@ -168,13 +168,13 @@ export async function activate(context: vscode.ExtensionContext) {
                 persistence.logWithEmoji('🤖', 'DecisionSynthesizer ready - Auto ADR generation enabled');
                 console.log('✅ RBOMEngine initialization completed (async deferred)');
                 
-                // ✅ Déclencher la synthèse d'ADRs après 2 minutes
+                // Trigger ADR synthesis after 2 minutes
                 setTimeout(() => {
                     console.log('🧠 Starting historical decision synthesis...');
                     decisionSynthesizer?.synthesizeHistoricalDecisions();
                 }, 120000); // 2 minutes
                 
-                // ✅ Synthèse périodique toutes les 5 minutes
+                // Periodic synthesis every 5 minutes
                 setInterval(() => {
                     console.log('🧠 Periodic decision synthesis...');
                     decisionSynthesizer?.synthesizeHistoricalDecisions();
@@ -184,12 +184,12 @@ export async function activate(context: vscode.ExtensionContext) {
                 console.warn('⚠️ RBOMEngine could not load:', errorMsg);
                 persistence?.logWithEmoji('⚠️', `RBOMEngine disabled - ${errorMsg}`);
             }
-        }, 6000); // Activation différée de 6 secondes pour éviter le blocage top-level
+        }, 6000); // Delayed activation of 6 seconds to avoid top-level blocking
         
-        // ✅ GitHub Repository Info (once only)
+        // GitHub Repository Info (once only)
         persistence.logWithEmoji('🚀', 'GitHub integration available - create repo for full features');
         
-        // Commandes de base
+        // Base commands
         context.subscriptions.push(
             vscode.commands.registerCommand('reasoning.init', () => {
                 vscode.window.showInformationMessage('✅ Reasoning Layer V3 initialized!');
@@ -271,7 +271,7 @@ export async function activate(context: vscode.ExtensionContext) {
             })
         );
 
-        // ❌ RBOM Engine DÉSACTIVÉ pour stabilité Layer 1 (réactivé en Strate 2)
+        // RBOM Engine DISABLED for Layer 1 stability (re-enabled in Strata 2)
         /*
         if (workspaceRoot) {
             rbomEngine = new RBOMEngine(workspaceRoot);
@@ -476,7 +476,7 @@ ${adr.evidenceIds.length} evidence(s) linked
             })
         );
 
-        // ✅ Commande Auto-synthèse d'ADRs
+        // Auto-synthesis ADR Command
         context.subscriptions.push(
             vscode.commands.registerCommand('reasoning.adr.auto', async () => {
                 if (!rbomEngine) {
@@ -512,7 +512,7 @@ ${adr.evidenceIds.length} evidence(s) linked
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
 
-        // ✅ Générer le manifest après 2 secondes (sécurisé)
+        // Generate manifest after 2 seconds (safe)
         setTimeout(async () => {
             try {
                 if (persistence && workspaceRoot) {
@@ -561,7 +561,7 @@ export function deactivate() {
     console.log('✅ Extension deactivated successfully');
 }
 
-// ✅ ÉTAPE 1: VS Code Watchers (progressive et sécurisé)
+// STEP 1: VS Code Watchers (progressive and safe)
 function setupVSCodeWatchers() {
     if (!persistence) {
         console.warn('⚠️ PersistenceManager not available for watchers');
@@ -580,7 +580,7 @@ function setupVSCodeWatchers() {
 
         const filePath = textDocEvent.document.uri.fsPath;
 
-        // ✅ Debounce pour éviter la multiplication d'événements
+        // Debounce to prevent event multiplication
         const existingTimeout = fileDebounceMap.get(filePath);
         if (existingTimeout) {
             clearTimeout(existingTimeout);
@@ -602,7 +602,7 @@ function setupVSCodeWatchers() {
                 persistence?.logWithEmoji('📝', `File modified: ${path.basename(filePath)}`);
             }
             fileDebounceMap.delete(filePath);
-        }, 1000); // 1 seconde de debounce
+        }, 1000); // 1 second debounce
 
         fileDebounceMap.set(filePath, timeout);
     });
@@ -630,7 +630,7 @@ function setupVSCodeWatchers() {
     });
 }
 
-// ✅ COPIÉ V2 - Filtrage robuste
+// COPIED V2 - Robust filtering
 function shouldIgnoreFile(filePath: string): boolean {
     const ignoredPatterns = [
         /node_modules\//,
