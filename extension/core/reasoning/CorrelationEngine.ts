@@ -68,7 +68,13 @@ export class CorrelationEngine {
             for (const pattern of patterns) {
                 const score = this.computeCorrelation(event, pattern);
                 
-                if (score >= 0.7) {
+                // Log for debugging
+                if (score > 0) {
+                    const eventTags = this.extractEventTags(event);
+                    console.log(`🔍 Pattern "${pattern.pattern}" vs Event "${event.type}": score=${score.toFixed(2)} (eventTags: ${eventTags.join(',')})`);
+                }
+                
+                if (score >= 0.6) { // Lowered threshold for more correlations
                     const correlation = this.createCorrelation(event, pattern, score);
                     correlations.push(correlation);
                 }
