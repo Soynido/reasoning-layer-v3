@@ -14,6 +14,12 @@ import { registerUnderstandCommands } from './commands/understand';
 import { registerExecuteCommands } from './commands/execute';
 import { registerMaintainCommands } from './commands/maintain';
 import { registerHelpCommands } from './commands/help';
+import { registerPlanCommands } from './commands/contextual/plan';
+import { registerTasksCommands } from './commands/contextual/tasks';
+import { registerReportsCommands } from './commands/contextual/reports';
+import { registerForecastsCommands } from './commands/contextual/forecasts';
+import { registerPatternsCommands } from './commands/contextual/patterns';
+import { registerLegacyRedirects } from './core/compat/commandRedirects';
 // RBOM Engine temporarily disabled for diagnostics
 // import { RBOMEngine } from './core/rbom/RBOMEngine';
 // import { ADR } from './core/rbom/types';
@@ -1279,6 +1285,16 @@ ${adr.evidenceIds.length} evidence(s) linked
         registerExecuteCommands(context);
         registerMaintainCommands(context, workspaceRoot);
         registerHelpCommands(context, workspaceRoot);
+        
+        // Register contextual command groups
+        registerPlanCommands(context, workspaceRoot);
+        registerTasksCommands(context, workspaceRoot);
+        registerReportsCommands(context, workspaceRoot);
+        registerForecastsCommands(context, workspaceRoot);
+        registerPatternsCommands(context, workspaceRoot);
+        
+        // Register legacy command redirects (migration compatibility)
+        registerLegacyRedirects(context, workspaceRoot);
         
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');

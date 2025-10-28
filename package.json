@@ -266,6 +266,56 @@
         "command": "reasoning.help.docs",
         "title": "Show Reasoning Layer Docs",
         "category": "Reasoning › Help"
+      },
+      {
+        "command": "reasoning.plan.showOverview",
+        "title": "🗺️ Show Plan Overview",
+        "category": "Reasoning › Plan"
+      },
+      {
+        "command": "reasoning.plan.newCycle",
+        "title": "Start New Reasoning Cycle",
+        "category": "Reasoning › Plan"
+      },
+      {
+        "command": "reasoning.tasks.list",
+        "title": "✅ List Active Tasks",
+        "category": "Reasoning › Tasks"
+      },
+      {
+        "command": "reasoning.tasks.complete",
+        "title": "Complete Task",
+        "category": "Reasoning › Tasks"
+      },
+      {
+        "command": "reasoning.tasks.refresh",
+        "title": "Refresh Tasks",
+        "category": "Reasoning › Tasks"
+      },
+      {
+        "command": "reasoning.reports.list",
+        "title": "📑 List Cycle Reports",
+        "category": "Reasoning › Reports"
+      },
+      {
+        "command": "reasoning.forecasts.show",
+        "title": "🔮 Show Forecasts",
+        "category": "Reasoning › Forecasts"
+      },
+      {
+        "command": "reasoning.forecasts.analyze",
+        "title": "Analyze Forecasts",
+        "category": "Reasoning › Forecasts"
+      },
+      {
+        "command": "reasoning.patterns.list",
+        "title": "🧠 List Learned Patterns",
+        "category": "Reasoning › Patterns"
+      },
+      {
+        "command": "reasoning.patterns.visualize",
+        "title": "Visualize Patterns",
+        "category": "Reasoning › Patterns"
       }
     ]
   },
