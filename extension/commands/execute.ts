@@ -18,20 +18,7 @@ export function registerExecuteCommands(context: vscode.ExtensionContext) {
         })
     );
 
-    // Create Snapshot
-    context.subscriptions.push(
-        vscode.commands.registerCommand('reasoning.snapshot.create', async () => {
-            // Already exists in package.json, just trigger it
-            await vscode.commands.executeCommand('reasoning.snapshot.create');
-        })
-    );
-
-    // Verify Integrity
-    context.subscriptions.push(
-        vscode.commands.registerCommand('reasoning.integrity.verify', async () => {
-            // Already exists in package.json
-            await vscode.commands.executeCommand('reasoning.verify.integrity');
-        })
-    );
+    // These commands already exist in package.json, no need to re-register
+    // Create Snapshot and Verify Integrity are handled by existing handlers
 }
 

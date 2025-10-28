@@ -20,6 +20,11 @@ import { registerReportsCommands } from './commands/contextual/reports';
 import { registerForecastsCommands } from './commands/contextual/forecasts';
 import { registerPatternsCommands } from './commands/contextual/patterns';
 import { registerLegacyRedirects } from './core/compat/commandRedirects';
+import { runSelfAudit } from './core/selfAudit';
+import { runCognitiveAwakening } from './core/onboarding/AwakeningSequence';
+import { showCognitiveGreeting } from './core/onboarding/CognitiveGreeting';
+import { CognitiveRebuilder } from './core/autonomous/CognitiveRebuilder';
+import { UnifiedLogger } from './core/UnifiedLogger';
 // RBOM Engine temporarily disabled for diagnostics
 // import { RBOMEngine } from './core/rbom/RBOMEngine';
 // import { ADR } from './core/rbom/types';
@@ -49,13 +54,33 @@ let patternLearningEngine: any = null; // PatternLearningEngine dynamically load
 const fileDebounceMap = new Map<string, NodeJS.Timeout>();
 
 export async function activate(context: vscode.ExtensionContext) {
-    console.log('🧠 Reasoning Layer V3 - Activation started');
-    
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!workspaceRoot) {
         vscode.window.showErrorMessage('Reasoning Layer V3 requires a workspace folder');
         return;
     }
+    
+    // Initialize Unified Logger (single source of truth for all output)
+    const logger = UnifiedLogger.getInstance();
+    logger.show();
+    
+    // Load manifest data
+    const manifestPath = path.join(workspaceRoot, '.reasoning', 'manifest.json');
+    let totalEvents = 0;
+    let githubConnected = false;
+    
+    if (fs.existsSync(manifestPath)) {
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+        totalEvents = manifest.total_events || 0;
+    }
+    
+    // Check GitHub status
+    const githubTokenPath = path.join(workspaceRoot, '.reasoning', 'security', 'github.json');
+    githubConnected = fs.existsSync(githubTokenPath);
+    
+    // Log startup header
+    const workspaceName = path.basename(workspaceRoot);
+    logger.logStartup(workspaceName, totalEvents, githubConnected);
     
     try {
         // STEP 1: PersistenceManager (core stable)
@@ -269,12 +294,13 @@ export async function activate(context: vscode.ExtensionContext) {
             })
         );
 
-        // GitHub Setup Command
+        // GitHub Setup Command (Fine-Grained Integration)
         context.subscriptions.push(
             vscode.commands.registerCommand('reasoning.github.setup', async () => {
                 try {
-                    const { GitHubTokenManager } = await import('./core/GitHubTokenManager');
-                    await GitHubTokenManager.showSetupDialog();
+                    const { GitHubFineGrainedManager } = await import('./core/integrations/GitHubFineGrainedManager');
+                    const manager = new GitHubFineGrainedManager(workspaceRoot);
+                    await manager.setupIntegration();
                 } catch (error) {
                     vscode.window.showErrorMessage(`Failed to setup GitHub: ${error}`);
                 }
@@ -1296,8 +1322,67 @@ ${adr.evidenceIds.length} evidence(s) linked
         // Register legacy command redirects (migration compatibility)
         registerLegacyRedirects(context, workspaceRoot);
         
-        console.log('✅ Reasoning Layer V3 - Commands registered successfully');
-        vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
+        // Register Self-Audit command
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.selfaudit.run', async () => {
+                try {
+                    await vscode.window.withProgress({
+                        location: vscode.ProgressLocation.Notification,
+                        title: 'Running Self-Audit (Level 13)',
+                        cancellable: false
+                    }, async () => {
+                        const result = await runSelfAudit(workspaceRoot);
+                        
+                        vscode.window.showInformationMessage(
+                            `✅ Self-Audit completed:\n` +
+                            `📝 ADR generated\n` +
+                            `📄 Report: ${path.basename(result.reportPath)}\n` +
+                            `💯 Confidence: ${(result.confidence * 100).toFixed(0)}%`
+                        );
+                    });
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Self-Audit failed: ${error}`);
+                }
+            })
+        );
+
+        // Register Cognitive Rebuilder command (Full Autonomous Reconstruction)
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.rebuild.full', async () => {
+                try {
+                    await vscode.window.withProgress({
+                        location: vscode.ProgressLocation.Notification,
+                        title: 'Full Cognitive Reconstruction',
+                        cancellable: false
+                    }, async () => {
+                        const rebuilder = new CognitiveRebuilder(workspaceRoot);
+                        await rebuilder.executeFullRebuild();
+                    });
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Full reconstruction failed: ${error}`);
+                }
+            })
+        );
+        
+        logger.log('✅ Reasoning Layer V3 - Commands registered successfully');
+        
+        // Check if first run (minimalist onboarding)
+        const reasoningDir = path.join(workspaceRoot, '.reasoning');
+        const tracesDir = path.join(reasoningDir, 'traces');
+        
+        if (fs.existsSync(tracesDir)) {
+            const traceFiles = fs.readdirSync(tracesDir).filter(f => f.endsWith('.json'));
+            const hasEvents = traceFiles.some(file => {
+                const content = JSON.parse(fs.readFileSync(path.join(tracesDir, file), 'utf-8'));
+                return Array.isArray(content) && content.length > 0;
+            });
+            
+            if (!hasEvents) {
+                logger.logOnboarding();
+            }
+        } else {
+            logger.logOnboarding();
+        }
 
         // Generate manifest after 2 seconds (safe)
         setTimeout(async () => {

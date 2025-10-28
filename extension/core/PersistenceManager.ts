@@ -2,17 +2,18 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { CaptureEvent, ProjectManifest, SerializableData } from './types';
+import { UnifiedLogger } from './UnifiedLogger';
 
 export class PersistenceManager {
     private workspaceRoot: string;
-    private outputChannel: vscode.OutputChannel;
+    private logger: UnifiedLogger;
     private autoSaveInterval: NodeJS.Timeout | null = null;
     private manifest!: ProjectManifest;
     private tracesPath!: string;
 
     constructor(workspaceRoot: string) {
         this.workspaceRoot = workspaceRoot;
-        this.outputChannel = vscode.window.createOutputChannel('Reasoning Layer V3');
+        this.logger = UnifiedLogger.getInstance();
         this.initialize();
     }
 
@@ -55,15 +56,15 @@ export class PersistenceManager {
         }, 30000);
 
         // Detailed logs like V2
-        this.outputChannel.appendLine('🔄 === REASONING LAYER V3 INITIALIZATION ===');
+        this.logger.log('🔄 === REASONING LAYER V3 INITIALIZATION ===');
         const createdDate = new Date(this.manifest.createdAt);
         // Display in correct local time
-        this.outputChannel.appendLine(`📅 Created: ${createdDate.toLocaleString('en-US')} (Local)`);
-        this.outputChannel.appendLine(`📊 Project: ${this.manifest.projectName}`);
-        this.outputChannel.appendLine(`📊 Total Events: ${this.manifest.totalEvents}`);
-        this.outputChannel.appendLine(`📊 Version: ${this.manifest.version}`);
-        this.outputChannel.appendLine(`📁 Workspace: ${this.workspaceRoot}`);
-        this.outputChannel.appendLine('✅ === PERSISTENCE MANAGER READY ===');
+        this.logger.log(`📅 Created: ${createdDate.toLocaleString('en-US')} (Local)`);
+        this.logger.log(`📊 Project: ${this.manifest.projectName}`);
+        this.logger.log(`📊 Total Events: ${this.manifest.totalEvents}`);
+        this.logger.log(`📊 Version: ${this.manifest.version}`);
+        this.logger.log(`📁 Workspace: ${this.workspaceRoot}`);
+        this.logger.log('✅ === PERSISTENCE MANAGER READY ===');
         
         this.logWithEmoji('✅', 'PersistenceManager initialized');
     }
@@ -72,15 +73,15 @@ export class PersistenceManager {
     public logWithEmoji(emoji: string, message: string): void {
         const timestamp = new Date().toISOString();
         const logMessage = `${emoji} [${timestamp}] ${message}`;
-        this.outputChannel.appendLine(logMessage);
+        this.logger.log(logMessage);
     }
 
     public show(): void {
-        this.outputChannel.show();
+        this.logger.show();
     }
     
     public appendLine(message: string): void {
-        this.outputChannel.appendLine(message);
+        this.logger.log(message);
     }
 
     // NEW - Rotation by date

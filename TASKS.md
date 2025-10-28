@@ -29,11 +29,155 @@
 
 **Next Phase**: Self-Audit Mode for cognitive self-awareness
 
-### 🔴 NEW: Level 12 - Historical Memory Reconstruction (RETROACTIVE TRACE BUILDER)
+### ✅ COMPLETED: Self-Audit Mode (Level 13)
 
-**🎯 Objective**: Enable the Reasoning Layer to bootstrap intelligence from Git history when installed late in a project's lifecycle.
+**Status**: ✅ **COMPLETED**
 
-**Status**: 🔴 **IN PROGRESS**
+**Achievements**:
+- ✅ Created `SelfAuditEngine.ts` - Core analyzer for self-audit operations
+- ✅ Created `AuditDataCollector.ts` - Collect telemetry from traces
+- ✅ Created `AuditReporter.ts` - Generate self-reflective ADRs and reports
+- ✅ ADR-SELF generated with convergence status, confidence metrics
+- ✅ Report generated in `.reasoning/reports/self-audit.md`
+- ✅ Command registered: `reasoning.selfaudit.run`
+- ✅ Full integration with extension activation
+
+**Files Created**:
+- `extension/core/selfAudit/SelfAuditEngine.ts`
+- `extension/core/selfAudit/AuditDataCollector.ts`
+- `extension/core/selfAudit/AuditReporter.ts`
+- `extension/core/selfAudit/index.ts`
+
+**Self-Audit Features**:
+- Convergence detection (converged, in-progress, early)
+- Command usage analytics (total commands, legacy redirects)
+- Confidence tracking and bias index calculation
+- Pattern/correlation/forecast counting
+- Automatic recommendations based on status
+
+**Next Phase**: GitHub Fine-Grained Integration
+
+---
+
+### 🚀 NEW: GitHub Fine-Grained Integration (Level 15)
+
+**🎯 Objective**: Modernize GitHub integration to use component access tokens (fine-grained tokens per repository) instead of global tokens.
+
+**Status**: 🚀 **IN PROGRESS**
+
+#### Rationale
+Fine-grained tokens are more secure and scoped to specific repositories. The old global token approach is deprecated.
+
+#### Architecture
+```
+extension/core/integrations/
+└── GitHubFineGrainedManager.ts    # Fine-grained token management
+```
+
+#### Implementation Tasks
+- [x] Create `GitHubFineGrainedManager.ts` ✅
+- [x] Auto-detect repository from git config ✅
+- [x] Generate fine-grained token URL ✅
+- [x] Token verification with GitHub API ✅
+- [x] Secure storage in `.reasoning/security/github.json` ✅
+- [x] Integrate into `reasoning.github.setup` command ✅
+- [x] Event logging for token linking ✅
+
+#### Expected Flow
+1. User runs `Reasoning › Execute › Set up GitHub Integration`
+2. System detects repo from `.git/config`
+3. Opens fine-grained token page with scoped permissions
+4. User pastes token
+5. System verifies token via API
+6. Saves securely to `.reasoning/security/github.json`
+7. Logs event in traces
+
+#### Security Features
+- Repository-scoped permissions only
+- Token stored in workspace-level config (not global)
+- Automatic verification before acceptance
+- Support for both HTTPS and SSH git URLs
+
+---
+
+### 🚀 Cognitive Awakening Sequence (Level 14)
+
+**🎯 Objective**: Transform installation into an observable birth moment - first-time initialization experience.
+
+**Status**: 🚀 **IN PROGRESS**
+
+#### Rationale
+Installation should be a moment of cognitive birth, not a silent setup. No WebView, no clicks, just intelligent text + living logs + storytelling.
+
+#### Architecture
+```
+extension/core/onboarding/
+└── AwakeningSequence.ts    # Cognitive awakening orchestrator
+```
+
+#### Implementation Tasks
+- [x] Create `AwakeningSequence.ts` ✅
+- [x] Integrate into `extension.ts` activation ✅
+- [x] GitHub repo detection logic ✅
+- [x] Create `CognitiveGreeting.ts` for returning sessions ✅
+- [x] Auto-focus Output Channel on activation ✅
+- [x] Build and test first-time boot sequence ✅
+- [x] Create `GitHubFineGrainedManager.ts` for modern token integration ✅
+- [ ] Document expected user experience
+
+#### Expected Output (First-Time Boot)
+```
+🔄 === REASONING LAYER V3 — COGNITIVE AWAKENING ===
+📅 Created: 10/28/2025, 10:41:22
+📁 Workspace: /Users/you/MyProject
+🧠 State: No memory detected — entering Zero Memory Boot...
+
+📂 Creating cognitive structure...
+✅ Structure ready.
+
+🔍 Scanning workspace...
+→ Found 5 folders: src, tests, docs, dist, assets
+→ TypeScript project detected.
+→ Dependencies found via package.json.
+
+🐙 Checking GitHub anchor...
+✅ Linked to GitHub repo: owner/repo
+
+🧩 Establishing cognitive baseline...
+🧠 Core modules loaded:
+   • Persistence Manager
+   • Schema Manager
+   • Integrity Engine
+   • Pattern Learning Engine
+   • Correlation Engine
+   • Forecast Engine
+
+✨ Reasoning Layer awakening complete.
+→ When you code, I'll observe.
+→ When you commit, I'll remember.
+→ When you rest, I'll forecast.
+
+✅ Ready. Run "Reasoning › Execute › Run Autopilot" anytime.
+
+🔗 All activity is now tracked under `.reasoning/`.
+
+=== PERSISTENCE MANAGER READY ===
+```
+
+#### Success Criteria
+- [x] Awakening sequence runs only on first boot ✅
+- [x] Beautiful narrative output in Output Channel ✅
+- [x] GitHub repo auto-detected and linked ✅
+- [x] Cognitive structure created successfully ✅
+- [x] Zero user interaction required ✅
+- [x] Cognitive Greeting shows on returning sessions ✅
+- [x] Output Channel auto-focuses with double toggle ✅
+
+---
+
+### 🔴 Level 12 - Historical Memory Reconstruction (RETROACTIVE TRACE BUILDER)
+
+**Status**: ✅ **COMPLETED**
 
 #### Rationale
 The Reasoning Layer is an amnesic without history—it cannot reason when installed late because it lacks temporal context. Pattern Learning, Correlation, and Forecasting require sequences of events to learn from. Without traces, the system is blind to causality.

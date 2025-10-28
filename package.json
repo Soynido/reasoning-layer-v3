@@ -316,7 +316,17 @@
         "command": "reasoning.patterns.visualize",
         "title": "Visualize Patterns",
         "category": "Reasoning › Patterns"
-      }
+      },
+          {
+            "command": "reasoning.selfaudit.run",
+            "title": "🧠 Run Self-Audit",
+            "category": "Reasoning › Maintain"
+          },
+          {
+            "command": "reasoning.rebuild.full",
+            "title": "🔄 Full Cognitive Reconstruction",
+            "category": "Reasoning › Maintain"
+          }
     ]
   },
   "scripts": {

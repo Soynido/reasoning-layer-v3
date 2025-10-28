@@ -24,6 +24,13 @@ export class RBOMEngine {
     private workspaceRoot: string;
 
     constructor(workspaceRoot: string, logFn?: (msg: string) => void, warnFn?: (msg: string) => void) {
+        // ⊘ Safety check: ensure workspaceRoot is defined
+        if (!workspaceRoot) {
+            const errorMsg = '❌ RBOMEngine: workspaceRoot is undefined. Cannot initialize.';
+            console.error(errorMsg);
+            throw new Error(errorMsg);
+        }
+
         this.workspaceRoot = workspaceRoot;
         this.adrsDir = path.join(workspaceRoot, '.reasoning', 'adrs');
         this.adrsIndexPath = path.join(this.adrsDir, 'index.json');
@@ -101,11 +108,25 @@ export class RBOMEngine {
      * Helper pour générer un UUID (utilise le module chargé ou fallback)
      */
     private generateId(): string {
-        if (this.uuidModule) {
-            return this.uuidModule.v4();
+        try {
+            if (this.uuidModule && this.uuidModule.v4) {
+                const id = this.uuidModule.v4();
+                if (!id) {
+                    console.error('❌ RBOMEngine: uuidModule.v4() returned undefined');
+                    throw new Error('UUID generation failed');
+                }
+                return id;
+            }
+        } catch (error) {
+            console.error(`❌ RBOMEngine: UUID generation error: ${error}`);
         }
+        
         // Fallback: timestamp + random (pas d'UUID standard mais évite le crash)
-        return `adr-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const fallbackId = `adr-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        if (!fallbackId) {
+            throw new Error('Fallback ID generation failed');
+        }
+        return fallbackId;
     }
 
     /**
@@ -312,13 +333,22 @@ export class RBOMEngine {
             }
 
             // Sauvegarder
+            if (!adr.id) {
+                const errorMsg = '❌ RBOMEngine: ADR ID is undefined. Cannot save.';
+                console.error(errorMsg);
+                if (this.warn) {
+                    this.warn(errorMsg);
+                }
+                return null;
+            }
+            
             this.saveADR(adr);
             this.adrs.set(adr.id, adr);
             this.saveIndex();
             
             // Level 5: Sign ADR automatically (fire-and-forget)
             void this.signADR(adr).catch(() => {});
-
+            
             return adr;
         } catch (error) {
             if (this.warn) {
@@ -493,11 +523,40 @@ export class RBOMEngine {
 
     private saveADR(adr: ADR): void {
         try {
+            // ⊘ Safety check: ensure adrsDir is initialized
+            if (!this.adrsDir) {
+                const errorMsg = '❌ RBOMEngine: adrsDir is undefined. Cannot save ADR.';
+                console.error(errorMsg);
+                if (this.warn) {
+                    this.warn(errorMsg);
+                }
+                return;
+            }
+
+            // ⊘ Ensure directory exists
+            if (!fs.existsSync(this.adrsDir)) {
+                fs.mkdirSync(this.adrsDir, { recursive: true });
+            }
+
             const filePath = path.join(this.adrsDir, `${adr.id}.json`);
+            if (!filePath) {
+                const errorMsg = `❌ RBOMEngine: filePath is undefined for ADR ${adr.id}`;
+                console.error(errorMsg);
+                if (this.warn) {
+                    this.warn(errorMsg);
+                }
+                return;
+            }
+
             fs.writeFileSync(filePath, JSON.stringify(adr, null, 2), 'utf-8');
+            if (this.log) {
+                this.log(`💾 ADR saved: ${adr.id}.json`);
+            }
         } catch (error) {
+            const errorMsg = `❌ Failed to save ADR ${adr.id}: ${error}`;
+            console.error(errorMsg);
             if (this.warn) {
-                this.warn(`Failed to save ADR: ${error}`);
+                this.warn(errorMsg);
             }
         }
     }

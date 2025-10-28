@@ -1,4 +1,4 @@
-import { Logger } from './Logger.js';
+import { UnifiedLogger } from './UnifiedLogger';
 
 /**
  * Runtime detection for multi-environment support
@@ -17,16 +17,16 @@ export interface RuntimeCapabilities {
 }
 
 export class RuntimeDetector {
-    private logger: Logger;
+    private logger: UnifiedLogger;
     private runtime: RuntimeEnvironment;
     private capabilities: RuntimeCapabilities;
 
     constructor(workspaceRoot: string) {
-        this.logger = new Logger(workspaceRoot, 'RuntimeDetector');
+        this.logger = UnifiedLogger.getInstance();
         this.runtime = this.detectRuntime();
         this.capabilities = this.getRuntimeCapabilities();
 
-        this.logger.info(`Runtime detected: ${this.runtime} (${this.capabilities.name})`);
+        this.logger.log(`🔍 Runtime detected: ${this.runtime} (${this.capabilities.name})`);
     }
 
     /**
@@ -201,22 +201,22 @@ export class RuntimeDetector {
      * Log runtime information for debugging
      */
     public logRuntimeInfo(): void {
-        this.logger.info('=== Runtime Detection Complete ===');
-        this.logger.info(`Runtime: ${this.runtime}`);
-        this.logger.info(`Name: ${this.capabilities.name}`);
-        this.logger.info(`VS Code API: ${this.supportsVSCodeAPI()}`);
-        this.logger.info(`Commands: ${this.supportsCommands()}`);
-        this.logger.info(`FileSystem Poller: ${this.requiresFileSystemPoller()}`);
+        this.logger.log('=== Runtime Detection Complete ===');
+        this.logger.log(`Runtime: ${this.runtime}`);
+        this.logger.log(`Name: ${this.capabilities.name}`);
+        this.logger.log(`VS Code API: ${this.supportsVSCodeAPI()}`);
+        this.logger.log(`Commands: ${this.supportsCommands()}`);
+        this.logger.log(`FileSystem Poller: ${this.requiresFileSystemPoller()}`);
 
         const strategy = this.getOptimalCaptureStrategy();
-        this.logger.info('Optimal Capture Strategy:');
-        this.logger.info(`  - OnDidSave: ${strategy.useOnDidSaveTextDocument}`);
-        this.logger.info(`  - OnDidChange: ${strategy.useOnDidChangeTextDocument}`);
-        this.logger.info(`  - FileSystemWatcher: ${strategy.useFileSystemWatcher}`);
-        this.logger.info(`  - FileSystemPoller: ${strategy.useFileSystemPoller}`);
+        this.logger.log('Optimal Capture Strategy:');
+        this.logger.log(`  - OnDidSave: ${strategy.useOnDidSaveTextDocument}`);
+        this.logger.log(`  - OnDidChange: ${strategy.useOnDidChangeTextDocument}`);
+        this.logger.log(`  - FileSystemWatcher: ${strategy.useFileSystemWatcher}`);
+        this.logger.log(`  - FileSystemPoller: ${strategy.useFileSystemPoller}`);
         if (strategy.pollInterval) {
-            this.logger.info(`  - Poll Interval: ${strategy.pollInterval}ms`);
+            this.logger.log(`  - Poll Interval: ${strategy.pollInterval}ms`);
         }
-        this.logger.info('================================');
+        this.logger.log('================================');
     }
 }

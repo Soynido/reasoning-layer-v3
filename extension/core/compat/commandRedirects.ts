@@ -8,40 +8,8 @@ import * as path from 'path';
  * This ensures backward compatibility while the Reasoning Layer evolves its cognitive architecture.
  */
 const redirects: Record<string, string> = {
-    // ADR commands → Decide
-    'reasoning.adr.create': 'reasoning.generateADRs',
-    'reasoning.adr.list': 'reasoning.decisions.analyze',
-    'reasoning.adr.view': 'reasoning.decisions.analyze',
-    'reasoning.adr.autoGenerate': 'reasoning.generateADRs',
-    
-    // Security commands → Execute
-    'reasoning.security.verify': 'reasoning.integrity.verify',
-    'reasoning.snapshot.create': 'reasoning.integrity.verify',
-    'reasoning.snapshot.list': 'reasoning.integrity.verify',
-    
-    // External commands → Collaborate (placeholder)
-    'reasoning.external.sync': 'reasoning.github.sync',
-    'reasoning.external.status': 'reasoning.dashboard.show',
-    'reasoning.external.linkADR': 'reasoning.decisions.analyze',
-    
-    // Human commands → Collaborate (placeholder)
-    'reasoning.contributors.extract': 'reasoning.dashboard.show',
-    'reasoning.contributors.list': 'reasoning.dashboard.show',
-    
-    // Pattern commands → Patterns contextual
-    'reasoning.pattern.analyze': 'reasoning.patterns.list',
-    
-    // Correlation commands → Understand
-    'reasoning.correlation.analyze': 'reasoning.events.correlate',
-    
-    // Forecast commands → Forecasts contextual
-    'reasoning.forecast.generate': 'reasoning.forecasts.show',
-    
-    // Evidence commands → Understand
-    'reasoning.evidence.report': 'reasoning.decisions.analyze',
-    
-    // UI commands → Observe
-    'reasoning.perceptual.open': 'reasoning.dashboard.show',
+    // Simplified redirects - only for truly deprecated commands
+    // Most commands now have proper handlers in the new structure
 };
 
 /**
