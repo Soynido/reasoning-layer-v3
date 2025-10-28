@@ -191,6 +191,11 @@
         "command": "reasoning.perceptual.open",
         "title": "🎨 Open Perceptual Layer",
         "category": "Reasoning UI"
+      },
+      {
+        "command": "reasoning.retroactive.reconstruct",
+        "title": "🕰️ Reconstruct Historical Memory",
+        "category": "Reasoning Retroactive"
       }
     ]
   },

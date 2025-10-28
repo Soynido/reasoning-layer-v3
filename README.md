@@ -1,6 +1,6 @@
 ---
 title: "Reasoning Layer V3"
-version: "v1.0.41-COGNITIVE-AUTONOMY"
+version: "v1.0.42-HISTORICAL-RECONSTRUCTION"
 description: "An autonomous reasoning system that transforms software traces into structured architectural intelligence with self-aware cognitive architecture."
 generated: "2025-10-27T20:15:00Z"
 source_data: "Live analysis from .reasoning/ memory"
@@ -83,9 +83,9 @@ This transforms hidden tribal knowledge into explicit, searchable, learnable kno
 
 ---
 
-## 🏗️ Architecture: 11 Layers of Intelligence
+## 🏗️ Architecture: 12 Layers of Intelligence
 
-The system is organized into 11 progressively sophisticated layers (7 foundational + 4 cognitive):
+The system is organized into 12 progressively sophisticated layers (7 foundational + 5 cognitive):
 
 ### **Layer 1: Code & Structure Capture** ✅
 The foundation. Automatically captures:
@@ -277,6 +277,22 @@ Visual reasoning UI—human-observable cognitive interface:
 
 ---
 
+### **Layer 12: Historical Memory Reconstruction** ✅ NEW
+Amnesiac remedy—enables late installation with full cognitive context:
+- **GitHistoryScanner**: Scans up to 1000 Git commits
+- **DiffAnalyzer**: Categorizes commits (feature, refactor, fix, config, test)
+- **EventSynthesizer**: Generates synthetic traces with confidence scoring
+- **PatternInferencer**: Infers patterns from historical sequences
+- **TemporalWeighter**: Applies exponential decay to old events
+- **ConfidenceEstimator**: Estimates synthetic data reliability (0.5-0.95)
+- **RetroactiveTraceBuilder**: Main orchestrator
+
+**Status**: ✅ **OPERATIONAL** | Validated with real workspace | Historical memory reconstruction active
+
+**Use case**: Install Reasoning Layer on mature projects—reconstructs full history from Git.
+
+---
+
 ## 📊 Current Status & Metrics
 
 ### Overall Progress
@@ -293,6 +309,7 @@ Visual reasoning UI—human-observable cognitive interface:
 | Layer 9 | ✅ **OPERATIONAL** | Self-review active, history tracked |
 | Layer 10 | ✅ **OPERATIONAL** | **24 modules** (base/cognition/memory/operational), self-organized |
 | Layer 11 | ⏳ **READY** | UI implemented, testing pending |
+| Layer 12 | ✅ **OPERATIONAL** | Historical reconstruction from Git (7 modules, 1000 commits) |
 
 ### Cognitive State (Live from Memory)
 ```

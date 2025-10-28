@@ -1146,6 +1146,46 @@ ${adr.evidenceIds.length} evidence(s) linked
             })
         );
 
+        // Retroactive Trace Builder (Level 12)
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.retroactive.reconstruct', async () => {
+                try {
+                    const { RetroactiveTraceBuilder } = await import('./core/retroactive/RetroactiveTraceBuilder');
+                    const builder = new RetroactiveTraceBuilder(workspaceRoot);
+                    
+                    const shouldReconstruct = await builder.shouldReconstruct();
+                    
+                    if (!shouldReconstruct) {
+                        vscode.window.showInformationMessage(
+                            '✅ Historical memory already exists. Traces found in .reasoning/traces/'
+                        );
+                        return;
+                    }
+                    
+                    const progressOptions: vscode.ProgressOptions = {
+                        location: vscode.ProgressLocation.Notification,
+                        title: 'Reconstructing Historical Memory',
+                        cancellable: false
+                    };
+                    
+                    vscode.window.withProgress(progressOptions, async () => {
+                        const result = await builder.reconstruct();
+                        
+                        vscode.window.showInformationMessage(
+                            `✅ Historical memory reconstructed:\n` +
+                            `📊 ${result.commitsAnalyzed} commits analyzed\n` +
+                            `🎭 ${result.eventsGenerated} events generated\n` +
+                            `🔍 ${result.patternsDetected} patterns detected\n` +
+                            `💯 Avg confidence: ${(result.averageConfidence * 100).toFixed(0)}%`
+                        );
+                    });
+                } catch (error) {
+                    console.error('❌ Failed to reconstruct historical memory:', error);
+                    vscode.window.showErrorMessage(`Reconstruction failed: ${error}`);
+                }
+            })
+        );
+
         // Perceptual Layer (Level 11)
         context.subscriptions.push(
             vscode.commands.registerCommand('reasoning.perceptual.open', () => {

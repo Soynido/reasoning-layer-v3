@@ -2,6 +2,64 @@
 
 ## 🚨 URGENT PRIORITIES - This Week
 
+### 🔴 NEW: Level 12 - Historical Memory Reconstruction (RETROACTIVE TRACE BUILDER)
+
+**🎯 Objective**: Enable the Reasoning Layer to bootstrap intelligence from Git history when installed late in a project's lifecycle.
+
+**Status**: 🔴 **IN PROGRESS**
+
+#### Rationale
+The Reasoning Layer is an amnesic without history—it cannot reason when installed late because it lacks temporal context. Pattern Learning, Correlation, and Forecasting require sequences of events to learn from. Without traces, the system is blind to causality.
+
+#### Architecture: RetroactiveTraceBuilder
+
+```
+extension/core/retroactive/
+├── RetroactiveTraceBuilder.ts      # Main orchestrator
+├── scanners/
+│   ├── GitHistoryScanner.ts        # Scan commits from Git
+│   └── DiffAnalyzer.ts             # Analyze commit diffs
+├── synthesizers/
+│   ├── EventSynthesizer.ts         # Generate synthetic events
+│   └── PatternInferencer.ts        # Infer patterns from history
+└── utils/
+    ├── TemporalWeighter.ts         # Apply temporal decay
+    └── ConfidenceEstimator.ts      # Estimate confidence for synthetic data
+```
+
+#### Implementation Tasks
+- [ ] Create `RetroactiveTraceBuilder.ts` (main module)
+- [ ] Create `GitHistoryScanner.ts` (extract commits)
+- [ ] Create `DiffAnalyzer.ts` (categorize commits)
+- [ ] Create `EventSynthesizer.ts` (generate synthetic traces)
+- [ ] Create `PatternInferencer.ts` (infer historical patterns)
+- [ ] Create `TemporalWeighter.ts` (decay old events)
+- [ ] Create `ConfidenceEstimator.ts` (estimate synthetic confidence)
+- [ ] Add VS Code command: `Reasoning: Reconstruct History`
+- [ ] Integrate into extension activation flow
+- [ ] Add config file: `.reasoning/config/retroactive.json`
+
+#### Expected Output
+```
+.reasoning/
+├── traces/
+│   ├── 2023-06-14.json   # Synthetic events from Git
+│   ├── 2023-08-01.json
+│   └── ...
+├── patterns/
+│   └── feature_refactor_cycle.json
+└── adrs/
+    └── ADR-RETRO-001.json  # Retroactive ADRs
+```
+
+#### Success Criteria
+- System can reconstruct 1000+ commits into temporal events
+- Confidence baseline of 0.7-0.8 for synthetic data
+- Pattern detection works on reconstructed history
+- No degradation of real-time capture during reconstruction
+
+---
+
 ### ✅ COMPLETED
 - [x] ADR Synthesizer 2.0 ✅
 - [x] LEVEL_7_REPORT.md ✅
