@@ -9,6 +9,11 @@ import { TestCaptureEngine } from './core/TestCaptureEngine';
 import { GitMetadataEngine } from './core/GitMetadataEngine';
 import { SchemaManager } from './core/SchemaManager';
 import { ManifestGenerator } from './core/ManifestGenerator';
+import { registerObserveCommands } from './commands/observe';
+import { registerUnderstandCommands } from './commands/understand';
+import { registerExecuteCommands } from './commands/execute';
+import { registerMaintainCommands } from './commands/maintain';
+import { registerHelpCommands } from './commands/help';
 // RBOM Engine temporarily disabled for diagnostics
 // import { RBOMEngine } from './core/rbom/RBOMEngine';
 // import { ADR } from './core/rbom/types';
@@ -1268,6 +1273,13 @@ ${adr.evidenceIds.length} evidence(s) linked
             })
         );
 
+        // Register structured cognitive command groups
+        registerObserveCommands(context, workspaceRoot);
+        registerUnderstandCommands(context, workspaceRoot);
+        registerExecuteCommands(context);
+        registerMaintainCommands(context, workspaceRoot);
+        registerHelpCommands(context, workspaceRoot);
+        
         console.log('✅ Reasoning Layer V3 - Commands registered successfully');
         vscode.window.showInformationMessage('🧠 Reasoning Layer V3 is now active!');
 

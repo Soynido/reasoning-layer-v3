@@ -28,15 +28,15 @@ extension/core/retroactive/
 ```
 
 #### Implementation Tasks
-- [ ] Create `RetroactiveTraceBuilder.ts` (main module)
-- [ ] Create `GitHistoryScanner.ts` (extract commits)
-- [ ] Create `DiffAnalyzer.ts` (categorize commits)
-- [ ] Create `EventSynthesizer.ts` (generate synthetic traces)
-- [ ] Create `PatternInferencer.ts` (infer historical patterns)
-- [ ] Create `TemporalWeighter.ts` (decay old events)
-- [ ] Create `ConfidenceEstimator.ts` (estimate synthetic confidence)
-- [ ] Add VS Code command: `Reasoning: Reconstruct History`
-- [ ] Integrate into extension activation flow
+- [x] Create `RetroactiveTraceBuilder.ts` (main module) ✅
+- [x] Create `GitHistoryScanner.ts` (extract commits) ✅
+- [x] Create `DiffAnalyzer.ts` (categorize commits) ✅
+- [x] Create `EventSynthesizer.ts` (generate synthetic traces) ✅
+- [x] Create `PatternInferencer.ts` (infer historical patterns) ✅
+- [x] Create `TemporalWeighter.ts` (decay old events) ✅
+- [x] Create `ConfidenceEstimator.ts` (estimate synthetic confidence) ✅
+- [x] Add VS Code command: `Reasoning: Reconstruct History` ✅
+- [x] Integrate into extension activation flow ✅
 - [ ] Add config file: `.reasoning/config/retroactive.json`
 
 #### Expected Output

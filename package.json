@@ -195,13 +195,83 @@
       {
         "command": "reasoning.retroactive.reconstruct",
         "title": "🕰️ Reconstruct Historical Memory",
-        "category": "Reasoning Retroactive"
+        "category": "Reasoning › Maintain"
+      },
+      {
+        "command": "reasoning.dashboard.show",
+        "title": "🧭 Show Cognitive Dashboard",
+        "category": "Reasoning › Observe"
+      },
+      {
+        "command": "reasoning.traces.show",
+        "title": "Show Event Traces",
+        "category": "Reasoning › Observe"
+      },
+      {
+        "command": "reasoning.patterns.show",
+        "title": "Show Learned Patterns",
+        "category": "Reasoning › Observe"
+      },
+      {
+        "command": "reasoning.forecasts.inspect",
+        "title": "Inspect Forecasts",
+        "category": "Reasoning › Observe"
+      },
+      {
+        "command": "reasoning.decisions.analyze",
+        "title": "Analyze Decisions",
+        "category": "Reasoning › Understand"
+      },
+      {
+        "command": "reasoning.patterns.detect",
+        "title": "Detect Patterns",
+        "category": "Reasoning › Understand"
+      },
+      {
+        "command": "reasoning.events.correlate",
+        "title": "Correlate Events",
+        "category": "Reasoning › Understand"
+      },
+      {
+        "command": "reasoning.confidence.evaluate",
+        "title": "Evaluate Confidence Level",
+        "category": "Reasoning › Understand"
+      },
+      {
+        "command": "reasoning.autopilot.run",
+        "title": "Run Autopilot",
+        "category": "Reasoning › Execute"
+      },
+      {
+        "command": "reasoning.integrity.verify",
+        "title": "Verify Integrity Chain",
+        "category": "Reasoning › Execute"
+      },
+      {
+        "command": "reasoning.manifest.edit",
+        "title": "Edit Manifest",
+        "category": "Reasoning › Maintain"
+      },
+      {
+        "command": "reasoning.summary.export",
+        "title": "Export Summary",
+        "category": "Reasoning › Maintain"
+      },
+      {
+        "command": "reasoning.help.lastReport",
+        "title": "Show Last Cycle Report",
+        "category": "Reasoning › Help"
+      },
+      {
+        "command": "reasoning.help.docs",
+        "title": "Show Reasoning Layer Docs",
+        "category": "Reasoning › Help"
       }
     ]
   },
   "scripts": {
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "compile": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
     "build": "webpack --mode production",
     "dev": "webpack --mode development --watch",
     "test": "jest",
