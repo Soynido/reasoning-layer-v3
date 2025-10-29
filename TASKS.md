@@ -74,6 +74,43 @@
 
 ---
 
+### ✅ COMPLETED: Cursor Chat Integration (v1.0.61)
+
+**Status**: ✅ **COMPLETED**
+
+**Achievements**:
+- ✅ Created `CursorChatIntegration.ts` - Bi-directional context sync
+- ✅ Hook 1: QueryContext() - Cursor reads RL3 cognitive context
+  - Summary, confidence, active goals, last decision
+  - Total events, patterns count, ADRs count
+- ✅ Hook 2: LogInteraction() - RL3 logs chat exchanges to traces
+  - Prompt + response capture
+  - Timestamp and metadata
+  - Integrates with event history
+- ✅ VS Code commands registered:
+  - `reasoning.cursor.queryContext`
+  - `reasoning.cursor.logInteraction`
+- ✅ Extension V1.0.61 with Cursor Chat bridge
+
+**Files Created**:
+- `extension/core/integrations/CursorChatIntegration.ts`
+
+**Integration Flow**:
+1. Cursor queries RL3 context before each AI request
+2. RL3 returns cognitive state (goals, confidence, recent decisions)
+3. Cursor uses context to inform AI responses
+4. Chat interactions logged to RL3 traces
+5. RL3 learns from conversations
+6. Next cycle enriched by chat history
+
+**Commands**:
+- `Reasoning › Cursor Chat › Query Cognitive Context`
+- `Reasoning › Cursor Chat › Log Chat Interaction`
+
+**Commit**: `284c2cb` - "Add Cursor Chat Integration"
+
+---
+
 ### 🚀 NEW: GitHub Fine-Grained Integration (Level 15)
 
 **🎯 Objective**: Modernize GitHub integration to use component access tokens (fine-grained tokens per repository) instead of global tokens.

@@ -25,12 +25,14 @@ import { runCognitiveAwakening } from './core/onboarding/AwakeningSequence';
 import { showCognitiveGreeting } from './core/onboarding/CognitiveGreeting';
 import { CognitiveRebuilder } from './core/autonomous/CognitiveRebuilder';
 import { UnifiedLogger } from './core/UnifiedLogger';
+import { getCursorChatIntegration } from './core/integrations/CursorChatIntegration';
 // RBOM Engine temporarily disabled for diagnostics
 // import { RBOMEngine } from './core/rbom/RBOMEngine';
 // import { ADR } from './core/rbom/types';
 // import { EvidenceMapper } from './core/EvidenceMapper';
 
 let persistence: PersistenceManager | null = null;
+let cursorChatIntegration: any = null;
 let eventAggregator: EventAggregator | null = null;
 let sbomCapture: SBOMCaptureEngine | null = null;
 let configCapture: ConfigCaptureEngine | null = null;
@@ -1365,6 +1367,31 @@ ${adr.evidenceIds.length} evidence(s) linked
         );
         
         logger.log('✅ Reasoning Layer V3 - Commands registered successfully');
+        
+        // Initialize Cursor Chat Integration
+        cursorChatIntegration = getCursorChatIntegration(workspaceRoot);
+        
+        // Register Cursor Chat Integration commands
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.cursor.queryContext', () => {
+                const ctx = cursorChatIntegration.queryContext();
+                logger.log('💬 Querying cognitive context for Cursor Chat...');
+                logger.log(cursorChatIntegration.getContextString());
+                vscode.window.showInformationMessage(
+                    `🧠 Cognitive Context: ${ctx.summary} (Confidence: ${(ctx.confidence * 100).toFixed(1)}%)`
+                );
+                return ctx;
+            })
+        );
+        
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.cursor.logInteraction', async (prompt: string, response: string) => {
+                await cursorChatIntegration.logInteraction(prompt, response);
+                logger.log('💬 Logged chat interaction to reasoning traces');
+            })
+        );
+        
+        logger.log('🔗 Cursor Chat Integration loaded');
         
         // Check if first run (minimalist onboarding)
         const reasoningDir = path.join(workspaceRoot, '.reasoning');

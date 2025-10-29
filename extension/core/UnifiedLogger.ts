@@ -77,6 +77,14 @@ export class UnifiedLogger {
     }
 
     /**
+     * Log a warning message
+     */
+    public warn(message: string): void {
+        this.channel.appendLine(`⚠️ WARNING: ${message}`);
+        console.warn(`RL3 WARN: ${message}`);
+    }
+
+    /**
      * Get the channel instance (for subsystems)
      */
     public getChannel(): vscode.OutputChannel {

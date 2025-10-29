@@ -326,6 +326,16 @@
             "command": "reasoning.rebuild.full",
             "title": "🔄 Full Cognitive Reconstruction",
             "category": "Reasoning › Maintain"
+          },
+          {
+            "command": "reasoning.cursor.queryContext",
+            "title": "💬 Query Cognitive Context for Cursor",
+            "category": "Reasoning › Cursor Chat"
+          },
+          {
+            "command": "reasoning.cursor.logInteraction",
+            "title": "📝 Log Chat Interaction to RL3",
+            "category": "Reasoning › Cursor Chat"
           }
     ]
   },
