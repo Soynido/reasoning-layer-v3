@@ -21,49 +21,75 @@ export class AuditReporter {
      * Generate ADR-SELF for self-audit results
      */
     public async generateADR(telemetry: TelemetryData, audit: AuditResult): Promise<string> {
-        const adrDir = path.join(this.workspaceRoot, '.reasoning', 'adrs');
-        if (!fs.existsSync(adrDir)) {
-            fs.mkdirSync(adrDir, { recursive: true });
+        try {
+            // ⊘ Safety check: ensure workspaceRoot is defined
+            if (!this.workspaceRoot) {
+                throw new Error('workspaceRoot is undefined');
+            }
+
+            const adrDir = path.join(this.workspaceRoot, '.reasoning', 'adrs');
+            if (!fs.existsSync(adrDir)) {
+                fs.mkdirSync(adrDir, { recursive: true });
+            }
+
+            const adrId = uuidv4().substring(0, 8).toUpperCase();
+            const adrPath = path.join(adrDir, `ADR-SELF-${adrId}.json`);
+
+            // ⊘ Safety check: ensure adrPath is valid
+            if (!adrPath) {
+                throw new Error('adrPath is undefined');
+            }
+
+            const adr = {
+                id: `ADR-SELF-${adrId}`,
+                title: `Self-Audit Cycle – ${audit.convergenceStatus === 'converged' ? 'Migration Convergence Achieved' : 'Ongoing Analysis'}`,
+                created: new Date().toISOString(),
+                context: {
+                    total_commands: telemetry.totalCommands,
+                    legacy_redirects: telemetry.legacyRedirects,
+                    redirect_percentage: telemetry.redirectPercentage.toFixed(2),
+                    confidence_avg: audit.confidence.toFixed(2),
+                    bias_index: audit.biasIndex.toFixed(2),
+                    cycles_completed: telemetry.totalCycles,
+                    patterns_detected: telemetry.patternsDetected,
+                    correlations_detected: telemetry.correlationsDetected
+                },
+                decision: this.generateDecision(audit, telemetry),
+                consequences: audit.recommendation,
+                confidence: audit.confidence,
+                status: 'proposed',
+                tags: ['self-audit', 'meta-cognition', 'architecture-evolution']
+            };
+
+            fs.writeFileSync(adrPath, JSON.stringify(adr, null, 2));
+            return adrPath;
+        } catch (error) {
+            console.error(`❌ AuditReporter.generateADR failed: ${error}`);
+            throw error;
         }
-
-        const adrId = uuidv4().substring(0, 8).toUpperCase();
-        const adrPath = path.join(adrDir, `ADR-SELF-${adrId}.json`);
-
-        const adr = {
-            id: `ADR-SELF-${adrId}`,
-            title: `Self-Audit Cycle – ${audit.convergenceStatus === 'converged' ? 'Migration Convergence Achieved' : 'Ongoing Analysis'}`,
-            created: new Date().toISOString(),
-            context: {
-                total_commands: telemetry.totalCommands,
-                legacy_redirects: telemetry.legacyRedirects,
-                redirect_percentage: telemetry.redirectPercentage.toFixed(2),
-                confidence_avg: audit.confidence.toFixed(2),
-                bias_index: audit.biasIndex.toFixed(2),
-                cycles_completed: telemetry.totalCycles,
-                patterns_detected: telemetry.patternsDetected,
-                correlations_detected: telemetry.correlationsDetected
-            },
-            decision: this.generateDecision(audit, telemetry),
-            consequences: audit.recommendation,
-            confidence: audit.confidence,
-            status: 'proposed',
-            tags: ['self-audit', 'meta-cognition', 'architecture-evolution']
-        };
-
-        fs.writeFileSync(adrPath, JSON.stringify(adr, null, 2));
-        return adrPath;
     }
 
     /**
      * Generate markdown report
      */
     public async generateReport(telemetry: TelemetryData, audit: AuditResult): Promise<string> {
-        const reportsDir = path.join(this.workspaceRoot, '.reasoning', 'reports');
-        if (!fs.existsSync(reportsDir)) {
-            fs.mkdirSync(reportsDir, { recursive: true });
-        }
+        try {
+            // ⊘ Safety check: ensure workspaceRoot is defined
+            if (!this.workspaceRoot) {
+                throw new Error('workspaceRoot is undefined');
+            }
 
-        const reportPath = path.join(reportsDir, 'self-audit.md');
+            const reportsDir = path.join(this.workspaceRoot, '.reasoning', 'reports');
+            if (!fs.existsSync(reportsDir)) {
+                fs.mkdirSync(reportsDir, { recursive: true });
+            }
+
+            const reportPath = path.join(reportsDir, 'self-audit.md');
+
+            // ⊘ Safety check: ensure reportPath is valid
+            if (!reportPath) {
+                throw new Error('reportPath is undefined');
+            }
         
         const avgConfidence = telemetry.confidenceHistory.length > 0
             ? (telemetry.confidenceHistory.reduce((a, b) => a + b, 0) / telemetry.confidenceHistory.length)
@@ -108,8 +134,12 @@ ${audit.recommendation}
 → Confidence: **${audit.confidence.toFixed(2)}**
 `;
 
-        fs.writeFileSync(reportPath, md);
-        return reportPath;
+            fs.writeFileSync(reportPath, md);
+            return reportPath;
+        } catch (error) {
+            console.error(`❌ AuditReporter.generateReport failed: ${error}`);
+            throw error;
+        }
     }
 
     /**
