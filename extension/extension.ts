@@ -14,6 +14,7 @@ import { registerUnderstandCommands } from './commands/understand';
 import { registerExecuteCommands } from './commands/execute';
 import { registerMaintainCommands } from './commands/maintain';
 import { registerHelpCommands } from './commands/help';
+import { registerAgentCommands } from './commands/agent';
 import { registerPlanCommands } from './commands/contextual/plan';
 import { registerTasksCommands } from './commands/contextual/tasks';
 import { registerReportsCommands } from './commands/contextual/reports';
@@ -27,6 +28,10 @@ import { CognitiveRebuilder } from './core/autonomous/CognitiveRebuilder';
 import { UnifiedLogger } from './core/UnifiedLogger';
 import { getCursorChatIntegration } from './core/integrations/CursorChatIntegration';
 import { loadManifest } from './core/utils/manifestLoader';
+import { GitCommitListener } from './core/inputs/GitCommitListener';
+import { FileChangeWatcher } from './core/inputs/FileChangeWatcher';
+import { GitHubDiscussionListener } from './core/inputs/GitHubDiscussionListener';
+import { ShellMessageCapture } from './core/inputs/ShellMessageCapture';
 // RBOM Engine temporarily disabled for diagnostics
 // import { RBOMEngine } from './core/rbom/RBOMEngine';
 // import { ADR } from './core/rbom/types';
@@ -52,6 +57,12 @@ let lifecycleManager: any = null; // LifecycleManager dynamically loaded
 
 // Level 7: Reasoning components
 let patternLearningEngine: any = null; // PatternLearningEngine dynamically loaded
+
+// Input Layer components
+let gitCommitListener: GitCommitListener | null = null;
+let fileChangeWatcher: FileChangeWatcher | null = null;
+let githubDiscussionListener: GitHubDiscussionListener | null = null;
+let shellMessageCapture: ShellMessageCapture | null = null;
 
 // Debounce map to prevent event multiplication
 const fileDebounceMap = new Map<string, NodeJS.Timeout>();
@@ -185,6 +196,25 @@ export async function activate(context: vscode.ExtensionContext) {
                 persistence.logWithEmoji('⚠️', 'GitHubCaptureEngine disabled');
             }
         }, 5500); // Delayed activation of 5.5 seconds
+        
+        // 🎧 INPUT LAYER: GitCommitListener (Priority 6)
+        setTimeout(async () => {
+            if (!persistence) return;
+            
+            try {
+                gitCommitListener = new GitCommitListener(workspaceRoot);
+                if (gitCommitListener.isGitRepository()) {
+                    await gitCommitListener.startWatching();
+                    persistence.logWithEmoji('🎧', 'GitCommitListener started - Input Layer active');
+                    logger.log('✅ Input Layer Phase 1: GitCommitListener operational');
+                } else {
+                    persistence.logWithEmoji('⚠️', 'GitCommitListener disabled - Not a Git repository');
+                }
+            } catch (gitListenerError) {
+                console.warn('⚠️ GitCommitListener failed to start:', gitListenerError);
+                persistence.logWithEmoji('⚠️', 'GitCommitListener disabled');
+            }
+        }, 6500); // Delayed activation of 6.5 seconds
         
         // STEP 7: RBOMEngine asynchronous activation via dynamic import
         setTimeout(async () => {
@@ -1303,12 +1333,81 @@ ${adr.evidenceIds.length} evidence(s) linked
             })
         );
 
+        // 🎧 Input Layer - GitCommitListener (Phase 1)
+        setTimeout(async () => {
+            try {
+                gitCommitListener = new GitCommitListener(workspaceRoot);
+                if (gitCommitListener.isGitRepository()) {
+                    await gitCommitListener.startWatching();
+                    persistence?.logWithEmoji('🎧', 'Input Layer: GitCommitListener activated');
+                    
+                    // Store in context for disposal
+                    context.subscriptions.push({
+                        dispose: () => gitCommitListener?.stopWatching()
+                    });
+                } else {
+                    persistence?.logWithEmoji('⚠️', 'Input Layer: Not a git repository (listener disabled)');
+                }
+            } catch (error) {
+                persistence?.logWithEmoji('⚠️', `Input Layer: GitCommitListener failed - ${error}`);
+            }
+        }, 7000); // 7 seconds - after RBOM
+        
+        // 🎧 Input Layer - FileChangeWatcher (Phase 2)
+        setTimeout(async () => {
+            try {
+                fileChangeWatcher = new FileChangeWatcher(workspaceRoot);
+                await fileChangeWatcher.startWatching();
+                persistence?.logWithEmoji('🎧', 'Input Layer: FileChangeWatcher activated');
+                
+                // Store in context for disposal
+                context.subscriptions.push({
+                    dispose: () => fileChangeWatcher?.stopWatching()
+                });
+            } catch (error) {
+                persistence?.logWithEmoji('⚠️', `Input Layer: FileChangeWatcher failed - ${error}`);
+            }
+        }, 8000); // 8 seconds - after GitCommitListener
+        
+        // 🎧 Input Layer - GitHubDiscussionListener (Phase 3)
+        setTimeout(async () => {
+            try {
+                githubDiscussionListener = new GitHubDiscussionListener(workspaceRoot);
+                await githubDiscussionListener.startWatching(5); // Poll every 5 minutes
+                persistence?.logWithEmoji('🎧', 'Input Layer: GitHubDiscussionListener activated');
+                
+                // Store in context for disposal
+                context.subscriptions.push({
+                    dispose: () => githubDiscussionListener?.stopWatching()
+                });
+            } catch (error) {
+                persistence?.logWithEmoji('⚠️', `Input Layer: GitHubDiscussionListener failed - ${error}`);
+            }
+        }, 9000); // 9 seconds - after FileChangeWatcher
+        
+        // 🎧 Input Layer - ShellMessageCapture (Phase 4)
+        setTimeout(async () => {
+            try {
+                shellMessageCapture = new ShellMessageCapture(workspaceRoot);
+                shellMessageCapture.startCapturing();
+                persistence?.logWithEmoji('🎧', 'Input Layer: ShellMessageCapture activated');
+                
+                // Store in context for disposal
+                context.subscriptions.push({
+                    dispose: () => shellMessageCapture?.stopCapturing()
+                });
+            } catch (error) {
+                persistence?.logWithEmoji('⚠️', `Input Layer: ShellMessageCapture failed - ${error}`);
+            }
+        }, 10000); // 10 seconds - after GitHubDiscussionListener
+        
         // Register structured cognitive command groups
         registerObserveCommands(context, workspaceRoot);
         registerUnderstandCommands(context, workspaceRoot);
         registerExecuteCommands(context);
         registerMaintainCommands(context, workspaceRoot);
         registerHelpCommands(context, workspaceRoot);
+        registerAgentCommands(context);
         
         // Register contextual command groups
         registerPlanCommands(context, workspaceRoot);

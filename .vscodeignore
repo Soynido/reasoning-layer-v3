@@ -1,5 +1,15 @@
 .vscode/**
-.reasoning/**
+.reasoning/reports/**
+.reasoning/logs/**
+.reasoning/conversations/**
+.reasoning/traces/**
+.reasoning/adrs/**
+.reasoning/snapshots/**
+.reasoning/self_review/**
+.reasoning/security/**
+.reasoning/ledger/**
+.reasoning/session_history.json
+.reasoning/current-context.json
 node_modules/**
 test-project/**
 *.md

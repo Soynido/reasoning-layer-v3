@@ -259,10 +259,14 @@ export class DecisionSynthesizer {
                 const commitData = event.metadata.commit as any;
                 // Extract hash from source or commit
                 let hash = '';
-                // ⊘ ROBUST: Check event.source before .includes()
-                if (event.source && event.source.includes(':') && event.source.includes('git:')) {
-                    hash = event.source.split(':')[1];
-                } else if (commitData.hash) {
+                // ⊘ ROBUST: Check event.source before .includes() and convert to string
+                if (event.source) {
+                    const sourcePath = String(event.source);
+                    if (sourcePath.includes(':') && sourcePath.includes('git:')) {
+                        hash = sourcePath.split(':')[1];
+                    }
+                }
+                if (!hash && commitData.hash) {
                     hash = commitData.hash;
                 }
                 
@@ -311,9 +315,13 @@ export class DecisionSynthesizer {
         const consequences = this.inferConsequences(pattern);
         
         // Find evidence (events linked to the commit)
-        // ⊘ ROBUST: Check e.source before .includes()
+        // ⊘ ROBUST: Check e.source before .includes() and convert to string
         const evidenceIds = events
-            .filter(e => e.source && e.source.includes(pattern.commit?.hash || ''))
+            .filter(e => {
+                if (!e.source) return false;
+                const sourcePath = String(e.source);
+                return sourcePath.includes(pattern.commit?.hash || '');
+            })
             .map(e => e.id)
             .slice(0, 10);
         
@@ -473,9 +481,10 @@ export class DecisionSynthesizer {
         for (const event of events) {
             summary.byType[event.type] = (summary.byType[event.type] || 0) + 1;
             
-            // ⊘ ROBUST: Check event.source before path.basename
+            // ⊘ ROBUST: Check event.source before path.basename and convert to string
             if (event.source) {
-                const fileName = path.basename(event.source);
+                const sourcePath = String(event.source); // Convert to string safely
+                const fileName = path.basename(sourcePath);
                 summary.byFile[fileName] = (summary.byFile[fileName] || 0) + 1;
             }
             
@@ -508,9 +517,10 @@ export class DecisionSynthesizer {
         // Détecter les changements majeurs
         const fileGroups = new Map<string, CaptureEvent[]>();
         for (const event of events) {
-            // ⊘ ROBUST: Check event.source before path.dirname
+            // ⊘ ROBUST: Check event.source before path.dirname and convert to string
             if (!event.source) continue;
-            const dir = path.dirname(event.source);
+            const sourcePath = String(event.source); // Convert to string safely
+            const dir = path.dirname(sourcePath);
             if (!fileGroups.has(dir)) fileGroups.set(dir, []);
             fileGroups.get(dir)!.push(event);
         }
@@ -522,7 +532,11 @@ export class DecisionSynthesizer {
                 const dirName = dir ? path.basename(dir) : 'unknown';
                 summary.majorChanges.push({
                     description: `Intensive development in ${dirName}`,
-                    files: dirEvents.map(e => e.source ? path.basename(e.source) : 'unknown'),
+                    files: dirEvents.map(e => {
+                        if (!e.source) return 'unknown';
+                        const sourcePath = String(e.source); // Convert to string safely
+                        return path.basename(sourcePath);
+                    }),
                     count: dirEvents.length,
                     timestamp: recentEvent.timestamp
                 });
@@ -538,14 +552,14 @@ export class DecisionSynthesizer {
         // Pattern 1: Persistence structure established
         // Intent: Detect human decision to stabilize a persistence contract
         if (summary.byFile['PersistenceManager.ts'] > 3 || summary.byFile['ManifestGenerator.ts'] > 2) {
-            // ⊘ ROBUST: Check e.source before .includes()
-            const persistenceEvents = events.filter(e => 
-                e.source && (
-                    e.source.includes('PersistenceManager') || 
-                    e.source.includes('ManifestGenerator') ||
-                    e.source.includes('SchemaManager')
-                )
-            );
+            // ⊘ ROBUST: Check e.source before .includes() and convert to string
+            const persistenceEvents = events.filter(e => {
+                if (!e.source) return false;
+                const sourcePath = String(e.source); // Convert to string safely
+                return sourcePath.includes('PersistenceManager') || 
+                       sourcePath.includes('ManifestGenerator') ||
+                       sourcePath.includes('SchemaManager');
+            });
 
             decisions.push({
                 title: 'Stabilizing the persistence contract via versioned manifest',
@@ -617,10 +631,12 @@ export class DecisionSynthesizer {
         if (summary.majorChanges.length > 0) {
             const biggestChange = summary.majorChanges.sort((a, b) => b.count - a.count)[0];
             if (biggestChange.count >= 10) {
-                // ⊘ ROBUST: Check e.source before .includes()
-                const changeEvents = events.filter(e => 
-                    e.source && biggestChange.files.some(file => e.source.includes(file))
-                );
+                // ⊘ ROBUST: Check e.source before .includes() and convert to string
+                const changeEvents = events.filter(e => {
+                    if (!e.source) return false;
+                    const sourcePath = String(e.source); // Convert to string safely
+                    return biggestChange.files.some(file => sourcePath.includes(file));
+                });
 
                 // ⊘ ROBUST: Check biggestChange.files before path.basename
                 const firstFile = biggestChange.files && biggestChange.files[0] ? biggestChange.files[0].split('/')[0] : 'unknown';

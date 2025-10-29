@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { UnifiedLogger } from '../UnifiedLogger';
+import { LanguageDetector } from '../memory/LanguageDetector';
 
 /**
  * Cursor Chat Integration - Bi-directional context sync
@@ -28,10 +29,12 @@ interface CognitiveContext {
 export class CursorChatIntegration {
     private workspaceRoot: string;
     private logger: UnifiedLogger;
+    private languageDetector: LanguageDetector;
 
     constructor(workspaceRoot: string) {
         this.workspaceRoot = workspaceRoot;
         this.logger = UnifiedLogger.getInstance();
+        this.languageDetector = new LanguageDetector(workspaceRoot);
     }
 
     /**
@@ -120,6 +123,12 @@ export class CursorChatIntegration {
             if (!prompt || !response) {
                 this.logger.warn('logInteraction called with empty prompt or response');
                 return;
+            }
+
+            // 🌐 Detect language from user prompt (auto-setup)
+            const detectedLang = this.languageDetector.detectFromChat(prompt);
+            if (detectedLang) {
+                this.logger.log(`🌐 Language detected from chat: ${detectedLang.toUpperCase()}`);
             }
 
             // 🛡️ Anti-recursion: ignore RL3 internal messages
