@@ -116,6 +116,24 @@ export class CursorChatIntegration {
      */
     public async logInteraction(prompt: string, response: string): Promise<void> {
         try {
+            // 🚫 Ignore corrupted or recursive content
+            if (!prompt || !response) {
+                this.logger.warn('logInteraction called with empty prompt or response');
+                return;
+            }
+
+            // 🛡️ Anti-recursion: ignore RL3 internal messages
+            if (prompt.includes('[RL3]') || response.includes('[RL3]') || 
+                prompt.includes('Reasoning Layer') || response.includes('Reasoning Layer')) {
+                this.logger.warn('⚠️ Skipping recursive RL3 log to prevent loop');
+                return;
+            }
+
+            // 🧹 Sanitize: remove binary-like or non-printable characters
+            const sanitize = (text: string) => {
+                return text.replace(/[^\x20-\x7E\n\t]+/g, '').slice(0, 5000);
+            };
+
             const tracesDir = path.join(this.workspaceRoot, '.reasoning', 'traces');
             if (!fs.existsSync(tracesDir)) {
                 fs.mkdirSync(tracesDir, { recursive: true });
@@ -132,13 +150,13 @@ export class CursorChatIntegration {
                 metadata: {
                     category: 'Interaction',
                     level: '3 - Strategic & Contextual',
-                    prompt_length: prompt.length,
-                    response_length: response.length,
-                    prompt_preview: prompt.substring(0, 100),
-                    response_preview: response.substring(0, 100)
+                    prompt_length: sanitize(prompt).length,
+                    response_length: sanitize(response).length,
+                    prompt_preview: sanitize(prompt).substring(0, 100),
+                    response_preview: sanitize(response).substring(0, 100)
                 },
-                prompt: prompt,
-                response: response
+                prompt: sanitize(prompt),
+                response: sanitize(response)
             };
 
             // Append to today's trace
@@ -148,11 +166,12 @@ export class CursorChatIntegration {
             }
 
             existing.push(entry);
-            fs.writeFileSync(traceFile, JSON.stringify(existing, null, 2));
+            fs.writeFileSync(traceFile, JSON.stringify(existing, null, 2), 'utf-8');
 
-            this.logger.log(`💬 Logged chat interaction: ${prompt.substring(0, 40)}...`);
+            this.logger.log(`💬 Logged chat interaction [${entry.id}] (${entry.metadata.prompt_length} chars)`);
         } catch (error) {
             this.logger.warn(`Failed to log chat interaction: ${error}`);
+            console.error('CursorChatIntegration.logInteraction error:', error);
         }
     }
 

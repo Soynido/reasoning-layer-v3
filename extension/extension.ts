@@ -1393,6 +1393,21 @@ ${adr.evidenceIds.length} evidence(s) linked
         
         logger.log('🔗 Cursor Chat Integration loaded');
         
+        // Register autoInit command
+        context.subscriptions.push(
+            vscode.commands.registerCommand('reasoning.autoInit', async () => {
+                const ctx = cursorChatIntegration.queryContext();
+                if (ctx.confidence < 0.5) {
+                    logger.log('🔄 Running autopilot cycle to bootstrap cognition...');
+                    // Trigger autopilot cycle
+                    await vscode.commands.executeCommand('reasoning.autopilot.run');
+                }
+                
+                logger.log('✅ Reasoning Layer auto-initialized and synced with Cursor Chat');
+                vscode.window.showInformationMessage('🧠 RL3 auto-initialized and synced.');
+            })
+        );
+        
         // Check if first run (minimalist onboarding)
         const reasoningDir = path.join(workspaceRoot, '.reasoning');
         const tracesDir = path.join(reasoningDir, 'traces');

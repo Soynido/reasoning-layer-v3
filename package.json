@@ -336,6 +336,11 @@
             "command": "reasoning.cursor.logInteraction",
             "title": "📝 Log Chat Interaction to RL3",
             "category": "Reasoning › Cursor Chat"
+          },
+          {
+            "command": "reasoning.autoInit",
+            "title": "🧠 Auto-Initialize Reasoning Layer",
+            "category": "Reasoning › Setup"
           }
     ]
   },
