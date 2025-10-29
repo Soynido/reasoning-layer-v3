@@ -5,6 +5,7 @@ import { RBOMEngine } from './RBOMEngine';
 import { CaptureEvent, GitCommitData } from '../types';
 import { ADR } from './types';
 import { EvidenceQualityScorer } from '../EvidenceQualityScorer';
+import { LLMInterpreter } from '../inputs/LLMInterpreter';
 
 interface EventSummary {
     totalEvents: number;
@@ -64,6 +65,7 @@ interface DecisionPattern {
 export class DecisionSynthesizer {
     private lastSynthesis: number = 0;
     private qualityScorer: EvidenceQualityScorer;
+    private llmInterpreter: LLMInterpreter | null = null;
 
     constructor(
         private workspaceRoot: string,
@@ -78,6 +80,16 @@ export class DecisionSynthesizer {
         }
         
         this.qualityScorer = new EvidenceQualityScorer();
+        
+        // Initialize LLM Interpreter for semantic analysis
+        try {
+            this.llmInterpreter = new LLMInterpreter(this.workspaceRoot);
+            this.persistence.logWithEmoji('🤖', 'LLMInterpreter initialized for semantic synthesis');
+        } catch (error) {
+            console.warn('⚠️ LLMInterpreter initialization failed, running without semantic analysis');
+            this.llmInterpreter = null;
+        }
+        
         this.persistence.logWithEmoji('🧠', 'DecisionSynthesizer initialized with historical analysis and evidence quality scoring');
     }
 
@@ -297,6 +309,35 @@ export class DecisionSynthesizer {
     }
 
     /**
+     * Build summary text for LLM semantic analysis
+     */
+    private buildSummaryText(summary: EventSummary): string {
+        const parts = [];
+        
+        parts.push(`Workspace state analysis:`);
+        parts.push(`- Total events: ${summary.totalEvents}`);
+        parts.push(`- Key files modified: ${summary.keyFiles.slice(0, 5).join(', ')}`);
+        
+        if (summary.majorChanges.length > 0) {
+            parts.push(`- Major changes detected:`);
+            summary.majorChanges.slice(0, 3).forEach(change => {
+                parts.push(`  * ${change.description} (${change.count} events)`);
+            });
+        }
+        
+        if (summary.dependencyHistory.length > 0) {
+            parts.push(`- Dependencies: ${summary.dependencyHistory.slice(0, 5).join(', ')}`);
+        }
+        
+        const authors = Object.keys(summary.gitEvolution.commitsByAuthor);
+        if (authors.length > 0) {
+            parts.push(`- Contributors: ${authors.slice(0, 3).join(', ')}`);
+        }
+        
+        return parts.join('\n');
+    }
+
+    /**
      * Generate an ADR from a detected pattern
      */
     private generateADR(pattern: DecisionPattern, events: CaptureEvent[]): {
@@ -422,6 +463,26 @@ export class DecisionSynthesizer {
             const summary = this.createIntelligentSummary(allEvents);
             
             this.persistence.logWithEmoji('🔍', `Summary: ${summary.totalEvents} events, ${summary.majorChanges.length} major changes`);
+
+            // Step 2.5: LLM semantic analysis (if available and complex patterns detected)
+            if (this.llmInterpreter && summary.majorChanges.length > 0) {
+                try {
+                    // Build summary text for LLM analysis
+                    const summaryText = this.buildSummaryText(summary);
+                    
+                    if (summaryText.length > 50) {
+                        const intent = await this.llmInterpreter.interpret(summaryText);
+                        this.persistence.logWithEmoji('🤖', `LLM semantic analysis: ${intent.intent} (confidence: ${(intent.confidence * 100).toFixed(1)}%)`);
+                        
+                        // Log reasoning if provided
+                        if (intent.reasoning) {
+                            this.persistence.logWithEmoji('💡', `Reasoning: ${intent.reasoning}`);
+                        }
+                    }
+                } catch (llmError) {
+                    console.warn('⚠️ LLM analysis failed, continuing with heuristic analysis', llmError);
+                }
+            }
 
             // Step 3: Architectural reasoning
             const adrCandidates = this.reasonArchitecturalDecisions(summary, allEvents);

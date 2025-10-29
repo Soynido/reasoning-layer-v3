@@ -1409,6 +1409,37 @@ ${adr.evidenceIds.length} evidence(s) linked
         registerHelpCommands(context, workspaceRoot);
         registerAgentCommands(context);
         
+        // ═══════════════════════════════════════════════════════════════════════════
+        // 🤖 AUTO-PACKAGING COMMANDS
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        // Command: Auto Package (full: compile + package + install)
+        const autoPackageCommand = vscode.commands.registerCommand('reasoning.autopackage', async () => {
+            const { AutoPackager } = await import('./core/auto/AutoPackager');
+            const packagerChannel = vscode.window.createOutputChannel('RL3 AutoPackager');
+            const autoPackager = new AutoPackager(workspaceRoot, packagerChannel);
+            await autoPackager.run({ bumpVersion: false, installLocally: true });
+        });
+        context.subscriptions.push(autoPackageCommand);
+
+        // Command: Auto Package with Version Bump
+        const autoPackageBumpCommand = vscode.commands.registerCommand('reasoning.autopackage.bump', async () => {
+            const { AutoPackager } = await import('./core/auto/AutoPackager');
+            const packagerChannel = vscode.window.createOutputChannel('RL3 AutoPackager');
+            const autoPackager = new AutoPackager(workspaceRoot, packagerChannel);
+            await autoPackager.run({ bumpVersion: true, installLocally: true });
+        });
+        context.subscriptions.push(autoPackageBumpCommand);
+
+        // Command: Quick Rebuild (compile + package only, no install)
+        const quickRebuildCommand = vscode.commands.registerCommand('reasoning.quickrebuild', async () => {
+            const { AutoPackager } = await import('./core/auto/AutoPackager');
+            const packagerChannel = vscode.window.createOutputChannel('RL3 AutoPackager');
+            const autoPackager = new AutoPackager(workspaceRoot, packagerChannel);
+            await autoPackager.quickRebuild();
+        });
+        context.subscriptions.push(quickRebuildCommand);
+        
         // Register contextual command groups
         registerPlanCommands(context, workspaceRoot);
         registerTasksCommands(context, workspaceRoot);

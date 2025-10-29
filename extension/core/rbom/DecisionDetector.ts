@@ -230,7 +230,10 @@ export class DecisionDetector {
         const newFiles = new Set<string>();
 
         for (const event of events.filter(e => e.type === 'file_change')) {
-            const fileName = path.basename(event.source);
+            // ⊘ ROBUST: Check event.source before path.basename and convert to string
+            if (!event.source) continue;
+            const sourcePath = String(event.source); // Convert to string safely
+            const fileName = path.basename(sourcePath);
             if (fileName.match(/^[A-Z][\w]+Engine\.ts$/)) {
                 newFiles.add(fileName);
             }
@@ -244,7 +247,11 @@ export class DecisionDetector {
                 decision: `Introduce ${moduleName} as a dedicated component to manage ${this.getModulePurpose(moduleName)}.`,
                 consequences: `Architecture now includes ${moduleName}. Must be properly integrated and tested.`,
                 components: [file],
-                evidenceIds: events.filter(e => e.source.includes(file)).map(e => e.id),
+                evidenceIds: events.filter(e => {
+                    if (!e.source) return false;
+                    const sourcePath = String(e.source); // Convert to string safely
+                    return sourcePath.includes(file);
+                }).map(e => e.id),
                 tags: ['auto', 'architecture', 'new-module']
             });
         }
@@ -262,10 +269,18 @@ export class DecisionDetector {
 
     private detectMassiveRefactor(events: CaptureEvent[]): ADRCandidate[] {
         const candidates: ADRCandidate[] = [];
-        const coreEvents = events.filter(e => e.source.includes('/core/'));
+        const coreEvents = events.filter(e => {
+            if (!e.source) return false;
+            const sourcePath = String(e.source); // Convert to string safely
+            return sourcePath.includes('/core/');
+        });
         
         if (coreEvents.length >= 10) {
-            const coreFiles = new Set(coreEvents.map(e => path.basename(e.source)));
+            const coreFiles = new Set(coreEvents.map(e => {
+                if (!e.source) return 'unknown';
+                const sourcePath = String(e.source); // Convert to string safely
+                return path.basename(sourcePath);
+            }));
             candidates.push({
                 title: 'Refactor massif du noyau technique',
                 context: `Large number of files modified in core/ directory (${coreFiles.size} files, ${coreEvents.length} changes).`,

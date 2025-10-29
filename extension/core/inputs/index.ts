@@ -17,4 +17,5 @@ export { FileChangeWatcher, FileChange, ChangePattern, WatcherStats } from './Fi
 export { GitHubDiscussionListener, GitHubDiscussion, CognitiveScore, ListenerStats } from './GitHubDiscussionListener';
 export { ShellMessageCapture, CaptureStats } from './ShellMessageCapture';
 export { LLMInterpreter, InterpretationResult } from './LLMInterpreter';
+export { LLMBridge } from './LLMBridge';
 

@@ -148,6 +148,21 @@
         "category": "Reasoning › Agent"
       },
       {
+        "command": "reasoning.autopackage",
+        "title": "🤖 Auto Package (Compile + Package + Install)",
+        "category": "Reasoning › System"
+      },
+      {
+        "command": "reasoning.autopackage.bump",
+        "title": "🔢 Auto Package with Version Bump",
+        "category": "Reasoning › System"
+      },
+      {
+        "command": "reasoning.quickrebuild",
+        "title": "⚡ Quick Rebuild (Compile + Package)",
+        "category": "Reasoning › System"
+      },
+      {
         "command": "reasoning.refreshTraces",
         "title": "🔄 Refresh Traces",
         "category": "Reasoning"

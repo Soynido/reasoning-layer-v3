@@ -25,6 +25,7 @@ export class LLMInterpreter {
     private contextCache: string | null = null;
     private lastContextUpdate: number = 0;
     private readonly CONTEXT_CACHE_TTL = 60000; // 1 minute
+    private llmBridge: any; // Optional LLMBridge for semantic understanding
 
     // Intent mapping patterns (multilingual)
     private readonly INTENT_PATTERNS: Record<string, { keywords: string[], languages: string[] }> = {
@@ -80,6 +81,21 @@ export class LLMInterpreter {
 
     constructor(workspaceRoot: string) {
         this.workspaceRoot = workspaceRoot;
+        
+        // Try to initialize LLMBridge (optional, requires API keys)
+        try {
+            const { LLMBridge } = require('./LLMBridge');
+            this.llmBridge = new LLMBridge();
+            if (this.llmBridge.isAvailable()) {
+                console.log(`🤖 LLMInterpreter: ${this.llmBridge.getProvider()} bridge initialized`);
+            } else {
+                console.log('📋 LLMInterpreter: Running in offline mode (no API key found)');
+                this.llmBridge = null;
+            }
+        } catch (error) {
+            console.log('📋 LLMInterpreter: Running in offline mode (pattern matching only)');
+            this.llmBridge = null;
+        }
     }
 
     /**
@@ -109,7 +125,29 @@ export class LLMInterpreter {
         // Method 1: Pattern matching (fast, offline, multilingual)
         const patternMatch = this.matchPatterns(cleanInput, detectedLanguage);
 
-        // Method 2: LLM interpretation (if configured and requested)
+        // Method 2: LLM interpretation (automatic if confidence < 0.7 and bridge available)
+        if (this.llmBridge && patternMatch.confidence < 0.7) {
+            try {
+                const llmResult = await this.llmBridge.interpret(input);
+                
+                // Use LLM if confidence higher and intent valid
+                if (llmResult.confidence > patternMatch.confidence && llmResult.intent !== 'unknown') {
+                    return {
+                        intent: llmResult.intent,
+                        confidence: llmResult.confidence,
+                        reasoning: llmResult.reasoning || 'LLM semantic interpretation',
+                        detectedLanguage,
+                        originalInput: input,
+                        entities: llmResult.entities,
+                        provider: this.llmBridge.getProvider()
+                    };
+                }
+            } catch (error) {
+                console.warn('⚠️ LLM interpretation failed, using pattern matching:', error);
+            }
+        }
+        
+        // Method 3: Legacy LLM interpretation (if explicitly requested)
         if (useLLM && this.isLLMConfigured()) {
             const llmInterpretation = await this.interpretViaLLM(cleanInput, detectedLanguage);
             
@@ -351,5 +389,7 @@ export interface InterpretationResult {
     reasoning: string;
     detectedLanguage: string;
     originalInput?: string;
+    entities?: Record<string, any>;
+    provider?: string;
 }
 
