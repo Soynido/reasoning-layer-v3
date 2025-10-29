@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { loadManifest } from '../../core/utils/manifestLoader';
 
 /**
  * Plan commands - Manage cognitive strategy and cycles
@@ -9,18 +10,17 @@ export function registerPlanCommands(context: vscode.ExtensionContext, workspace
     context.subscriptions.push(
         vscode.commands.registerCommand('reasoning.plan.showOverview', async () => {
             try {
-                const manifestPath = path.join(workspaceRoot, '.reasoning', 'manifest.json');
-                if (!fs.existsSync(manifestPath)) {
+                const manifest = loadManifest(workspaceRoot);
+                if (manifest.totalEvents === 0 && !manifest.projectName) {
                     vscode.window.showInformationMessage('No plan data found yet.');
                     return;
                 }
                 
-                const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
                 vscode.window.showInformationMessage(
                     `🗺️ Plan Overview\n\n` +
-                    `Total Events: ${manifest.total_events}\n` +
-                    `Project: ${manifest.project_name || 'Unknown'}\n` +
-                    `Created: ${manifest.created_at || 'Unknown'}`
+                    `Total Events: ${manifest.totalEvents}\n` +
+                    `Project: ${manifest.projectName || 'Unknown'}\n` +
+                    `Created: ${manifest.createdAt || 'Unknown'}`
                 );
             } catch (error) {
                 vscode.window.showErrorMessage(`Failed to show plan: ${error}`);

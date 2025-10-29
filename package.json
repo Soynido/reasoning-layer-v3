@@ -258,6 +258,11 @@
         "category": "Reasoning › Maintain"
       },
       {
+        "command": "reasoning.correlations.deduplicate",
+        "title": "🔧 Deduplicate Correlations",
+        "category": "Reasoning › Maintain"
+      },
+      {
         "command": "reasoning.help.lastReport",
         "title": "Show Last Cycle Report",
         "category": "Reasoning › Help"

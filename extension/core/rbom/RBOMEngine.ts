@@ -24,11 +24,11 @@ export class RBOMEngine {
     private workspaceRoot: string;
 
     constructor(workspaceRoot: string, logFn?: (msg: string) => void, warnFn?: (msg: string) => void) {
-        // ⊘ Safety check: ensure workspaceRoot is defined
+        // ⊘ ROBUST: Use fallback if workspaceRoot undefined (following user's recommendation)
         if (!workspaceRoot) {
-            const errorMsg = '❌ RBOMEngine: workspaceRoot is undefined. Cannot initialize.';
-            console.error(errorMsg);
-            throw new Error(errorMsg);
+            const fallback = process.cwd();
+            console.warn(`⚠️ RBOMEngine: workspaceRoot is undefined. Using fallback: ${fallback}`);
+            workspaceRoot = fallback;
         }
 
         this.workspaceRoot = workspaceRoot;
@@ -525,7 +525,17 @@ export class RBOMEngine {
         try {
             // ⊘ Safety check: ensure adrsDir is initialized
             if (!this.adrsDir) {
-                const errorMsg = '❌ RBOMEngine: adrsDir is undefined. Cannot save ADR.';
+                const errorMsg = '❌ RBOMEngine.saveADR: adrsDir is undefined. Cannot save ADR.';
+                console.error(errorMsg);
+                if (this.warn) {
+                    this.warn(errorMsg);
+                }
+                return;
+            }
+
+            // ⊘ Safety check: ensure adr.id is defined
+            if (!adr || !adr.id) {
+                const errorMsg = `❌ RBOMEngine.saveADR: adr.id is undefined. ADR: ${JSON.stringify(adr).substring(0, 100)}`;
                 console.error(errorMsg);
                 if (this.warn) {
                     this.warn(errorMsg);
@@ -539,8 +549,10 @@ export class RBOMEngine {
             }
 
             const filePath = path.join(this.adrsDir, `${adr.id}.json`);
-            if (!filePath) {
-                const errorMsg = `❌ RBOMEngine: filePath is undefined for ADR ${adr.id}`;
+            
+            // ⊘ Final safety check on filePath
+            if (!filePath || filePath === this.adrsDir) {
+                const errorMsg = `❌ RBOMEngine.saveADR: Invalid filePath generated. adrsDir=${this.adrsDir}, adr.id=${adr.id}`;
                 console.error(errorMsg);
                 if (this.warn) {
                     this.warn(errorMsg);

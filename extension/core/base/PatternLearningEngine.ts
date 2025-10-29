@@ -55,10 +55,50 @@ export class PatternLearningEngine {
         const compliancePattern = this.detectCompliancePattern(entries);
         if (compliancePattern) patterns.push(compliancePattern);
 
+        // OPTIMIZATION: Apply diversity penalty before saving
+        const diversifiedPatterns = this.applyDiversityPenalty(patterns);
+        
         // Save patterns
-        this.savePatterns(patterns);
+        this.savePatterns(diversifiedPatterns);
 
-        return patterns;
+        return diversifiedPatterns;
+    }
+
+    /**
+     * Apply diversity penalty to reduce thematic bias
+     * Patterns with high frequency get confidence reduction
+     */
+    private applyDiversityPenalty(patterns: DecisionPattern[]): DecisionPattern[] {
+        if (patterns.length === 0) return patterns;
+        
+        // Count patterns by impact category
+        const categoryCount = new Map<string, number>();
+        for (const pattern of patterns) {
+            const category = pattern.impact || 'Other';
+            categoryCount.set(category, (categoryCount.get(category) || 0) + 1);
+        }
+        
+        const total = patterns.length;
+        
+        // Apply penalty: reduce confidence proportionally to category overrepresentation
+        return patterns.map(pattern => {
+            const category = pattern.impact || 'Other';
+            const count = categoryCount.get(category) || 1;
+            const overrepresentation = count / total;
+            
+            // Penalty increases with overrepresentation (max 20% reduction)
+            const penalty = Math.min(0.20, overrepresentation * 0.25);
+            const adjustedConfidence = pattern.confidence * (1 - penalty);
+            
+            if (penalty > 0.05) {
+                console.log(`🎯 [Diversity Penalty] ${pattern.pattern.substring(0, 40)}... confidence ${pattern.confidence.toFixed(3)} → ${adjustedConfidence.toFixed(3)} (category ${category}: ${count}/${total})`);
+            }
+            
+            return {
+                ...pattern,
+                confidence: Math.max(0.50, adjustedConfidence) // Floor at 0.50
+            };
+        });
     }
 
     /**
@@ -204,7 +244,7 @@ export class PatternLearningEngine {
                 id: `pat-${Date.now()}-001`,
                 pattern: 'Incident + Feedback → Config Update ADR',
                 frequency: incidents.length + feedback.length,
-                confidence: 0.87,
+                confidence: Math.min(0.87, 0.70 + (incidents.length + feedback.length) * 0.05), // OPTIMIZED: Dynamic confidence
                 impact: 'Stability',
                 category: 'structural',
                 tags: ['incident', 'feedback', 'cache', 'config'],

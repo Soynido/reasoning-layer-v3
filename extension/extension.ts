@@ -26,6 +26,7 @@ import { showCognitiveGreeting } from './core/onboarding/CognitiveGreeting';
 import { CognitiveRebuilder } from './core/autonomous/CognitiveRebuilder';
 import { UnifiedLogger } from './core/UnifiedLogger';
 import { getCursorChatIntegration } from './core/integrations/CursorChatIntegration';
+import { loadManifest } from './core/utils/manifestLoader';
 // RBOM Engine temporarily disabled for diagnostics
 // import { RBOMEngine } from './core/rbom/RBOMEngine';
 // import { ADR } from './core/rbom/types';
@@ -66,15 +67,10 @@ export async function activate(context: vscode.ExtensionContext) {
     const logger = UnifiedLogger.getInstance();
     logger.show();
     
-    // Load manifest data
-    const manifestPath = path.join(workspaceRoot, '.reasoning', 'manifest.json');
-    let totalEvents = 0;
+    // Load manifest data (supports both camelCase and snake_case)
+    const manifest = loadManifest(workspaceRoot);
+    const totalEvents = manifest.totalEvents;
     let githubConnected = false;
-    
-    if (fs.existsSync(manifestPath)) {
-        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-        totalEvents = manifest.total_events || 0;
-    }
     
     // Check GitHub status
     const githubTokenPath = path.join(workspaceRoot, '.reasoning', 'security', 'github.json');

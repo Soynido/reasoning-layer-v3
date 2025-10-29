@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { RetroactiveTraceBuilder } from '../core/retroactive/RetroactiveTraceBuilder';
+import { CorrelationDeduplicator } from '../core/base/CorrelationDeduplicator';
+import { UnifiedLogger } from '../core/UnifiedLogger';
 
 /**
  * Maintain commands - Reset memory, edit manifest, retroactive mode, export
@@ -61,6 +63,41 @@ export function registerMaintainCommands(context: vscode.ExtensionContext, works
             } catch (error) {
                 vscode.window.showErrorMessage(`Failed to edit manifest: ${error}`);
             }
+        })
+    );
+
+    // Deduplicate Correlations
+    context.subscriptions.push(
+        vscode.commands.registerCommand('reasoning.correlations.deduplicate', async () => {
+            const logger = UnifiedLogger.getInstance();
+            
+            await vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: "Deduplicating correlations...",
+                cancellable: false
+            }, async (progress) => {
+                try {
+                    progress.report({ increment: 0, message: "Loading correlations..." });
+                    
+                    const deduplicator = new CorrelationDeduplicator(workspaceRoot);
+                    
+                    progress.report({ increment: 30, message: "Analyzing duplicates..." });
+                    const result = await deduplicator.applyDeduplication();
+                    
+                    progress.report({ increment: 100, message: "Complete" });
+                    
+                    logger.log('');
+                    logger.log('🔧 === CORRELATION DEDUPLICATION ===');
+                    logger.log(`✅ Deduplication complete`);
+                    logger.log(`📊 Unique correlations: ${result.length}`);
+                    logger.log('');
+                    
+                    vscode.window.showInformationMessage(`✅ Correlations deduplicated: ${result.length} unique entries`);
+                } catch (error) {
+                    logger.warn(`Deduplication failed: ${error}`);
+                    vscode.window.showErrorMessage(`Failed to deduplicate: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                }
+            });
         })
     );
 }

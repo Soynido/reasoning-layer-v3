@@ -70,11 +70,11 @@ export class DecisionSynthesizer {
         private persistence: PersistenceManager,
         private rbomEngine: RBOMEngine
     ) {
-        // ⊘ Safety check: ensure workspaceRoot is defined
+        // ⊘ ROBUST: Use fallback if workspaceRoot undefined (following user's recommendation)
         if (!workspaceRoot) {
-            const errorMsg = '❌ DecisionSynthesizer: workspaceRoot is undefined. Cannot initialize.';
-            console.error(errorMsg);
-            throw new Error(errorMsg);
+            const fallback = process.cwd();
+            console.warn(`⚠️ DecisionSynthesizer: workspaceRoot is undefined. Using fallback: ${fallback}`);
+            this.workspaceRoot = fallback;
         }
         
         this.qualityScorer = new EvidenceQualityScorer();
@@ -144,7 +144,9 @@ export class DecisionSynthesizer {
     }
 
     private loadRecentEvents(limit: number): CaptureEvent[] {
-        const tracesDir = path.join(this.workspaceRoot, '.reasoning', 'traces');
+        // ⊘ ROBUST: Ensure workspaceRoot is defined before path.join
+        const workspaceRoot = this.workspaceRoot || process.cwd();
+        const tracesDir = path.join(workspaceRoot, '.reasoning', 'traces');
         if (!fs.existsSync(tracesDir)) return [];
 
         const allEvents: CaptureEvent[] = [];
@@ -257,7 +259,8 @@ export class DecisionSynthesizer {
                 const commitData = event.metadata.commit as any;
                 // Extract hash from source or commit
                 let hash = '';
-                if (event.source.includes(':') && event.source.includes('git:')) {
+                // ⊘ ROBUST: Check event.source before .includes()
+                if (event.source && event.source.includes(':') && event.source.includes('git:')) {
                     hash = event.source.split(':')[1];
                 } else if (commitData.hash) {
                     hash = commitData.hash;
@@ -308,8 +311,9 @@ export class DecisionSynthesizer {
         const consequences = this.inferConsequences(pattern);
         
         // Find evidence (events linked to the commit)
+        // ⊘ ROBUST: Check e.source before .includes()
         const evidenceIds = events
-            .filter(e => e.source.includes(pattern.commit?.hash || ''))
+            .filter(e => e.source && e.source.includes(pattern.commit?.hash || ''))
             .map(e => e.id)
             .slice(0, 10);
         
@@ -383,6 +387,13 @@ export class DecisionSynthesizer {
     }
 
     public async synthesizeHistoricalDecisions(): Promise<void> {
+        // ⊘ ROBUST: Ensure workspaceRoot is defined before synthesis
+        if (!this.workspaceRoot) {
+            const fallback = process.cwd();
+            console.warn(`⚠️ DecisionSynthesizer.synthesizeHistoricalDecisions: workspaceRoot is undefined. Using fallback: ${fallback}`);
+            this.workspaceRoot = fallback;
+        }
+
         const now = Date.now();
         if (now - this.lastSynthesis < 300000) { // Synthesis every 5 minutes
             return;
@@ -421,7 +432,9 @@ export class DecisionSynthesizer {
     }
 
     private loadAllEvents(): CaptureEvent[] {
-        const tracesDir = path.join(this.workspaceRoot, '.reasoning', 'traces');
+        // ⊘ ROBUST: Ensure workspaceRoot is defined before path.join
+        const workspaceRoot = this.workspaceRoot || process.cwd();
+        const tracesDir = path.join(workspaceRoot, '.reasoning', 'traces');
         if (!fs.existsSync(tracesDir)) return [];
 
         const allEvents: CaptureEvent[] = [];
@@ -460,8 +473,11 @@ export class DecisionSynthesizer {
         for (const event of events) {
             summary.byType[event.type] = (summary.byType[event.type] || 0) + 1;
             
-            const fileName = path.basename(event.source);
-            summary.byFile[fileName] = (summary.byFile[fileName] || 0) + 1;
+            // ⊘ ROBUST: Check event.source before path.basename
+            if (event.source) {
+                const fileName = path.basename(event.source);
+                summary.byFile[fileName] = (summary.byFile[fileName] || 0) + 1;
+            }
             
             const category = event.metadata?.category || event.metadata?.level || 'unknown';
             summary.byCategory[category] = (summary.byCategory[category] || 0) + 1;
@@ -492,6 +508,8 @@ export class DecisionSynthesizer {
         // Détecter les changements majeurs
         const fileGroups = new Map<string, CaptureEvent[]>();
         for (const event of events) {
+            // ⊘ ROBUST: Check event.source before path.dirname
+            if (!event.source) continue;
             const dir = path.dirname(event.source);
             if (!fileGroups.has(dir)) fileGroups.set(dir, []);
             fileGroups.get(dir)!.push(event);
@@ -500,9 +518,11 @@ export class DecisionSynthesizer {
         for (const [dir, dirEvents] of fileGroups.entries()) {
             if (dirEvents.length >= 5) {
                 const recentEvent = dirEvents[dirEvents.length - 1];
+                // ⊘ ROBUST: Check dir and event.source before path.basename
+                const dirName = dir ? path.basename(dir) : 'unknown';
                 summary.majorChanges.push({
-                    description: `Intensive development in ${path.basename(dir)}`,
-                    files: dirEvents.map(e => path.basename(e.source)),
+                    description: `Intensive development in ${dirName}`,
+                    files: dirEvents.map(e => e.source ? path.basename(e.source) : 'unknown'),
                     count: dirEvents.length,
                     timestamp: recentEvent.timestamp
                 });
@@ -518,10 +538,13 @@ export class DecisionSynthesizer {
         // Pattern 1: Persistence structure established
         // Intent: Detect human decision to stabilize a persistence contract
         if (summary.byFile['PersistenceManager.ts'] > 3 || summary.byFile['ManifestGenerator.ts'] > 2) {
+            // ⊘ ROBUST: Check e.source before .includes()
             const persistenceEvents = events.filter(e => 
-                e.source.includes('PersistenceManager') || 
-                e.source.includes('ManifestGenerator') ||
-                e.source.includes('SchemaManager')
+                e.source && (
+                    e.source.includes('PersistenceManager') || 
+                    e.source.includes('ManifestGenerator') ||
+                    e.source.includes('SchemaManager')
+                )
             );
 
             decisions.push({
@@ -594,12 +617,17 @@ export class DecisionSynthesizer {
         if (summary.majorChanges.length > 0) {
             const biggestChange = summary.majorChanges.sort((a, b) => b.count - a.count)[0];
             if (biggestChange.count >= 10) {
+                // ⊘ ROBUST: Check e.source before .includes()
                 const changeEvents = events.filter(e => 
-                    biggestChange.files.some(file => e.source.includes(file))
+                    e.source && biggestChange.files.some(file => e.source.includes(file))
                 );
 
+                // ⊘ ROBUST: Check biggestChange.files before path.basename
+                const firstFile = biggestChange.files && biggestChange.files[0] ? biggestChange.files[0].split('/')[0] : 'unknown';
+                const fileBasename = firstFile !== 'unknown' ? path.basename(firstFile) : 'unknown';
+                
                 decisions.push({
-                    title: `Major refactor of ${path.basename(biggestChange.files[0]?.split('/')[0] || 'unknown')}`,
+                    title: `Major refactor of ${fileBasename}`,
                     context: `${biggestChange.count} modifications detected across ${biggestChange.files.length} files in ${biggestChange.description}. The developer chose to refactor rather than add patches.`,
                     decision: 'The choice made: refactor rather than add workarounds. This decision aimed to improve long-term maintainability.',
                     consequences: 'Observable impact: cleaner code, clearer architecture, but risk of short-term breaking changes.',

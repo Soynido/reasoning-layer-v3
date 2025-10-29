@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { loadManifest } from '../core/utils/manifestLoader';
 
 /**
  * Observe commands - Display and inspect current cognitive state
@@ -38,13 +39,11 @@ export function registerObserveCommands(context: vscode.ExtensionContext, worksp
                     forecastsCount = forecasts.forecasts?.length || 0;
                 }
 
-                const manifest = fs.existsSync(manifestPath) 
-                    ? JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
-                    : { total_events: 0 };
+                const manifest = loadManifest(workspaceRoot);
 
                 vscode.window.showInformationMessage(
                     `🧭 Cognitive Dashboard\n\n` +
-                    `📊 Events: ${manifest.total_events}\n` +
+                    `📊 Events: ${manifest.totalEvents}\n` +
                     `🔍 Patterns: ${patternsCount}\n` +
                     `🔗 Correlations: ${correlationsCount}\n` +
                     `🔮 Forecasts: ${forecastsCount}\n` +

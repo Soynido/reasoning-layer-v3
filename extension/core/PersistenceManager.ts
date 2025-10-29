@@ -11,8 +11,15 @@ export class PersistenceManager {
     private manifest!: ProjectManifest;
     private tracesPath!: string;
 
-    constructor(workspaceRoot: string) {
-        this.workspaceRoot = workspaceRoot;
+    constructor(workspaceRoot?: string) {
+        // ⊘ ROBUST: Use fallback if workspaceRoot undefined (following user's recommendation)
+        if (!workspaceRoot) {
+            const fallback = process.cwd();
+            console.warn(`⚠️ PersistenceManager: workspaceRoot is undefined. Using fallback: ${fallback}`);
+            this.workspaceRoot = fallback;
+        } else {
+            this.workspaceRoot = workspaceRoot;
+        }
         this.logger = UnifiedLogger.getInstance();
         this.initialize();
     }

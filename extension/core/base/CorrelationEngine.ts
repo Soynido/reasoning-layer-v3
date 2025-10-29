@@ -75,7 +75,7 @@ export class CorrelationEngine {
                     console.log(`🔍 Pattern "${pattern.pattern}" vs Event "${event.type}": score=${score.toFixed(2)} (eventTags: ${eventTags.join(',')})`);
                 }
                 
-                if (score >= 0.6) { // Lowered threshold for more correlations
+                if (score >= 0.55) { // OPTIMIZED: Lowered from 0.6 to 0.55 for more diversity
                     const correlation = this.createCorrelation(event, pattern, score);
                     
                     // Deduplication: Check if we've already seen this correlation
@@ -303,10 +303,19 @@ export class CorrelationEngine {
                 }
             }
 
-            // Combine and save
-            const allCorrelations = [...existingCorrelations, ...uniqueNewCorrelations];
+            // OPTIMIZATION: Load current patterns to filter obsolete correlations
+            const currentPatterns = await this.loadPatterns();
+            const currentPatternIds = new Set(currentPatterns.map(p => p.id));
             
-            console.log(`💾 Saving ${allCorrelations.length} correlations (${uniqueNewCorrelations.length} new, ${existingCorrelations.length} existing)`);
+            // Filter existing correlations to keep only those with current pattern_ids
+            const validExistingCorrelations = existingCorrelations.filter(c => 
+                currentPatternIds.has(c.pattern_id)
+            );
+            
+            // Combine valid existing + new correlations
+            const allCorrelations = [...validExistingCorrelations, ...uniqueNewCorrelations];
+            
+            console.log(`💾 Saving ${allCorrelations.length} correlations (${uniqueNewCorrelations.length} new, ${validExistingCorrelations.length} valid existing, ${existingCorrelations.length - validExistingCorrelations.length} obsolete removed)`);
 
             fs.writeFileSync(
                 this.correlationsPath,
