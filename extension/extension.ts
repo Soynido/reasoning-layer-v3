@@ -64,6 +64,14 @@ let fileChangeWatcher: FileChangeWatcher | null = null;
 let githubDiscussionListener: GitHubDiscussionListener | null = null;
 let shellMessageCapture: ShellMessageCapture | null = null;
 
+// Autonomous cycle timers
+let autonomousTimers: Array<ReturnType<typeof setInterval>> = [];
+
+// Status bar item (visual activation indicator)
+let rl3StatusBarItem: vscode.StatusBarItem | null = null;
+// Track if output channel is currently visible
+let outputChannelVisible = false;
+
 // Debounce map to prevent event multiplication
 const fileDebounceMap = new Map<string, NodeJS.Timeout>();
 
@@ -95,11 +103,100 @@ export async function activate(context: vscode.ExtensionContext) {
         // STEP 1: PersistenceManager (core stable)
         persistence = new PersistenceManager(workspaceRoot);
         persistence.logWithEmoji('🧠', 'Reasoning Layer V3 - Activated successfully!');
+
+        // Status bar indicator (bottom-left): opens output channel on click
+        try {
+            rl3StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+            rl3StatusBarItem.text = '$(rocket) RL3 Activated';
+            rl3StatusBarItem.tooltip = 'Reasoning Layer V3 — Click to open Output';
+            // Register a dedicated command to ensure output channel opens reliably
+            const openOutputCmd = vscode.commands.registerCommand('reasoning.status.openOutput', async () => {
+                // Only open if not already visible
+                if (!outputChannelVisible) {
+                    persistence?.show();
+                    // Ensure the Output panel is explicitly shown (avoid toggle behavior)
+                    await vscode.commands.executeCommand('workbench.action.output.show');
+                    outputChannelVisible = true;
+                    persistence?.logWithEmoji('📺', 'Output channel opened');
+                }
+            });
+            context.subscriptions.push(openOutputCmd);
+            rl3StatusBarItem.command = 'reasoning.status.openOutput';
+            rl3StatusBarItem.show();
+            context.subscriptions.push(rl3StatusBarItem);
+            persistence.logWithEmoji('🟢', 'Status bar: RL3 Activated');
+            // Auto-open output once on activation for visual cue
+            setTimeout(() => {
+                if (!outputChannelVisible) {
+                    // Show activation notification with CTA (non-blocking)
+                    void vscode.window.showInformationMessage(
+                        '🧠 RL3 Activated — Click "Open Output" to view logs.',
+                        'Open Output'
+                    ).then(sel => { 
+                        if (sel === 'Open Output' && !outputChannelVisible) { 
+                            vscode.commands.executeCommand('reasoning.status.openOutput'); 
+                        } 
+                    });
+                    // Also reveal the output once on activation to provide a visual cue
+                    setTimeout(() => {
+                        if (!outputChannelVisible) {
+                            persistence?.show();
+                            void vscode.commands.executeCommand('workbench.action.output.show');
+                            outputChannelVisible = true;
+                        }
+                    }, 250);
+                }
+            }, 700);
+        } catch (e) {
+            // Non-blocking
+        }
         
         // STEP 1.5: SchemaManager (persistence contract)
         schemaManager = new SchemaManager(workspaceRoot, persistence);
         persistence.logWithEmoji('📋', 'SchemaManager initialized - persistence contract v1.0');
         
+        // STEP 1.6: GitHub connection health check (fine-grained only)
+        setTimeout(async () => {
+            try {
+                const { GitHubFineGrainedManager } = await import('./core/integrations/GitHubFineGrainedManager');
+                const gh = new GitHubFineGrainedManager(workspaceRoot);
+                const status = await gh.checkConnection();
+                if (!status.ok) {
+                    let msg = 'GitHub is not connected.';
+                    if (status.reason === 'no_repo') msg = 'No GitHub repository detected in this workspace.';
+                    if (status.reason === 'missing_token') msg = `No fine-grained token found for ${status.repo}.`;
+                    if (status.reason === 'unauthorized') msg = 'GitHub token unauthorized or expired.';
+                    if (status.reason === 'missing_repo_access') msg = 'GitHub token valid but lacks repository access permissions.';
+
+                    // Auto-clean invalid/revoked tokens to avoid conflicts
+                    if (status.reason === 'unauthorized') {
+                        try {
+                            const tokenPath = path.join(workspaceRoot, '.reasoning', 'security', 'github.json');
+                            if (fs.existsSync(tokenPath)) {
+                                fs.unlinkSync(tokenPath);
+                                persistence?.logWithEmoji('🧹', 'Removed invalid GitHub token from workspace');
+                            }
+                        } catch {}
+                    }
+
+                    const action = await vscode.window.showInformationMessage(
+                        `🐙 ${msg} Connect now?`,
+                        'Connect GitHub',
+                        'Dismiss'
+                    );
+                    if (action === 'Connect GitHub') {
+                        void vscode.commands.executeCommand('reasoning.github.setup');
+                    }
+                } else {
+                    if (persistence) {
+                        persistence.logWithEmoji('🐙', `GitHub connected for ${status.repo}`);
+                    }
+                }
+            } catch (e) {
+                // Do not block activation on GitHub check
+            }
+        }, 1200);
+
         // Auto-generate initial manifest (DISABLED)
         
         // STEP 2: EventAggregator (centralization + debounce)
@@ -352,7 +449,7 @@ export async function activate(context: vscode.ExtensionContext) {
         context.subscriptions.push(
             vscode.commands.registerCommand('reasoning.github.test', async () => {
                 try {
-                    const { GitHubTokenManager } = await import('./core/GitHubTokenManager');
+                    const { GitHubFineGrainedManager } = await import('./core/integrations/GitHubFineGrainedManager');
                     const { GitHubCaptureEngine } = await import('./core/GitHubCaptureEngine');
                     
                     if (!persistence || !eventAggregator) {
@@ -360,9 +457,10 @@ export async function activate(context: vscode.ExtensionContext) {
                         return;
                     }
 
-                    const token = GitHubTokenManager.getToken();
+                    const fgm = new GitHubFineGrainedManager(workspaceRoot!);
+                    const token = fgm.getToken();
                     if (!token) {
-                        vscode.window.showWarningMessage('⚠️ No GitHub token found. Please setup token first.');
+                        vscode.window.showWarningMessage('⚠️ No fine-grained GitHub token found. Please run "Setup GitHub integration".');
                         return;
                     }
 
@@ -1415,28 +1513,94 @@ ${adr.evidenceIds.length} evidence(s) linked
         
         // Command: Auto Package (full: compile + package + install)
         const autoPackageCommand = vscode.commands.registerCommand('reasoning.autopackage', async () => {
-            const { AutoPackager } = await import('./core/auto/AutoPackager');
-            const packagerChannel = vscode.window.createOutputChannel('RL3 AutoPackager');
-            const autoPackager = new AutoPackager(workspaceRoot, packagerChannel);
-            await autoPackager.run({ bumpVersion: false, installLocally: true });
+            try {
+                const { AutoPackager } = await import('./core/auto/AutoPackager');
+                
+                // Réutiliser le channel principal au lieu d'en créer un nouveau
+                logger.show();
+                logger.log('');
+                logger.log('═══════════════════════════════════════════════════════════════');
+                logger.log('🤖 AUTOPACKAGER — Compile + Package + Install');
+                logger.log('═══════════════════════════════════════════════════════════════');
+                
+                // Ensure workspaceRoot is defined
+                if (!workspaceRoot) {
+                    const errorMsg = '❌ Workspace root not found. Please open a workspace folder.';
+                    logger.log(errorMsg);
+                    vscode.window.showErrorMessage(errorMsg);
+                    return;
+                }
+                
+                const autoPackager = new AutoPackager(workspaceRoot, logger.getChannel());
+                await autoPackager.run({ bumpVersion: false, installLocally: true });
+            } catch (error: any) {
+                const errorMsg = `❌ AutoPackager failed: ${error.message}`;
+                console.error(errorMsg, error);
+                logger.log(errorMsg);
+                vscode.window.showErrorMessage(errorMsg);
+            }
         });
         context.subscriptions.push(autoPackageCommand);
 
         // Command: Auto Package with Version Bump
         const autoPackageBumpCommand = vscode.commands.registerCommand('reasoning.autopackage.bump', async () => {
-            const { AutoPackager } = await import('./core/auto/AutoPackager');
-            const packagerChannel = vscode.window.createOutputChannel('RL3 AutoPackager');
-            const autoPackager = new AutoPackager(workspaceRoot, packagerChannel);
-            await autoPackager.run({ bumpVersion: true, installLocally: true });
+            try {
+                const { AutoPackager } = await import('./core/auto/AutoPackager');
+                
+                // Réutiliser le channel principal
+                logger.show();
+                logger.log('');
+                logger.log('═══════════════════════════════════════════════════════════════');
+                logger.log('🔢 AUTOPACKAGER — Version Bump + Compile + Package + Install');
+                logger.log('═══════════════════════════════════════════════════════════════');
+                
+                // Ensure workspaceRoot is defined
+                if (!workspaceRoot) {
+                    const errorMsg = '❌ Workspace root not found. Please open a workspace folder.';
+                    logger.log(errorMsg);
+                    vscode.window.showErrorMessage(errorMsg);
+                    return;
+                }
+                
+                const autoPackager = new AutoPackager(workspaceRoot, logger.getChannel());
+                await autoPackager.run({ bumpVersion: true, installLocally: true });
+            } catch (error: any) {
+                const errorMsg = `❌ AutoPackager with version bump failed: ${error.message}`;
+                console.error(errorMsg, error);
+                logger.log(errorMsg);
+                vscode.window.showErrorMessage(errorMsg);
+            }
         });
         context.subscriptions.push(autoPackageBumpCommand);
 
         // Command: Quick Rebuild (compile + package only, no install)
         const quickRebuildCommand = vscode.commands.registerCommand('reasoning.quickrebuild', async () => {
-            const { AutoPackager } = await import('./core/auto/AutoPackager');
-            const packagerChannel = vscode.window.createOutputChannel('RL3 AutoPackager');
-            const autoPackager = new AutoPackager(workspaceRoot, packagerChannel);
-            await autoPackager.quickRebuild();
+            try {
+                const { AutoPackager } = await import('./core/auto/AutoPackager');
+                
+                // Réutiliser le channel principal
+                logger.show();
+                logger.log('');
+                logger.log('═══════════════════════════════════════════════════════════════');
+                logger.log('⚡ QUICK REBUILD — Compile + Package (no install)');
+                logger.log('═══════════════════════════════════════════════════════════════');
+                
+                // Ensure workspaceRoot is defined
+                if (!workspaceRoot) {
+                    const errorMsg = '❌ Workspace root not found. Please open a workspace folder.';
+                    logger.log(errorMsg);
+                    vscode.window.showErrorMessage(errorMsg);
+                    return;
+                }
+                
+                const autoPackager = new AutoPackager(workspaceRoot, logger.getChannel());
+                await autoPackager.quickRebuild();
+            } catch (error: any) {
+                const errorMsg = `❌ Quick rebuild failed: ${error.message}`;
+                console.error(errorMsg, error);
+                logger.log(errorMsg);
+                vscode.window.showErrorMessage(errorMsg);
+            }
         });
         context.subscriptions.push(quickRebuildCommand);
         
@@ -1533,6 +1697,59 @@ ${adr.evidenceIds.length} evidence(s) linked
                 vscode.window.showInformationMessage('🧠 RL3 auto-initialized and synced.');
             })
         );
+
+        // ───────────────────────────────────────────────────────────────────────
+        // 🤖 Autonomous Development Cycle Scheduler
+        // Schedules periodic cognitive actions to increase persistence & cognition
+        // ───────────────────────────────────────────────────────────────────────
+        try {
+            // Helper to safely run a command and log
+            const run = async (cmd: string) => {
+                try {
+                    persistence?.logWithEmoji('⏱️', `Scheduled run: ${cmd}`);
+                    await vscode.commands.executeCommand(cmd);
+                    persistence?.logWithEmoji('✅', `Scheduled run completed: ${cmd}`);
+                } catch (err) {
+                    const msg = err instanceof Error ? err.message : String(err);
+                    persistence?.logWithEmoji('❌', `Scheduled run failed (${cmd}): ${msg}`);
+                }
+            };
+
+            // Cadences (ms)
+            const TWO_HOURS = 2 * 60 * 60 * 1000;
+            const FOUR_HOURS = 4 * 60 * 60 * 1000;
+            const ONE_DAY = 24 * 60 * 60 * 1000;
+
+            // Every ~2h: patterns, correlations, ADR auto
+            autonomousTimers.push(setInterval(() => {
+                void run('reasoning.pattern.analyze');
+                void run('reasoning.correlation.analyze');
+                void run('reasoning.adr.auto');
+            }, TWO_HOURS));
+
+            // Every ~4h: external sync/status (if configured)
+            autonomousTimers.push(setInterval(() => {
+                void run('reasoning.external.sync');
+                void run('reasoning.external.status');
+            }, FOUR_HOURS));
+
+            // Daily: integrity check and snapshot
+            autonomousTimers.push(setInterval(() => {
+                void run('reasoning.verify.integrity');
+                void run('reasoning.snapshot.create');
+            }, ONE_DAY));
+
+            // Dispose timers on deactivate via context subscription
+            context.subscriptions.push({ dispose: () => {
+                autonomousTimers.forEach(t => clearInterval(t));
+                autonomousTimers = [];
+            }});
+
+            persistence?.logWithEmoji('🗓️', 'Autonomous development cycle scheduler started');
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            persistence?.logWithEmoji('⚠️', `Scheduler initialization skipped: ${msg}`);
+        }
         
         // Check if first run (minimalist onboarding)
         const reasoningDir = path.join(workspaceRoot, '.reasoning');
@@ -1596,6 +1813,15 @@ export function deactivate() {
     
     if (persistence) {
         persistence.dispose();
+    }
+    if (rl3StatusBarItem) {
+        rl3StatusBarItem.dispose();
+        rl3StatusBarItem = null;
+    }
+    // Clear autonomous timers
+    if (autonomousTimers.length) {
+        autonomousTimers.forEach(t => clearInterval(t));
+        autonomousTimers = [];
     }
     
     console.log('✅ Extension deactivated successfully');

@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class GitHubTokenManager {
     private static readonly TOKEN_KEY = 'reasoningLayer.githubToken';
@@ -7,26 +9,39 @@ export class GitHubTokenManager {
      * Get stored GitHub token from VS Code settings
      */
     public static getToken(): string | null {
-        const config = vscode.workspace.getConfiguration('reasoningLayer');
-        return config.get<string | null>('githubToken', null);
+        // DEPRECATED: Legacy settings token is no longer used.
+        // New source of truth: .reasoning/security/github.json (fine-grained only)
+        const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!workspaceRoot) return null;
+        const tokenPath = path.join(workspaceRoot, '.reasoning', 'security', 'github.json');
+        try {
+            if (!fs.existsSync(tokenPath)) return null;
+            const data = JSON.parse(fs.readFileSync(tokenPath, 'utf-8'));
+            if (data && data.token && data.token_type === 'fine-grained') {
+                return data.token as string;
+            }
+            return null;
+        } catch {
+            return null;
+        }
     }
 
     /**
      * Store GitHub token in VS Code settings
      */
     public static async storeToken(token: string): Promise<void> {
-        const config = vscode.workspace.getConfiguration('reasoningLayer');
-        // Use Global target for window-scoped settings
-        await config.update('githubToken', token, vscode.ConfigurationTarget.Global);
+        // No-op: we only store fine-grained tokens on disk via GitHubFineGrainedManager
+        void token;
     }
 
     /**
      * Clear stored GitHub token
      */
     public static async clearToken(): Promise<void> {
-        const config = vscode.workspace.getConfiguration('reasoningLayer');
-        // Use Global target for window-scoped settings
-        await config.update('githubToken', undefined, vscode.ConfigurationTarget.Global);
+        const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!workspaceRoot) return;
+        const tokenPath = path.join(workspaceRoot, '.reasoning', 'security', 'github.json');
+        try { if (fs.existsSync(tokenPath)) fs.unlinkSync(tokenPath); } catch {}
     }
 
     /**

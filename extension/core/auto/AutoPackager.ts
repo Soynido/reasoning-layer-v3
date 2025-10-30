@@ -132,7 +132,8 @@ export class AutoPackager {
         const startTime = Date.now();
         
         try {
-            execSync('npm run compile', {
+            this.log('🔧', 'Running: npm run compile');
+            const result = execSync('npm run compile', {
                 cwd: this.workspaceRoot,
                 stdio: 'pipe',
                 encoding: 'utf-8'
@@ -141,6 +142,13 @@ export class AutoPackager {
             const duration = Date.now() - startTime;
             this.log('⏱️', `Compilation terminée en ${(duration / 1000).toFixed(1)}s`);
         } catch (error: any) {
+            this.log('❌', `Compilation error: ${error.message}`);
+            if (error.stdout) {
+                this.log('📝', `stdout: ${error.stdout}`);
+            }
+            if (error.stderr) {
+                this.log('📝', `stderr: ${error.stderr}`);
+            }
             throw new Error(`Compilation failed: ${error.message}`);
         }
     }
@@ -159,7 +167,8 @@ export class AutoPackager {
         this.cleanOldVsix();
 
         try {
-            execSync('vsce package --no-dependencies --allow-package-all-secrets', {
+            this.log('📦', 'Running: vsce package --no-dependencies --allow-package-all-secrets');
+            const result = execSync('vsce package --no-dependencies --allow-package-all-secrets', {
                 cwd: this.workspaceRoot,
                 stdio: 'pipe',
                 encoding: 'utf-8'
@@ -174,7 +183,9 @@ export class AutoPackager {
                 const files = fs.readdirSync(this.workspaceRoot);
                 const vsixFiles = files.filter(f => f.endsWith('.vsix'));
                 if (vsixFiles.length > 0) {
-                    return path.join(this.workspaceRoot, vsixFiles[0]);
+                    const foundPath = path.join(this.workspaceRoot, vsixFiles[0]);
+                    this.log('📦', `Found .vsix: ${vsixFiles[0]}`);
+                    return foundPath;
                 }
                 throw new Error('VSIX file not found after packaging');
             }
@@ -185,6 +196,13 @@ export class AutoPackager {
 
             return vsixPath;
         } catch (error: any) {
+            this.log('❌', `Packaging error: ${error.message}`);
+            if (error.stdout) {
+                this.log('📝', `stdout: ${error.stdout}`);
+            }
+            if (error.stderr) {
+                this.log('📝', `stderr: ${error.stderr}`);
+            }
             throw new Error(`Packaging failed: ${error.message}`);
         }
     }
@@ -197,16 +215,18 @@ export class AutoPackager {
 
         try {
             // Try Cursor first, then VS Code
+            this.log('⚙️', `Running: cursor --install-extension "${path.basename(vsixPath)}"`);
             try {
-                execSync(`cursor --install-extension "${vsixPath}"`, {
+                const result = execSync(`cursor --install-extension "${vsixPath}"`, {
                     cwd: this.workspaceRoot,
                     stdio: 'pipe',
                     encoding: 'utf-8'
                 });
                 this.log('📦', 'Installé dans Cursor');
-            } catch (cursorError) {
+            } catch (cursorError: any) {
+                this.log('⚠️', 'Cursor installation failed, trying VS Code...');
                 // Fallback to VS Code
-                execSync(`code --install-extension "${vsixPath}"`, {
+                const result = execSync(`code --install-extension "${vsixPath}"`, {
                     cwd: this.workspaceRoot,
                     stdio: 'pipe',
                     encoding: 'utf-8'
@@ -217,6 +237,13 @@ export class AutoPackager {
             const duration = Date.now() - startTime;
             this.log('⏱️', `Installation terminée en ${(duration / 1000).toFixed(1)}s`);
         } catch (error: any) {
+            this.log('❌', `Installation error: ${error.message}`);
+            if (error.stdout) {
+                this.log('📝', `stdout: ${error.stdout}`);
+            }
+            if (error.stderr) {
+                this.log('📝', `stderr: ${error.stderr}`);
+            }
             throw new Error(`Installation failed: ${error.message}`);
         }
     }

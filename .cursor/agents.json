@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Reasoning Layer",
+    "description": "Autonomous cognitive engine (RL3) — free-text prompt → CLI synthesize",
+    "command": "node .reasoning/cli.js synthesize --goal='${prompt}' --update-readme --push",
+    "trigger": ["RL3", "Reasoning Layer", "Auto-doc", "Roadmap", "Audit"]
+  }
+]
+
+

@@ -11,9 +11,8 @@ module.exports = {
   },
   externals: {
     vscode: 'commonjs vscode',
-    chokidar: 'commonjs chokidar',
-    'simple-git': 'commonjs simple-git'
-    // uuid: retiré pour que webpack le bundlise
+    'fsevents': 'commonjs fsevents' // Optionnel macOS natif, non requis pour fonctionner
+    // chokidar, simple-git, uuid: bundlés par webpack pour autonomie complète
   },
   resolve: {
     extensions: ['.ts', '.js']

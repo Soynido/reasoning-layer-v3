@@ -15,6 +15,22 @@ export class GitHubFineGrainedManager {
     }
 
     /**
+     * Public health check: determines if repo + valid fine-grained token are configured
+     */
+    public async checkConnection(): Promise<{ ok: boolean; reason?: string; repo?: string }> {
+        const repoSlug = this.getRepositorySlug();
+        if (!repoSlug) {
+            return { ok: false, reason: 'no_repo' };
+        }
+        const token = this.getToken();
+        if (!token) {
+            return { ok: false, reason: 'missing_token', repo: repoSlug };
+        }
+        const result = await this.verifyToken(token, repoSlug);
+        return { ok: result.ok, reason: result.reason, repo: repoSlug };
+    }
+
+    /**
      * Detect repository from local git config
      */
     private getRepositorySlug(): string | null {
@@ -27,7 +43,7 @@ export class GitHubFineGrainedManager {
             // Match both HTTPS and SSH formats
             const match = remoteUrl.match(/(?:https:\/\/github\.com\/|git@github\.com:)([^\/]+\/[^\/]+)(?:\.git)?$/);
             if (match && match[1]) {
-                return match[1];
+                return this.normalizeRepoSlug(match[1]);
             }
 
             return null;
@@ -38,28 +54,53 @@ export class GitHubFineGrainedManager {
     }
 
     /**
+     * Ensure repo slug is in the form owner/repo (strip trailing .git, trim spaces)
+     */
+    private normalizeRepoSlug(slug: string): string {
+        return slug.trim().replace(/\.git$/i, '');
+    }
+
+    /**
      * Generate fine-grained token creation URL
      */
     private generateTokenUrl(repoSlug: string): string {
-        return `https://github.com/settings/personal-access-tokens/new?scopes=repo&repository=${repoSlug}`;
+        const normalized = this.normalizeRepoSlug(repoSlug);
+        return `https://github.com/settings/personal-access-tokens/new?scopes=repo&repository=${normalized}`;
     }
 
     /**
      * Verify token with GitHub API
      */
-    private async verifyToken(token: string, repoSlug: string): Promise<boolean> {
-        try {
-            const response = await fetch(`https://api.github.com/repos/${repoSlug}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/vnd.github+json'
-                }
-            });
+    private async verifyToken(token: string, repoSlug: string): Promise<{ ok: boolean; reason?: string }> {
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28'
+        } as const;
 
-            return response.status === 200;
+        try {
+            // 1) Validate token syntactically and account identity
+            const userRes = await fetch('https://api.github.com/user', { headers });
+            if (userRes.status === 401) {
+                return { ok: false, reason: 'unauthorized' };
+            }
+            if (userRes.status !== 200) {
+                return { ok: false, reason: `unexpected_user_status_${userRes.status}` };
+            }
+
+            // 2) Check repository visibility with this token (private requires explicit permission)
+            const repoRes = await fetch(`https://api.github.com/repos/${this.normalizeRepoSlug(repoSlug)}`, { headers });
+            if (repoRes.status === 200) {
+                return { ok: true };
+            }
+            if (repoRes.status === 404 || repoRes.status === 403) {
+                // Token valid, but missing repository access/permissions
+                return { ok: false, reason: 'missing_repo_access' };
+            }
+            return { ok: false, reason: `unexpected_repo_status_${repoRes.status}` };
         } catch (error) {
             console.error('Token verification failed:', error);
-            return false;
+            return { ok: false, reason: 'network_error' };
         }
     }
 
@@ -73,7 +114,7 @@ export class GitHubFineGrainedManager {
         }
 
         const tokenData = {
-            repo: repoSlug,
+            repo: this.normalizeRepoSlug(repoSlug),
             token_type: 'fine-grained',
             created_at: new Date().toISOString(),
             scopes: ['repo'],
@@ -101,6 +142,29 @@ export class GitHubFineGrainedManager {
 
         console.log(`📁 Detected repository: ${repoSlug}`);
 
+        // Step 1.1: Check existing token and prompt for overwrite
+        try {
+            const tokenPath = path.join(this.workspaceRoot, '.reasoning', 'security', 'github.json');
+            if (fs.existsSync(tokenPath)) {
+                const existing = JSON.parse(fs.readFileSync(tokenPath, 'utf-8'));
+                const existingRepo = existing?.repo || 'unknown';
+                const createdAt = existing?.created_at || 'unknown';
+                const choice = await vscode.window.showInformationMessage(
+                    `A fine-grained token is already configured for ${existingRepo} (created: ${createdAt}).`,
+                    'Replace token',
+                    'Keep existing',
+                    'Cancel'
+                );
+                if (choice === 'Keep existing' || choice === 'Cancel') {
+                    vscode.window.showInformationMessage('ℹ️ Keeping existing GitHub token.');
+                    return;
+                }
+                // If 'Replace token', continue flow
+            }
+        } catch (e) {
+            console.warn('Token overwrite check failed:', e);
+        }
+
         // Step 2: Open fine-grained token creation URL
         const tokenUrl = this.generateTokenUrl(repoSlug);
         console.log(`🔗 Opening: ${tokenUrl}`);
@@ -123,12 +187,22 @@ export class GitHubFineGrainedManager {
         // Step 4: Verify token
         vscode.window.showInformationMessage('🔍 Verifying token...');
         
-        const isValid = await this.verifyToken(token, repoSlug);
-        
-        if (!isValid) {
-            vscode.window.showErrorMessage(
-                '⚠️ Invalid or expired token. Please generate a new one.'
-            );
+        const check = await this.verifyToken(token, repoSlug);
+        if (!check.ok) {
+            if (check.reason === 'unauthorized') {
+                vscode.window.showErrorMessage('⚠️ Token unauthorized. Ensure you pasted it correctly and it is active.');
+                return;
+            }
+            if (check.reason === 'missing_repo_access') {
+                // Save token so user can adjust permissions on GitHub without re-pasting
+                this.saveToken(token, repoSlug);
+                this.logEvent(repoSlug);
+                vscode.window.showWarningMessage(
+                    '⚠️ Token is valid but lacks access to this repository. Grant Repository access to this repo and permissions (Contents: Read, Issues: Read, Pull requests: Read, Discussions: Read), then retry.'
+                );
+                return;
+            }
+            vscode.window.showErrorMessage(`⚠️ Token validation failed (${check.reason}). Please try again.`);
             return;
         }
 

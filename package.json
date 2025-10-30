@@ -1,7 +1,7 @@
 {
   "name": "reasoning-layer-v3",
   "displayName": "Reasoning Layer V3",
-  "version": "1.0.86",
+  "version": "1.0.87",
   "publisher": "valentingaludec",
   "author": {
     "name": "Valentin Galudec",
@@ -455,7 +455,7 @@
     "publish": "vsce publish"
   },
   "dependencies": {
-    "chokidar": "^3.5.3",
+    "chokidar": "^3.6.0",
     "simple-git": "^3.28.0",
     "uuid": "^9.0.1",
     "zod": "^3.23.8"

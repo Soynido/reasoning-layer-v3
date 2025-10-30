@@ -604,3 +604,15 @@ This project is actively developed by [Valentin Galudec](https://github.com/Soyn
 ---
 
 *This README was synthesized from actual reasoning data captured by the system during normal operations. The metrics, patterns, correlations, forecasts, and goals shown are real outputs from the Reasoning Layer V3 engine as of 2025-10-29.*
+
+<!-- RL3-AUTO-DOC:START -->
+
+## Reasoning Layer — Live Cognitive Snapshot
+
+- Events: 2396
+- Patterns: 4
+- Correlations: 0
+- ADRs: 21
+- Goals: 4
+
+<!-- RL3-AUTO-DOC:END -->
