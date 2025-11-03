@@ -9241,3 +9241,120 @@
 {"timestamp":"2025-11-03T17:50:29.410Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
 {"timestamp":"2025-11-03T17:50:30.992Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
 {"timestamp":"2025-11-03T17:50:30.993Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:32.544Z","command":"git rev-parse HEAD","latency_ms":13,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:34.194Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:34.416Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:36.008Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:36.008Z","command":"git rev-parse HEAD","latency_ms":13,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:37.023Z","command":"git branch --show-current","latency_ms":29,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:37.040Z","command":"git branch -v","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:37.558Z","command":"git rev-parse HEAD","latency_ms":24,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:39.187Z","command":"git branch --show-current","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:39.205Z","command":"git branch -v","latency_ms":18,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:39.210Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:39.418Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:41.025Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:41.025Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:42.551Z","command":"git rev-parse HEAD","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:44.254Z","command":"git rev-parse HEAD","latency_ms":40,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:44.478Z","command":"git rev-parse HEAD","latency_ms":74,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:46.045Z","command":"git rev-parse HEAD","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:46.045Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:47.014Z","command":"git branch --show-current","latency_ms":18,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:47.034Z","command":"git branch -v","latency_ms":20,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:47.553Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:49.194Z","command":"git branch --show-current","latency_ms":19,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:49.211Z","command":"git branch -v","latency_ms":17,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:49.273Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:49.427Z","command":"git rev-parse HEAD","latency_ms":17,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:51.071Z","command":"git rev-parse HEAD","latency_ms":23,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:51.072Z","command":"git rev-parse HEAD","latency_ms":23,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:52.559Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:52.578Z","command":"git show --pretty=format:\"%H|%an|%ae|%ad|%s\" --nam","latency_ms":19,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:52.593Z","command":"git branch --show-current","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:52.610Z","command":"git show --name-status fc152f53f3e7d405b8235a19a8b","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:54.295Z","command":"git log -1 --pretty=format:%s 0a2b4282893165ff0f6d","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:54.310Z","command":"git log -1 --pretty=format:%an 0a2b4282893165ff0f6","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:54.325Z","command":"git log -1 --pretty=format:%aI 0a2b4282893165ff0f6","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:54.340Z","command":"git diff-tree --no-commit-id --name-only -r 0a2b42","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:54.355Z","command":"git show --stat --format=\"\" 0a2b4282893165ff0f6d01","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:54.369Z","command":"git rev-parse HEAD","latency_ms":12,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:54.384Z","command":"git log -1 --pretty=format:%s fc152f53f3e7d405b823","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:54.399Z","command":"git log -1 --pretty=format:%an fc152f53f3e7d405b82","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:54.415Z","command":"git log -1 --pretty=format:%aI fc152f53f3e7d405b82","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:54.425Z","command":"git rev-parse HEAD","latency_ms":13,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:54.428Z","command":"git diff-tree --no-commit-id --name-only -r fc152f","latency_ms":13,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:54.441Z","command":"git show --pretty=format:\"%H|%an|%ae|%ad|%s\" --nam","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:54.456Z","command":"git branch --show-current","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:54.459Z","command":"git show --stat --format=\"\" fc152f53f3e7d405b8235a","latency_ms":31,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:54.472Z","command":"git show --name-status fc152f53f3e7d405b8235a19a8b","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:56.087Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:56.087Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:56.103Z","command":"git log -1 --pretty=format:%s fc152f53f3e7d405b823","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:56.104Z","command":"git log -1 --pretty=format:%s fc152f53f3e7d405b823","latency_ms":17,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:56.118Z","command":"git log -1 --pretty=format:%an fc152f53f3e7d405b82","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:56.119Z","command":"git log -1 --pretty=format:%an fc152f53f3e7d405b82","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:56.134Z","command":"git log -1 --pretty=format:%aI fc152f53f3e7d405b82","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:56.135Z","command":"git log -1 --pretty=format:%aI fc152f53f3e7d405b82","latency_ms":17,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:56.151Z","command":"git diff-tree --no-commit-id --name-only -r fc152f","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:56.152Z","command":"git diff-tree --no-commit-id --name-only -r fc152f","latency_ms":17,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:56.183Z","command":"git show --stat --format=\"\" fc152f53f3e7d405b8235a","latency_ms":31,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:50:56.184Z","command":"git show --stat --format=\"\" fc152f53f3e7d405b8235a","latency_ms":31,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:57.011Z","command":"git branch --show-current","latency_ms":13,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:57.027Z","command":"git branch -v","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:57.043Z","command":"git branch -v","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:57.057Z","command":"git branch --show-current","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:57.560Z","command":"git rev-parse HEAD","latency_ms":13,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:59.207Z","command":"git branch --show-current","latency_ms":27,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:59.228Z","command":"git branch -v","latency_ms":21,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:59.249Z","command":"git branch -v","latency_ms":21,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:59.267Z","command":"git branch --show-current","latency_ms":18,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:59.427Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:50:59.479Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:01.201Z","command":"git rev-parse HEAD","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:51:01.201Z","command":"git rev-parse HEAD","latency_ms":17,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:02.562Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:04.427Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:04.497Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:06.223Z","command":"git rev-parse HEAD","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:51:06.224Z","command":"git rev-parse HEAD","latency_ms":17,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:07.017Z","command":"git branch --show-current","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:07.034Z","command":"git branch -v","latency_ms":17,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:07.567Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:09.200Z","command":"git branch --show-current","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:09.218Z","command":"git branch -v","latency_ms":17,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:09.431Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:09.512Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:11.240Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:51:11.240Z","command":"git rev-parse HEAD","latency_ms":13,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:12.577Z","command":"git rev-parse HEAD","latency_ms":24,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:14.436Z","command":"git rev-parse HEAD","latency_ms":13,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:14.526Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:16.256Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:51:16.256Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:17.021Z","command":"git branch --show-current","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:17.037Z","command":"git branch -v","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:17.572Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:19.203Z","command":"git branch --show-current","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:19.222Z","command":"git branch -v","latency_ms":19,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:19.436Z","command":"git rev-parse HEAD","latency_ms":13,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:19.543Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:21.279Z","command":"git rev-parse HEAD","latency_ms":18,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:51:21.280Z","command":"git rev-parse HEAD","latency_ms":18,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:22.575Z","command":"git rev-parse HEAD","latency_ms":17,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:24.444Z","command":"git rev-parse HEAD","latency_ms":20,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:24.559Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:26.299Z","command":"git rev-parse HEAD","latency_ms":16,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:51:26.299Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:27.025Z","command":"git branch --show-current","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:27.044Z","command":"git branch -v","latency_ms":18,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:27.573Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:29.203Z","command":"git branch --show-current","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:29.220Z","command":"git branch -v","latency_ms":17,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:29.442Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:29.577Z","command":"git rev-parse HEAD","latency_ms":13,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:31.319Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":2}
+{"timestamp":"2025-11-03T17:51:31.320Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:32.573Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:34.443Z","command":"git rev-parse HEAD","latency_ms":15,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}
+{"timestamp":"2025-11-03T17:51:34.593Z","command":"git rev-parse HEAD","latency_ms":14,"success":true,"timedOut":false,"queue_size":0,"active_jobs":1}

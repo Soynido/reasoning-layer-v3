@@ -80,10 +80,17 @@ export async function activate(context: vscode.ExtensionContext) {
             outputChannel.appendLine('❤️ Health Monitor started');
         }
         
-        // Start CognitiveScheduler
-        outputChannel.appendLine('🧠 Starting CognitiveScheduler...');
-        scheduler.start(kernelConfig.cognitive_cycle_interval_ms);
-        outputChannel.appendLine(`🛡️ Watchdog active (${kernelConfig.cognitive_cycle_interval_ms}ms cycles)`);
+        // Start CognitiveScheduler (double-delay for Extension Host stability)
+        outputChannel.appendLine('🧠 Starting CognitiveScheduler (delayed start in 3s)...');
+        
+        // External delay: Ensure kernel is fully initialized before scheduler starts
+        const channel = outputChannel; // Capture for setTimeout callback
+        setTimeout(async () => {
+            channel.appendLine('⏳ Scheduler: Starting delayed initialization...');
+            await scheduler.start(kernelConfig.cognitive_cycle_interval_ms);
+            channel.appendLine(`✅ Scheduler started successfully`);
+            channel.appendLine(`🛡️ Watchdog active (${kernelConfig.cognitive_cycle_interval_ms}ms cycles)`);
+        }, 3000);
         
         // Register minimal commands
         context.subscriptions.push(

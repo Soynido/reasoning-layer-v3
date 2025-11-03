@@ -56,11 +56,17 @@ export class CognitiveScheduler {
      * Start periodic cycles with watchdog protection
      * @param periodMs - Period in milliseconds (default: 5-10s for testing, 2h for production)
      */
-    start(periodMs: number = 10000): void {
+    async start(periodMs: number = 10000): Promise<void> {
         this.intervalMs = periodMs;
         
         // Stop any existing timers first
         this.stop();
+        
+        // CRITICAL: Wait for VS Code Extension Host to stabilize
+        // Without this delay, timers are registered but never fire
+        console.log(`⏳ [Scheduler] Waiting 2s for Extension Host to stabilize...`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log(`✅ [Scheduler] Extension Host ready`);
         
         // Register main cycle timer
         console.log(`🧪 [Scheduler] Registering cycle timer (${periodMs}ms)...`);
@@ -108,11 +114,11 @@ export class CognitiveScheduler {
     /**
      * Restart scheduler (called by watchdog or manually)
      */
-    restart(): void {
+    async restart(): Promise<void> {
         console.log('🔄 RL4 CognitiveScheduler restarting...');
         const currentInterval = this.intervalMs;
         this.stop();
-        this.start(currentInterval);
+        await this.start(currentInterval);
         console.log('✅ RL4 CognitiveScheduler auto-restarted');
     }
     
