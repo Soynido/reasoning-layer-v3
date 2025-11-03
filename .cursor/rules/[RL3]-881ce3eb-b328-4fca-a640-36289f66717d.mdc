@@ -1,0 +1,20 @@
+---
+description: [RL3] Adoption d'une architecture modulaire par capteur spécialisé
+globs: **/*.ts, **/*.md
+alwaysApply: false
+manual: false
+---
+
+# Adoption d'une architecture modulaire par capteur spécialisé
+
+**Identifiant**: 881ce3eb-b328-4fca-a640-36289f66717d
+
+## Contexte
+- Le développement montre la création de 4 engines séparés (SBOMCaptureEngine, ConfigCaptureEngine, TestCaptureEngine, GitMetadataEngine). L'intention était de découpler les responsabilités de capture par domaine technique.
+
+## Décision
+- Le choix fait: un engine par type de métadonnée plutôt qu'un capteur monolithique. Cette décision visait à améliorer la maintenabilité et tester chaque capteur indépendamment.
+
+## Conséquences
+- Impact observable: le code est plus modulaire, chaque engine peut évoluer sans affecter les autres. Cela facilite l'ajout de nouveaux capteurs.
+

@@ -1,0 +1,21 @@
+# Architecture Decision Records (RL3)
+
+- 0e952acf-30b4-4814-9e29-0f3987443b25: Auto-ADR: Dependency decision (1f77c0b)
+- 2109e5f9-656f-48f4-a7e8-9b3c247f5332: Adoption of a modular architecture through specialized capture engines
+- 31bd42ed-0ff0-4b82-a40b-a8879a465e2c: Auto-ADR: Config decision (fb3959f)
+- 3ad08407-051f-4786-8557-8af87f40481c: Stabilisation du contrat de persistance via manifest versionné
+- 3b3467ee-a009-43f4-bb3d-0b6c91147dc7: Auto-ADR: Dependency decision (1c15f36)
+- 52f13b9f-6071-429b-9e46-31a270efafa8: Using Git for decision traceability via history
+- 5ad6d1d1-6c32-4a04-b9f4-88d6b36b704a: Major refactor of extension.ts
+- 7051c680-fd39-4aba-a24c-2a848130f97b: Auto-ADR: Config decision (f0dab50)
+- 805d2583-52b3-4851-873e-34e60d34e4b6: Major refactor of git:89a7e45f5abf0c8d115ec4c195f7a8600839a641
+- 842aeddb-7a8a-4357-af2e-8a9ba3abff1f: Auto-ADR: Config decision (b1e6f20)
+- 86e66c06-71be-4114-9547-c520dea4feb8: Auto-ADR: Dependency decision (13ad65b)
+- 881ce3eb-b328-4fca-a640-36289f66717d: Adoption d'une architecture modulaire par capteur spécialisé
+- 8bd734e6-63f7-43cc-89ef-836e046bffcb: Auto-ADR: Dependency decision (1f77c0b)
+- 95397efb-f0c8-430c-8cfa-96270ccc77dc: Refactor majeur de git:89a7e45f5abf0c8d115ec4c195f7a8600839a641
+- 96f4201d-fde9-4eec-b41b-d15053567fd1: Major refactor of git:***AWS_SECRET_REDACTED***
+- bb084243-e24a-4806-b24a-c40e038865c7: Refactor majeur de extension.ts
+- cf74e1d7-1bab-4614-863f-ced6ce0e0d57: Auto-ADR: Config decision (1cf1b84)
+- ed542959-46dd-4d70-a053-fe06e084230a: Auto-ADR: Config decision (7554273)
+- f82a9f56-b33d-41c4-b485-7174ac33aee1: Stabilizing the persistence contract via versioned manifest

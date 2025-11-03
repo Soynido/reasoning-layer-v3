@@ -1,0 +1,20 @@
+---
+description: [RL3] Adoption of a modular architecture through specialized capture engines
+globs: **/*.ts, **/*.md
+alwaysApply: false
+manual: false
+---
+
+# Adoption of a modular architecture through specialized capture engines
+
+**Identifiant**: 2109e5f9-656f-48f4-a7e8-9b3c247f5332
+
+## Contexte
+- Development shows the creation of 4 separate engines (SBOMCaptureEngine, ConfigCaptureEngine, TestCaptureEngine, GitMetadataEngine). The intention was to decouple capture responsibilities by technical domain.
+
+## Décision
+- The choice made: one engine per metadata type rather than a monolithic capture system. This decision aimed to improve maintainability and test each capture engine independently.
+
+## Conséquences
+- Observable impact: code is more modular, each engine can evolve without affecting others. This facilitates the addition of new capture engines.
+
