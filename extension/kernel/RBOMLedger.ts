@@ -40,6 +40,7 @@ export interface CycleSummary {
         adrs: { hash: string; count: number };
     };
     merkleRoot: string;
+    prevMerkleRoot: string; // Chain link to previous cycle
 }
 
 export class RBOMLedger {
@@ -181,11 +182,32 @@ export class RBOMLedger {
     }
     
     /**
-     * Calculate hash of data
+     * Calculate hash of data (with stable serialization)
      */
     private calculateHash(data: any): string {
-        const json = JSON.stringify(data);
+        const json = this.stableStringify(data);
         return crypto.createHash('sha256').update(json).digest('hex');
+    }
+    
+    /**
+     * Stable JSON serialization (deterministic key ordering)
+     * Critical for consistent Merkle roots across runs
+     */
+    private stableStringify(obj: any): string {
+        if (obj === null) return 'null';
+        if (typeof obj !== 'object') return JSON.stringify(obj);
+        if (Array.isArray(obj)) {
+            return '[' + obj.map(item => this.stableStringify(item)).join(',') + ']';
+        }
+        
+        // Sort keys alphabetically for deterministic output
+        const sortedKeys = Object.keys(obj).sort();
+        const pairs = sortedKeys.map(key => {
+            const value = this.stableStringify(obj[key]);
+            return `"${key}":${value}`;
+        });
+        
+        return '{' + pairs.join(',') + '}';
     }
     
     /**
@@ -197,10 +219,11 @@ export class RBOMLedger {
     
     /**
      * Hash a batch of items (for phase-level integrity)
+     * Uses stable serialization for deterministic hashing
      */
     hashBatch(items: any[]): string {
         if (items.length === 0) return '';
-        const combined = JSON.stringify(items);
+        const combined = this.stableStringify(items);
         return crypto.createHash('sha256').update(combined).digest('hex');
     }
     
@@ -212,9 +235,18 @@ export class RBOMLedger {
     }
     
     /**
-     * Append cycle summary to cycles.jsonl
+     * Append cycle summary to cycles.jsonl (with chain linking)
      */
-    async appendCycle(cycle: CycleSummary): Promise<void> {
+    async appendCycle(cycleData: Omit<CycleSummary, 'prevMerkleRoot'>): Promise<void> {
+        // Get previous cycle's Merkle root for chain linking
+        const lastCycle = await this.getLastCycle();
+        const prevMerkleRoot = lastCycle?.merkleRoot || '0000000000000000'; // Genesis
+        
+        const cycle: CycleSummary = {
+            ...cycleData,
+            prevMerkleRoot
+        };
+        
         await this.cyclesWriter.append(cycle);
         
         // Update merkle roots cache
@@ -235,14 +267,18 @@ export class RBOMLedger {
     
     /**
      * Verify entire chain (expensive - use sparingly)
+     * @param options.deep - Also verify inter-cycle chain (prevMerkleRoot links)
      */
-    async verifyChain(): Promise<boolean> {
+    async verifyChain(options: { deep?: boolean } = {}): Promise<boolean> {
         const result = await this.verify();
+        if (!result.valid) return false;
         
-        // Also verify cycles
+        // Verify cycles
         const cycles = await this.cyclesWriter.readAll();
-        for (const cycle of cycles) {
-            // Recompute phase hashes and verify
+        for (let i = 0; i < cycles.length; i++) {
+            const cycle = cycles[i];
+            
+            // 1. Verify phase hashes → merkleRoot
             const phaseHashes = [
                 cycle.phases.patterns.hash,
                 cycle.phases.correlations.hash,
@@ -253,9 +289,17 @@ export class RBOMLedger {
             if (recomputedRoot !== cycle.merkleRoot) {
                 return false;
             }
+            
+            // 2. Verify inter-cycle chain (deep mode)
+            if (options.deep && i > 0) {
+                const prevCycle = cycles[i - 1];
+                if (cycle.prevMerkleRoot !== prevCycle.merkleRoot) {
+                    return false; // Chain broken!
+                }
+            }
         }
         
-        return result.valid;
+        return true;
     }
     
     /**
