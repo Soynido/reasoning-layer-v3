@@ -1,0 +1,8 @@
+{
+  "benchmark": "events-10k",
+  "timestamp": "2025-11-03T13:35:47.057Z",
+  "duration_ms": 23,
+  "throughput_per_s": 434782.60869565216,
+  "file_size_kb": 2038.84765625,
+  "pass": true
+}
