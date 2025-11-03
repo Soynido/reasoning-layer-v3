@@ -1,11 +1,9 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync, exec } from 'child_process';
-import { promisify } from 'util';
+import { execSync } from 'child_process';
 import { UnifiedLogger } from '../UnifiedLogger';
-
-const execAsync = promisify(exec);
+import { ExecPool } from '../../kernel/ExecPool';
 
 /**
  * GitHub CLI Manager - Local Cognitive Agent
@@ -25,10 +23,12 @@ export class GitHubCLIManager {
     private repoSlug: string | null = null;
     private repoOwner: string | null = null;
     private repoName: string | null = null;
+    private execPool: ExecPool;
 
-    constructor(workspaceRoot: string) {
+    constructor(workspaceRoot: string, execPool?: ExecPool) {
         this.workspaceRoot = workspaceRoot || process.cwd();
         this.logger = UnifiedLogger.getInstance();
+        this.execPool = execPool || new ExecPool(2, 2000);
         this.detectRepository();
     }
 
@@ -72,8 +72,8 @@ export class GitHubCLIManager {
      */
     public async checkGHAuth(): Promise<boolean> {
         try {
-            const { stdout } = await execAsync('gh auth status');
-            return stdout.includes('Logged in');
+            const result = await this.execPool.run('gh auth status', { cwd: this.workspaceRoot });
+            return result.stdout.includes('Logged in');
         } catch (error) {
             return false;
         }
@@ -84,8 +84,8 @@ export class GitHubCLIManager {
      */
     public async getGitHubUser(): Promise<string | null> {
         try {
-            const { stdout } = await execAsync('gh auth status');
-            const match = stdout.match(/Logged in to github.com as ([^\s]+)/);
+            const result = await this.execPool.run('gh auth status', { cwd: this.workspaceRoot });
+            const match = result.stdout.match(/Logged in to github.com as ([^\s]+)/);
             return match ? match[1] : null;
         } catch (error) {
             return null;
@@ -146,10 +146,11 @@ export class GitHubCLIManager {
         }
 
         try {
-            const { stdout } = await execAsync(
-                `gh issue list --repo ${this.repoSlug} --state ${state} --json number,title,body,state,createdAt,updatedAt`
+            const result = await this.execPool.run(
+                `gh issue list --repo ${this.repoSlug} --state ${state} --json number,title,body,state,createdAt,updatedAt`,
+                { cwd: this.workspaceRoot }
             );
-            const issues = JSON.parse(stdout);
+            const issues = JSON.parse(result.stdout);
             this.logger.log(`📋 Listed ${issues.length} ${state} issues`);
             return issues;
         } catch (error) {
@@ -172,12 +173,13 @@ export class GitHubCLIManager {
 
         try {
             const labelFlag = labels.length > 0 ? `--label "${labels.join(',')}"` : '';
-            const { stdout } = await execAsync(
-                `gh issue create --repo ${this.repoSlug} --title "${title}" --body "${body}" ${labelFlag}`.trim()
+            const result = await this.execPool.run(
+                `gh issue create --repo ${this.repoSlug} --title "${title}" --body "${body}" ${labelFlag}`.trim(),
+                { cwd: this.workspaceRoot }
             );
             
             // Extract issue number from output (e.g., "https://github.com/owner/repo/issues/42")
-            const match = stdout.match(/issues\/(\d+)/);
+            const match = result.stdout.match(/issues\/(\d+)/);
             const issueNumber = match ? parseInt(match[1]) : null;
 
             this.logger.log(`✅ Issue created: #${issueNumber} - ${title}`);
@@ -185,7 +187,7 @@ export class GitHubCLIManager {
             // Log to traces
             this.logGitHubAction('create_issue', { issueNumber, title });
 
-            return { number: issueNumber, url: stdout.trim() };
+            return { number: issueNumber, url: result.stdout.trim() };
         } catch (error) {
             this.logger.warn(`Failed to create issue: ${error}`);
             throw error;
@@ -205,8 +207,9 @@ export class GitHubCLIManager {
         }
 
         try {
-            await execAsync(
-                `gh pr comment ${prNumber} --repo ${this.repoSlug} --body "${body}"`
+            await this.execPool.run(
+                `gh pr comment ${prNumber} --repo ${this.repoSlug} --body "${body}"`,
+                { cwd: this.workspaceRoot }
             );
 
             this.logger.log(`💬 Commented on PR #${prNumber}`);
@@ -236,8 +239,9 @@ export class GitHubCLIManager {
             const tempFile = path.join(this.workspaceRoot, '.reasoning', 'temp_discussion.md');
             fs.writeFileSync(tempFile, body, 'utf-8');
 
-            const { stdout } = await execAsync(
-                `gh discussion create --repo ${this.repoSlug} --title "${title}" --body-file "${tempFile}" --category "${category}"`
+            const result = await this.execPool.run(
+                `gh discussion create --repo ${this.repoSlug} --title "${title}" --body-file "${tempFile}" --category "${category}"`,
+                { cwd: this.workspaceRoot }
             );
 
             // Clean up temp file
@@ -250,7 +254,7 @@ export class GitHubCLIManager {
             // Log to traces
             this.logGitHubAction('publish_discussion', { title, category });
 
-            return { url: stdout.trim() };
+            return { url: result.stdout.trim() };
         } catch (error) {
             this.logger.warn(`Failed to publish discussion: ${error}`);
             throw error;
@@ -306,8 +310,9 @@ export class GitHubCLIManager {
                 .map(([key, value]) => `-f ${key}="${value}"`)
                 .join(' ');
 
-            await execAsync(
-                `gh workflow run ${workflowId} --repo ${this.repoSlug} ${inputFlags}`.trim()
+            await this.execPool.run(
+                `gh workflow run ${workflowId} --repo ${this.repoSlug} ${inputFlags}`.trim(),
+                { cwd: this.workspaceRoot }
             );
 
             this.logger.log(`⚙️  Workflow triggered: ${workflowId}`);

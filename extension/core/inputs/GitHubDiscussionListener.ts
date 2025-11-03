@@ -1,12 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { CaptureEvent } from '../types';
 import { UnifiedLogger } from '../UnifiedLogger';
-
-const execAsync = promisify(exec);
+import { ExecPool } from '../../kernel/ExecPool';
 
 /**
  * GitHubDiscussionListener - Input Layer Component (Phase 3)
@@ -30,6 +27,7 @@ export class GitHubDiscussionListener {
     private lastPollTime: string = '';
     private repoOwner: string = '';
     private repoName: string = '';
+    private execPool: ExecPool;
 
     // Cognitive keywords for scoring
     private readonly COGNITIVE_KEYWORDS = [
@@ -39,9 +37,10 @@ export class GitHubDiscussionListener {
         'adr', 'rfc', 'proposal', 'discussion', 'debate'
     ];
 
-    constructor(workspaceRoot: string) {
+    constructor(workspaceRoot: string, execPool?: ExecPool) {
         this.workspaceRoot = workspaceRoot;
         this.logger = UnifiedLogger.getInstance();
+        this.execPool = execPool || new ExecPool(2, 2000);
     }
 
     /**
@@ -93,8 +92,8 @@ export class GitHubDiscussionListener {
      */
     private async detectRepository(): Promise<{ owner: string; name: string } | null> {
         try {
-            const { stdout } = await execAsync('git remote get-url origin', { cwd: this.workspaceRoot });
-            const remoteUrl = stdout.trim();
+            const result = await this.execPool.run('git remote get-url origin', { cwd: this.workspaceRoot });
+            const remoteUrl = result.stdout.trim();
 
             // Parse GitHub URL
             // Supports: https://github.com/owner/repo.git or git@github.com:owner/repo.git
@@ -158,12 +157,12 @@ export class GitHubDiscussionListener {
      */
     private async fetchRecentIssues(): Promise<GitHubDiscussion[]> {
         try {
-            const { stdout } = await execAsync(
+            const result = await this.execPool.run(
                 `gh issue list --repo ${this.repoOwner}/${this.repoName} --limit 10 --json number,title,body,state,createdAt,updatedAt,author,labels`,
                 { cwd: this.workspaceRoot }
             );
 
-            const issues = JSON.parse(stdout);
+            const issues = JSON.parse(result.stdout);
             return issues.map((issue: any) => ({
                 type: 'issue',
                 number: issue.number,
@@ -186,12 +185,12 @@ export class GitHubDiscussionListener {
      */
     private async fetchRecentPRs(): Promise<GitHubDiscussion[]> {
         try {
-            const { stdout } = await execAsync(
+            const result = await this.execPool.run(
                 `gh pr list --repo ${this.repoOwner}/${this.repoName} --limit 10 --json number,title,body,state,createdAt,updatedAt,author,labels`,
                 { cwd: this.workspaceRoot }
             );
 
-            const prs = JSON.parse(stdout);
+            const prs = JSON.parse(result.stdout);
             return prs.map((pr: any) => ({
                 type: 'pr',
                 number: pr.number,
