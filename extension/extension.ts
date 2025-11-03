@@ -3,6 +3,13 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { PersistenceManager } from './core/PersistenceManager';
 import { EventAggregator } from './core/EventAggregator';
+// RL4 Kernel imports
+import { TimerRegistry } from './kernel/TimerRegistry';
+import { StateRegistry } from './kernel/StateRegistry';
+import { HealthMonitor } from './kernel/HealthMonitor';
+import { CognitiveScheduler } from './kernel/CognitiveScheduler';
+import { KernelAPI } from './kernel/KernelAPI';
+import { loadKernelConfig } from './kernel/config';
 import { SBOMCaptureEngine } from './core/SBOMCaptureEngine';
 import { ConfigCaptureEngine } from './core/ConfigCaptureEngine';
 import { TestCaptureEngine } from './core/TestCaptureEngine';
@@ -64,7 +71,16 @@ let fileChangeWatcher: FileChangeWatcher | null = null;
 let githubDiscussionListener: GitHubDiscussionListener | null = null;
 let shellMessageCapture: ShellMessageCapture | null = null;
 
-// Autonomous cycle timers
+// RL4 Kernel components
+let kernel: {
+    timerRegistry: TimerRegistry;
+    stateRegistry: StateRegistry;
+    healthMonitor: HealthMonitor;
+    scheduler: CognitiveScheduler;
+    api: KernelAPI;
+} | null = null;
+
+// Autonomous cycle timers (DEPRECATED - replaced by CognitiveScheduler)
 let autonomousTimers: Array<ReturnType<typeof setInterval>> = [];
 
 // Status bar item (visual activation indicator)
@@ -80,6 +96,42 @@ export async function activate(context: vscode.ExtensionContext) {
     if (!workspaceRoot) {
         vscode.window.showErrorMessage('Reasoning Layer V3 requires a workspace folder');
         return;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // RL4 KERNEL INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════
+    const kernelConfig = loadKernelConfig(workspaceRoot);
+    
+    if (kernelConfig.USE_TIMER_REGISTRY) {
+        // Initialize Kernel components
+        const timerRegistry = new TimerRegistry();
+        const stateRegistry = new StateRegistry(workspaceRoot);
+        const healthMonitor = new HealthMonitor(workspaceRoot, timerRegistry);
+        const scheduler = new CognitiveScheduler(workspaceRoot, timerRegistry);
+        const api = new KernelAPI(
+            timerRegistry,
+            stateRegistry,
+            healthMonitor,
+            scheduler,
+            new Map(), // writers (will be populated)
+            undefined as any // execPool (will be added in I3-F)
+        );
+        
+        kernel = {
+            timerRegistry,
+            stateRegistry,
+            healthMonitor,
+            scheduler,
+            api
+        };
+        
+        // Start health monitoring
+        if (kernelConfig.USE_HEALTH_MONITOR) {
+            healthMonitor.start(timerRegistry);
+        }
+        
+        console.log('✅ RL4 Kernel initialized');
     }
     
     // Initialize Unified Logger (single source of truth for all output)
@@ -1698,57 +1750,104 @@ ${adr.evidenceIds.length} evidence(s) linked
             })
         );
 
+        // ═══════════════════════════════════════════════════════════════
+        // RL4 KERNEL COMMANDS
+        // ═══════════════════════════════════════════════════════════════
+        
+        if (kernel) {
+            // Kernel Status
+            context.subscriptions.push(
+                vscode.commands.registerCommand('reasoning.kernel.status', () => {
+                    const status = kernel!.api.status();
+                    vscode.window.showInformationMessage(
+                        `🧠 RL4 Kernel Status:\n` +
+                        `Memory: ${status.health.memoryMB.toFixed(0)}MB\n` +
+                        `Timers: ${status.timers}\n` +
+                        `Queue: ${status.queueSize}\n` +
+                        `Uptime: ${(status.uptime / 1000 / 60).toFixed(0)}min\n` +
+                        `Event Loop Lag (p95): ${status.health.eventLoopLag.p95.toFixed(1)}ms`
+                    );
+                })
+            );
+            
+            // Kernel Reflect (Run Cognitive Cycle)
+            context.subscriptions.push(
+                vscode.commands.registerCommand('reasoning.kernel.reflect', async () => {
+                    const result = await kernel!.api.reflect();
+                    vscode.window.showInformationMessage(
+                        `✅ Cognitive Cycle ${result.cycleId} complete\n` +
+                        `Duration: ${result.duration}ms\n` +
+                        `Phases: ${result.phases.filter(p => p.success).length}/${result.phases.length} succeeded`
+                    );
+                })
+            );
+            
+            // Kernel Flush
+            context.subscriptions.push(
+                vscode.commands.registerCommand('reasoning.kernel.flush', async () => {
+                    await kernel!.api.flush();
+                    vscode.window.showInformationMessage('✅ All queues flushed');
+                })
+            );
+        }
+
         // ───────────────────────────────────────────────────────────────────────
-        // 🤖 Autonomous Development Cycle Scheduler
-        // Schedules periodic cognitive actions to increase persistence & cognition
+        // 🤖 Cognitive Cycle Scheduler (RL4 Kernel vs RL3 Legacy)
         // ───────────────────────────────────────────────────────────────────────
-        try {
-            // Helper to safely run a command and log
-            const run = async (cmd: string) => {
-                try {
-                    persistence?.logWithEmoji('⏱️', `Scheduled run: ${cmd}`);
-                    await vscode.commands.executeCommand(cmd);
-                    persistence?.logWithEmoji('✅', `Scheduled run completed: ${cmd}`);
-                } catch (err) {
-                    const msg = err instanceof Error ? err.message : String(err);
-                    persistence?.logWithEmoji('❌', `Scheduled run failed (${cmd}): ${msg}`);
-                }
-            };
+        if (kernel && kernelConfig.USE_TIMER_REGISTRY) {
+            // RL4 MODE: Use single CognitiveScheduler
+            kernel.scheduler.start(kernelConfig.cognitive_cycle_interval_ms);
+            persistence?.logWithEmoji('🧠', `RL4 CognitiveScheduler started (${kernelConfig.cognitive_cycle_interval_ms}ms cycles)`);
+            
+        } else {
+            // RL3 LEGACY MODE: Use multiple autonomous timers (DEPRECATED)
+            try {
+                const run = async (cmd: string) => {
+                    try {
+                        persistence?.logWithEmoji('⏱️', `Scheduled run: ${cmd}`);
+                        await vscode.commands.executeCommand(cmd);
+                        persistence?.logWithEmoji('✅', `Scheduled run completed: ${cmd}`);
+                    } catch (err) {
+                        const msg = err instanceof Error ? err.message : String(err);
+                        persistence?.logWithEmoji('❌', `Scheduled run failed (${cmd}): ${msg}`);
+                    }
+                };
 
-            // Cadences (ms)
-            const TWO_HOURS = 2 * 60 * 60 * 1000;
-            const FOUR_HOURS = 4 * 60 * 60 * 1000;
-            const ONE_DAY = 24 * 60 * 60 * 1000;
+                // Cadences (ms)
+                const TWO_HOURS = 2 * 60 * 60 * 1000;
+                const FOUR_HOURS = 4 * 60 * 60 * 1000;
+                const ONE_DAY = 24 * 60 * 60 * 1000;
 
-            // Every ~2h: patterns, correlations, ADR auto
-            autonomousTimers.push(setInterval(() => {
-                void run('reasoning.pattern.analyze');
-                void run('reasoning.correlation.analyze');
-                void run('reasoning.adr.auto');
-            }, TWO_HOURS));
+                // Every ~2h: patterns, correlations, ADR auto
+                autonomousTimers.push(setInterval(() => {
+                    void run('reasoning.pattern.analyze');
+                    void run('reasoning.correlation.analyze');
+                    void run('reasoning.adr.auto');
+                }, TWO_HOURS));
 
-            // Every ~4h: external sync/status (if configured)
-            autonomousTimers.push(setInterval(() => {
-                void run('reasoning.external.sync');
-                void run('reasoning.external.status');
-            }, FOUR_HOURS));
+                // Every ~4h: external sync/status (if configured)
+                autonomousTimers.push(setInterval(() => {
+                    void run('reasoning.external.sync');
+                    void run('reasoning.external.status');
+                }, FOUR_HOURS));
 
-            // Daily: integrity check and snapshot
-            autonomousTimers.push(setInterval(() => {
-                void run('reasoning.verify.integrity');
-                void run('reasoning.snapshot.create');
-            }, ONE_DAY));
+                // Daily: integrity check and snapshot
+                autonomousTimers.push(setInterval(() => {
+                    void run('reasoning.verify.integrity');
+                    void run('reasoning.snapshot.create');
+                }, ONE_DAY));
 
-            // Dispose timers on deactivate via context subscription
-            context.subscriptions.push({ dispose: () => {
-                autonomousTimers.forEach(t => clearInterval(t));
-                autonomousTimers = [];
-            }});
+                // Dispose timers on deactivate via context subscription
+                context.subscriptions.push({ dispose: () => {
+                    autonomousTimers.forEach(t => clearInterval(t));
+                    autonomousTimers = [];
+                }});
 
-            persistence?.logWithEmoji('🗓️', 'Autonomous development cycle scheduler started');
-        } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            persistence?.logWithEmoji('⚠️', `Scheduler initialization skipped: ${msg}`);
+                persistence?.logWithEmoji('🗓️', 'RL3 Legacy scheduler started (autonomous timers)');
+            } catch (e) {
+                const msg = e instanceof Error ? e.message : String(e);
+                persistence?.logWithEmoji('⚠️', `Scheduler initialization skipped: ${msg}`);
+            }
         }
         
         // Check if first run (minimalist onboarding)
@@ -1788,9 +1887,20 @@ ${adr.evidenceIds.length} evidence(s) linked
     }
 }
 
-export function deactivate() {
+export async function deactivate() {
     console.log('🧠 Reasoning Layer V3 - Deactivating...');
     
+    // RL4 Kernel shutdown (if active)
+    if (kernel) {
+        try {
+            await kernel.api.shutdown();
+            console.log('✅ RL4 Kernel shutdown complete');
+        } catch (error) {
+            console.error('❌ Kernel shutdown error:', error);
+        }
+    }
+    
+    // RL3 Capture engines
     if (sbomCapture) {
         sbomCapture.stop();
     }
@@ -1818,7 +1928,8 @@ export function deactivate() {
         rl3StatusBarItem.dispose();
         rl3StatusBarItem = null;
     }
-    // Clear autonomous timers
+    
+    // Clear autonomous timers (RL3 legacy mode only)
     if (autonomousTimers.length) {
         autonomousTimers.forEach(t => clearInterval(t));
         autonomousTimers = [];

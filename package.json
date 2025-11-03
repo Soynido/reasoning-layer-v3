@@ -441,6 +441,21 @@
         "command": "reasoning.autoInit",
         "title": "🧠 Auto-Initialize Reasoning Layer",
         "category": "Reasoning › Setup"
+      },
+      {
+        "command": "reasoning.kernel.status",
+        "title": "📊 Kernel Status",
+        "category": "Reasoning › Kernel"
+      },
+      {
+        "command": "reasoning.kernel.reflect",
+        "title": "🧠 Run Cognitive Cycle",
+        "category": "Reasoning › Kernel"
+      },
+      {
+        "command": "reasoning.kernel.flush",
+        "title": "💾 Flush All Queues",
+        "category": "Reasoning › Kernel"
       }
     ]
   },
