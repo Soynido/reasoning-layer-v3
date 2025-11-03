@@ -1,7 +1,7 @@
 /**
  * StateRegistry - Centralized State Management
  * 
- * Periodic snapshot of kernel state to .reasoning/state/kernel.json
+ * Periodic snapshot of kernel state to .reasoning_rl4/state/kernel.json
  * 
  * RL4 Kernel Component #4
  */
@@ -29,7 +29,7 @@ export class StateRegistry {
     private writer: AppendOnlyWriter;
     
     constructor(workspaceRoot: string) {
-        this.stateDir = path.join(workspaceRoot, '.reasoning', 'state');
+        this.stateDir = path.join(workspaceRoot, '.reasoning_rl4', 'state');
         this.writer = new AppendOnlyWriter(
             path.join(this.stateDir, 'kernel_snapshots.jsonl')
         );

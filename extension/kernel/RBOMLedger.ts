@@ -257,18 +257,35 @@ export class RBOMLedger {
      * Append cycle summary to cycles.jsonl (with chain linking)
      */
     async appendCycle(cycleData: Omit<CycleSummary, 'prevMerkleRoot'>): Promise<void> {
+        // Lazy init: load last cycle's merkleRoot if not cached (for first append after restart)
+        if (this.lastCycleMerkleRoot === null) {
+            const lastCycle = await this.getLastCycle();
+            this.lastCycleMerkleRoot = lastCycle?.merkleRoot || null;
+        }
+        
         // Get previous cycle's Merkle root for chain linking (use cache)
         const prevMerkleRoot = this.lastCycleMerkleRoot || '0000000000000000'; // Genesis
         
+        // Compute Merkle root from phase hashes (deterministic)
+        const phaseHashes = [
+            cycleData.phases.patterns.hash,
+            cycleData.phases.correlations.hash,
+            cycleData.phases.forecasts.hash,
+            cycleData.phases.adrs.hash
+        ].filter(h => h.length > 0); // Remove empty hashes
+        
+        const merkleRoot = this.computeRoot(phaseHashes);
+        
         const cycle: CycleSummary = {
             ...cycleData,
+            merkleRoot,
             prevMerkleRoot
         };
         
         await this.cyclesWriter.append(cycle);
         
         // Update cache for next cycle
-        this.lastCycleMerkleRoot = cycle.merkleRoot;
+        this.lastCycleMerkleRoot = merkleRoot;
     }
     
     /**

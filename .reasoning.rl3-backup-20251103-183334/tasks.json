@@ -1,0 +1,948 @@
+{
+  "tasks": [
+    {
+      "title": "Create `GitHubFineGrainedManager.ts` ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Auto-detect repository from git config ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Generate fine-grained token URL ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Token verification with GitHub API ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Secure storage in `.reasoning/security/github.json` ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Integrate into `reasoning.github.setup` command ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Event logging for token linking ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Create `AwakeningSequence.ts` ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Integrate into `extension.ts` activation ✅",
+      "status": "completed"
+    },
+    {
+      "title": "GitHub repo detection logic ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Create `CognitiveGreeting.ts` for returning sessions ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Auto-focus Output Channel on activation ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Build and test first-time boot sequence ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Create `GitHubFineGrainedManager.ts` for modern token integration ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Document expected user experience",
+      "status": "pending"
+    },
+    {
+      "title": "Awakening sequence runs only on first boot ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Beautiful narrative output in Output Channel ✅",
+      "status": "completed"
+    },
+    {
+      "title": "GitHub repo auto-detected and linked ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Cognitive structure created successfully ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Zero user interaction required ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Cognitive Greeting shows on returning sessions ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Output Channel auto-focuses with double toggle ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Create `RetroactiveTraceBuilder.ts` (main module) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Create `GitHistoryScanner.ts` (extract commits) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Create `DiffAnalyzer.ts` (categorize commits) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Create `EventSynthesizer.ts` (generate synthetic traces) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Create `PatternInferencer.ts` (infer historical patterns) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Create `TemporalWeighter.ts` (decay old events) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Create `ConfidenceEstimator.ts` (estimate synthetic confidence) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Add VS Code command: `Reasoning: Reconstruct History` ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Integrate into extension activation flow ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Add config file: `.reasoning/config/retroactive.json`",
+      "status": "pending"
+    },
+    {
+      "title": "ADR Synthesizer 2.0 ✅",
+      "status": "completed"
+    },
+    {
+      "title": "LEVEL_7_REPORT.md ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Forecast Deduplication ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Duplicate Decision Detection ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Adaptive Cognitive Regulation ✅",
+      "status": "completed"
+    },
+    {
+      "title": "GoalSynthesizer (Level 8) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "ReflectionManager (Level 8.5) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "SelfReviewEngine (Level 9) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "HistoryManager (Level 9) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "TaskSynthesizer (Level 8.75) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "AutoTaskSynthesizer (Level 9.5) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Goal-to-Action Compiler (Level 10) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "TaskMemoryManager (Level 10.1) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "FeatureMapper (Level 10.1) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "GitHub Issue Reference Parsing Fix ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Create `TaskMemoryManager.ts` - Persist task execution ledger ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Implement `.reasoning/task_memory.jsonl` - Immutable action log ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Add `CognitiveRoadmap.md` generation - Auto-summary of progress ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Integrate with SelfReviewEngine - Complete the feedback loop ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Create `FeatureMapper.ts` - Scan and document all modules ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Generate `FeatureMap.json` - Machine-readable documentation ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Generate `FeatureMap.md` - Human-readable documentation ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Document 15 reasoning modules across 4 levels ✅",
+      "status": "completed"
+    },
+    {
+      "title": "1.1. Create `CorrelationDeduplicator.ts` - Modular deduplication logic ✅",
+      "status": "completed"
+    },
+    {
+      "title": "1.2. Update `CorrelationEngine.ts` - Integrate deduplicator, purge duplicates ✅",
+      "status": "completed"
+    },
+    {
+      "title": "2.1. Update `ForecastEngine.ts` - Add category limiter (max 3/category) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "2.2. Create `HistoricalBalancer.ts` - Re-sample historical data for theme balance ✅",
+      "status": "completed"
+    },
+    {
+      "title": "3.1. Create `PatternMutationEngine.ts` - Generate pattern mutations (target: 5+ patterns, novelty >0.6) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "3.2. Create `PatternEvaluator.ts` - Evaluate novelty and quality metrics ✅",
+      "status": "completed"
+    },
+    {
+      "title": "3.3. Create `PatternPruner.ts` - Remove redundant patterns (cosine similarity <0.4) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "3.4. Integrated all modules into test pipeline ✅",
+      "status": "completed"
+    },
+    {
+      "title": "`Reasoning: Validate ADR Forecasts` - Check forecast/ADR consistency",
+      "status": "pending"
+    },
+    {
+      "title": "`Reasoning: Analyze Biases` - Run bias detection and show results",
+      "status": "pending"
+    },
+    {
+      "title": "`Reasoning: Run Complete Pipeline` - Execute all 7 layers",
+      "status": "pending"
+    },
+    {
+      "title": "HTML/CSS/JS WebView (`extension/webview/PerceptualLayer.html`)",
+      "status": "pending"
+    },
+    {
+      "title": "Timeline visualization (decision nodes over time)",
+      "status": "pending"
+    },
+    {
+      "title": "Pattern graph (interconnections between patterns)",
+      "status": "pending"
+    },
+    {
+      "title": "ADR proposals (pending vs accepted)",
+      "status": "pending"
+    },
+    {
+      "title": "Bias alerts dashboard",
+      "status": "pending"
+    },
+    {
+      "title": "Enhanced ADR Schema (tradeoffs, risks, mitigations)",
+      "status": "pending"
+    },
+    {
+      "title": "Better PR/Issue Linking (parsing commit references)",
+      "status": "pending"
+    },
+    {
+      "title": "Agent Integration (Claude/GPT/Dust for analysis)",
+      "status": "pending"
+    },
+    {
+      "title": "`GoalSynthesizer.ts` → `goals.json` ✅",
+      "status": "completed"
+    },
+    {
+      "title": "`ReflectionManager.ts` → Orchestrates autonomous decision-making ✅",
+      "status": "completed"
+    },
+    {
+      "title": "`SelfReviewEngine.ts` → `history.json`",
+      "status": "pending"
+    },
+    {
+      "title": "System generates its own goals without TASKS.md ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Actions chosen and executed autonomously ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Dependency on external task lists eliminated ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Self-reviews detect improvements/regressions 🔴",
+      "status": "pending"
+    },
+    {
+      "title": "System tracks own evolution over time",
+      "status": "pending"
+    },
+    {
+      "title": "Auto-evaluates cognitive performance",
+      "status": "pending"
+    },
+    {
+      "title": "Provides actionable insights",
+      "status": "pending"
+    },
+    {
+      "title": "Closes the reasoning feedback loop",
+      "status": "pending"
+    },
+    {
+      "title": "Day 1: Infrastructure Setup & GitHub Repository",
+      "status": "completed"
+    },
+    {
+      "title": "Day 2-3: Base Types & PersistenceManager",
+      "status": "completed"
+    },
+    {
+      "title": "Day 4-5: CaptureEngine (EventAggregator)",
+      "status": "completed"
+    },
+    {
+      "title": "Day 6-7: Capture Engines (SBOM, Config, Test, Git)",
+      "status": "completed"
+    },
+    {
+      "title": "Day 8: SchemaManager & Manifest Generation",
+      "status": "completed"
+    },
+    {
+      "title": "Day 9: Extension Entry Point & Commands",
+      "status": "completed"
+    },
+    {
+      "title": "Day 10: Layer 1 Validation & Stabilization",
+      "status": "completed"
+    },
+    {
+      "title": "Day 11: Debug & Fix (OutputChannel duplicate)",
+      "status": "completed"
+    },
+    {
+      "title": "Day 13: Layer 1 Final Stabilization (RBOM disabled)",
+      "status": "completed"
+    },
+    {
+      "title": "Day 14: 100% English Translation - All code, ADRs, docs",
+      "status": "completed"
+    },
+    {
+      "title": "Day 12: RBOM Types consolidation ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Day 13: Zod Validation v3.23.8 ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Day 13: EvidenceMapper created ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Day 14-15: RBOMEngine activation (deferred load) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Day 16-17: Evidence → RBOM integration ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Day 18-19: VS Code RBOM Commands ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Day 20: DecisionSynthesizer & Evidence Quality Scoring ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Contributor Tracking - Detect contributors from Git history",
+      "status": "completed"
+    },
+    {
+      "title": "Expertise Domain Inference - Auto-detect Testing, Frontend, Backend, etc.",
+      "status": "completed"
+    },
+    {
+      "title": "Activity Summary - Commit counts, first/last seen dates",
+      "status": "completed"
+    },
+    {
+      "title": "Export to human-context.json",
+      "status": "completed"
+    },
+    {
+      "title": "VS Code Commands - Extract/List Contributors",
+      "status": "completed"
+    },
+    {
+      "title": "Evidence Report System - Quality scoring and distribution",
+      "status": "completed"
+    },
+    {
+      "title": "Evidence Grouping - By type (PR, Issue, Commit, etc.)",
+      "status": "completed"
+    },
+    {
+      "title": "Quality Labels - Excellent/Good/Fair/Poor",
+      "status": "completed"
+    },
+    {
+      "title": "Top Evidence Display - Highest quality items first",
+      "status": "completed"
+    },
+    {
+      "title": "VS Code Command - Show ADR Evidence Report",
+      "status": "completed"
+    },
+    {
+      "title": "Day 1: Hash & Signature Engine (SHA256 + RSA) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Day 2: Integrity Chain Ledger (append-only JSONL) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Day 3: Sign ADRs automatically ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Day 4: Snapshot Manifest generation ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Day 5: Commands (verify.integrity, snapshot.create, snapshot.list) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "External Evidence Schema (Product Metrics, Feedback, Compliance, Market, Incidents) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "ExternalIntegrator Engine - Sync all sources ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Ledger system for external evidence ✅",
+      "status": "completed"
+    },
+    {
+      "title": "VS Code commands (sync, status, link) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Test data creation (5 sources) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Level 6 Report generation ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Context Snapshot Manager (Level 6.5) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "ContextSnapshotManager implementation ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Consolidated evidence aggregation ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Insight generation (3 strategic insights) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Snapshot generation for Level 7 input ✅",
+      "status": "completed"
+    },
+    {
+      "title": "`PatternLearningEngine.ts` → `patterns.json` ✅",
+      "status": "completed"
+    },
+    {
+      "title": "`ForecastEngine.ts` → `forecasts.json` ✅",
+      "status": "completed"
+    },
+    {
+      "title": "`CorrelationEngine.ts` → `correlations.json` ✅",
+      "status": "completed"
+    },
+    {
+      "title": "`ADRGeneratorV2.ts` → `ADRs/auto/` ✅",
+      "status": "completed"
+    },
+    {
+      "title": "`LEVEL_7_REPORT.md` with forecasts and patterns ✅",
+      "status": "completed"
+    },
+    {
+      "title": "`BiasMonitor.ts` → `alerts.json`",
+      "status": "pending"
+    },
+    {
+      "title": "Day 21-25: Vanilla HTML/CSS/JS Webview",
+      "status": "pending"
+    },
+    {
+      "title": "Day 26-28: V2 → V3 Migration",
+      "status": "pending"
+    },
+    {
+      "title": "Day 29-30: Tests & Documentation",
+      "status": "pending"
+    },
+    {
+      "title": "Day 30: Layer 3 Validation",
+      "status": "pending"
+    },
+    {
+      "title": "✅ Extension works after RBOM deactivation",
+      "status": "completed"
+    },
+    {
+      "title": "✅ Layer 1 stable (production-ready)",
+      "status": "completed"
+    },
+    {
+      "title": "✅ RBOM remains disabled until crash fix",
+      "status": "completed"
+    },
+    {
+      "title": "✅ Commit & push stabilization: `e40bd7f`",
+      "status": "completed"
+    },
+    {
+      "title": "✅ GitHub repository creation via `gh CLI`: https://github.com/Soynido/reasoning-layer-v3",
+      "status": "completed"
+    },
+    {
+      "title": "✅ Local Git initialization + remote origin",
+      "status": "completed"
+    },
+    {
+      "title": "✅ `.gitignore` creation with appropriate patterns",
+      "status": "completed"
+    },
+    {
+      "title": "✅ Complete project structure:",
+      "status": "completed"
+    },
+    {
+      "title": "✅ `package.json`: Minimal VS Code extension with 3 basic commands",
+      "status": "completed"
+    },
+    {
+      "title": "✅ `tsconfig.json`: TypeScript strict mode, ES2020 target",
+      "status": "completed"
+    },
+    {
+      "title": "✅ `webpack.config.js`: Simple build with appropriate externals",
+      "status": "completed"
+    },
+    {
+      "title": "✅ Dependencies installation: `npm install` ✅",
+      "status": "completed"
+    },
+    {
+      "title": "✅ TypeScript compilation: `npm run compile` ✅",
+      "status": "completed"
+    },
+    {
+      "title": "✅ Webpack build: `npm run build` ✅",
+      "status": "completed"
+    },
+    {
+      "title": "✅ First commit + GitHub push: `53e4d55`",
+      "status": "completed"
+    },
+    {
+      "title": "✅ All TypeScript code translated (extension.ts, DecisionSynthesizer, PersistenceManager, etc.)",
+      "status": "completed"
+    },
+    {
+      "title": "✅ All 8 ADRs translated (titles, contexts, decisions, consequences)",
+      "status": "completed"
+    },
+    {
+      "title": "✅ TASKS.md fully translated (Strate → Layer)",
+      "status": "completed"
+    },
+    {
+      "title": "✅ Internal doc (REASONING_LAYER_V2_V3_TRANSFER.md) excluded from Git and VSIX",
+      "status": "completed"
+    },
+    {
+      "title": "✅ VSIX package: 199 files, 413 KB - 100% English",
+      "status": "completed"
+    },
+    {
+      "title": "✅ Commit: `c46d614`",
+      "status": "completed"
+    },
+    {
+      "title": "Validate existing RBOM types (already done ✅)",
+      "status": "pending"
+    },
+    {
+      "title": "Re-implement RBOMEngine progressively (already done ✅)",
+      "status": "pending"
+    },
+    {
+      "title": "Test each component individually",
+      "status": "pending"
+    },
+    {
+      "title": "Create EvidenceMapper (Capture → RBOM interface) (already done ✅)",
+      "status": "pending"
+    },
+    {
+      "title": "Implement VS Code commands for ADRs (ready in code ✅)",
+      "status": "pending"
+    },
+    {
+      "title": "RBOMEngine with progressive approach ✅",
+      "status": "completed"
+    },
+    {
+      "title": "EvidenceMapper for Capture → RBOM interface ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Zod schema for ADR validation ✅",
+      "status": "completed"
+    },
+    {
+      "title": "VS Code commands for CRUD ADRs ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Automatic decision detection (DecisionSynthesizer) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Layer 2 Testing & Validation ⏳",
+      "status": "pending"
+    },
+    {
+      "title": "✅ **HumanContextManager created** - Extract contributors from Git",
+      "status": "completed"
+    },
+    {
+      "title": "✅ **Expertise inference** - Detect Testing, Frontend, Backend, Database, DevOps domains",
+      "status": "completed"
+    },
+    {
+      "title": "✅ **Activity tracking** - Commit counts, first/last seen, files touched",
+      "status": "completed"
+    },
+    {
+      "title": "✅ **Export to JSON** - .reasoning/human-context.json with summary",
+      "status": "completed"
+    },
+    {
+      "title": "✅ **VS Code Commands** - Extract/List Contributors functional",
+      "status": "completed"
+    },
+    {
+      "title": "✅ **Tested** - Soynido detected: 77 commits, 4 domains",
+      "status": "completed"
+    },
+    {
+      "title": "✅ Commits: `341ca2e`, `7ea921a`",
+      "status": "completed"
+    },
+    {
+      "title": "✅ Version v1.0.20 - Stable production",
+      "status": "completed"
+    },
+    {
+      "title": "Vanilla HTML/CSS/JS Webview",
+      "status": "pending"
+    },
+    {
+      "title": "Traces visualization dashboard",
+      "status": "pending"
+    },
+    {
+      "title": "Interactive ADR interface",
+      "status": "pending"
+    },
+    {
+      "title": "Tests & Documentation",
+      "status": "pending"
+    },
+    {
+      "title": "V2 → V3 Migration",
+      "status": "pending"
+    },
+    {
+      "title": "Parse insertions/deletions per file",
+      "status": "pending"
+    },
+    {
+      "title": "Detect functions impacted by commit",
+      "status": "pending"
+    },
+    {
+      "title": "Track dependencies modified",
+      "status": "pending"
+    },
+    {
+      "title": "Create GitHubCaptureEngine",
+      "status": "pending"
+    },
+    {
+      "title": "Link PRs to ADRs via evidence",
+      "status": "pending"
+    },
+    {
+      "title": "Capture issue context",
+      "status": "pending"
+    },
+    {
+      "title": "Count PRs, issues, commits, benchmarks",
+      "status": "pending"
+    },
+    {
+      "title": "Track evidence freshness",
+      "status": "pending"
+    },
+    {
+      "title": "Calculate diversity of sources",
+      "status": "pending"
+    },
+    {
+      "title": "Exécuter `Reasoning › Maintain › 🔧 Deduplicate Correlations`",
+      "status": "pending"
+    },
+    {
+      "title": "Ajuster seuils `CorrelationEngine.ts` & `ForecastEngine.ts`:",
+      "status": "completed"
+    },
+    {
+      "title": "Implémenter `PatternDiversityScorer`:",
+      "status": "completed"
+    },
+    {
+      "title": "Améliorer `ForecastEngine.ts`:",
+      "status": "completed"
+    },
+    {
+      "title": "Ajouter re-évaluation Goals post-cycle:",
+      "status": "completed"
+    },
+    {
+      "title": "Validation empirique des optimisations:",
+      "status": "completed"
+    },
+    {
+      "title": "Auditer résultats post-optimisation:",
+      "status": "completed"
+    },
+    {
+      "title": "Corrélations dédupliquées: 495 → 99 ✅ (100% qualité Strong)",
+      "status": "completed"
+    },
+    {
+      "title": "Patterns détectés: 4 → 8-10 patterns (en cours)",
+      "status": "pending"
+    },
+    {
+      "title": "Forecasts générés: 1 → 4 forecasts ✅",
+      "status": "completed"
+    },
+    {
+      "title": "Autopilot stable: ✅ No synthesis errors",
+      "status": "completed"
+    },
+    {
+      "title": "Fallbacks robustes: ✅ process.cwd() implemented",
+      "status": "completed"
+    },
+    {
+      "title": "Create CognitiveCommentEngine",
+      "status": "pending"
+    },
+    {
+      "title": "Create GitHubWatcher",
+      "status": "pending"
+    },
+    {
+      "title": "Create MemoryLedger",
+      "status": "pending"
+    },
+    {
+      "title": "Add VS Code commands",
+      "status": "pending"
+    },
+    {
+      "title": "Test on local repos only",
+      "status": "pending"
+    },
+    {
+      "title": "Create @reasoning-layer-bot account",
+      "status": "pending"
+    },
+    {
+      "title": "Configure PAT with minimal scopes",
+      "status": "pending"
+    },
+    {
+      "title": "Test on 3-5 friendly repos (with permission)",
+      "status": "pending"
+    },
+    {
+      "title": "Refine cognitive scoring algorithm",
+      "status": "pending"
+    },
+    {
+      "title": "Build comment templates",
+      "status": "pending"
+    },
+    {
+      "title": "Deploy cron job for observation mode",
+      "status": "pending"
+    },
+    {
+      "title": "Monitor 20-50 repos passively (no comments)",
+      "status": "pending"
+    },
+    {
+      "title": "Analyze cognitive patterns discovered",
+      "status": "pending"
+    },
+    {
+      "title": "Build reputation whitelist",
+      "status": "pending"
+    },
+    {
+      "title": "Generate weekly cognitive reports",
+      "status": "pending"
+    },
+    {
+      "title": "Enable commenting on high-value discussions",
+      "status": "pending"
+    },
+    {
+      "title": "Track impact metrics (stars, forks, mentions)",
+      "status": "pending"
+    },
+    {
+      "title": "Build cognitive graph visualization",
+      "status": "pending"
+    },
+    {
+      "title": "Publish \"State of OSS Reasoning\" reports",
+      "status": "pending"
+    },
+    {
+      "title": "Expand to 100+ repos",
+      "status": "pending"
+    },
+    {
+      "title": "**P2-001**: Score all existing issues in reasoning-layer-v3 ✅",
+      "status": "completed"
+    },
+    {
+      "title": "**P2-002**: Generate comment previews for high-value issues ✅",
+      "status": "completed"
+    },
+    {
+      "title": "**P2-003**: Build comprehensive cognitive graph of repo ✅",
+      "status": "completed"
+    },
+    {
+      "title": "**P2-004**: Analyze cognitive patterns across issues ✅",
+      "status": "completed"
+    },
+    {
+      "title": "**P3-001**: Observe all issues in repo (expand scope) ✅",
+      "status": "completed"
+    },
+    {
+      "title": "**P3-002**: Generate weekly cognitive report ✅",
+      "status": "completed"
+    },
+    {
+      "title": "**P3-003**: Build keyword taxonomy and frequencies ✅",
+      "status": "completed"
+    },
+    {
+      "title": "**P3-004**: Identify top cognitive topics and themes ✅",
+      "status": "completed"
+    },
+    {
+      "title": "**P4-001**: Generate and post high-value comment on Issue #1 ✅",
+      "status": "completed"
+    },
+    {
+      "title": "**P4-002**: Track comment engagement and impact ✅",
+      "status": "completed"
+    },
+    {
+      "title": "**P4-003**: Build reputation score based on interactions ✅",
+      "status": "completed"
+    },
+    {
+      "title": "**P4-004**: Generate Phase 4 activation report ✅",
+      "status": "completed"
+    }
+  ]
+}

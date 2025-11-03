@@ -1,0 +1,21 @@
+{
+  "tasks": {
+    "hash": "466b2c4bef74cb44bc24d787edef08c0ce31870319a3138fc1a0616efb8bcf9c",
+    "lastUpdate": "2025-11-03T10:35:49.986Z",
+    "metrics": {
+      "totalTasks": 236,
+      "completedTasks": 170,
+      "pendingTasks": 66,
+      "completionRate": 0.72
+    }
+  },
+  "plan": {
+    "hash": "e7d495069462810576c6f35b3b9ce18e1e2e48a5534f8bddc5384dad6f086cec",
+    "lastUpdate": "2025-11-03T13:45:21.656Z",
+    "metrics": {
+      "sections": 0,
+      "sectionTitles": [],
+      "steps": 0
+    }
+  }
+}

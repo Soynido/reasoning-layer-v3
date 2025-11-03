@@ -63,21 +63,30 @@ export class CognitiveScheduler {
         this.stop();
         
         // Register main cycle timer
+        console.log(`🧪 [Scheduler] Registering cycle timer (${periodMs}ms)...`);
         this.timerRegistry.registerInterval(
             'kernel:cognitive-cycle',
-            () => this.runCycle(),
+            () => {
+                console.log('🔔 [Scheduler] Cycle timer FIRED!');
+                this.runCycle();
+            },
             periodMs
         );
+        console.log(`✅ [Scheduler] Cycle timer registered`);
         
         // 🧠 Watchdog: Check if scheduler is still active every minute
         // If no cycle executed for 2x interval → auto-restart
         const watchdogInterval = Math.max(60000, periodMs); // Min 1 minute
+        console.log(`🧪 [Scheduler] Registering watchdog timer (${watchdogInterval}ms)...`);
         this.timerRegistry.registerInterval(
             'kernel:cognitive-watchdog',
-            () => this.checkWatchdog(),
+            () => {
+                console.log('🔔 [Scheduler] Watchdog timer FIRED!');
+                this.checkWatchdog();
+            },
             watchdogInterval
         );
-        
+        console.log(`✅ [Scheduler] Watchdog timer registered`);
         console.log(`🛡️ RL4 Watchdog active (checking every ${watchdogInterval}ms)`);
     }
     

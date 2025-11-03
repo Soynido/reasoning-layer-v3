@@ -1,0 +1,14 @@
+graph LR
+    classDef v2Class fill:#4A90E2,stroke:#2E5C8A,color:#fff
+    classDef v3Class fill:#7B68EE,stroke:#4B3C9E,color:#fff
+    classDef v4Class fill:#FF6B6B,stroke:#C92A2A,color:#fff
+    
+    START[🌱 Genesis<br/>Reasoning Layer V2]:::v2Class
+    START --> V2_0[Merge kernel scaffold v2.0.0-beta1<br/>2025-11-03]:::v2Class
+    V2_0 --> V3_START[🚀 Migration V2→V3<br/>Architecture Refactor]:::v3Class
+    V3_START --> V4_START[⚡ Evolution V3→V4<br/>Kernel Architecture]:::v4Class
+    V4_START --> V4_I1[I1: Cleanup & Stabilization]:::v4Class
+    V4_I1 --> V4_I2[I2: Kernel Foundation]:::v4Class
+    V4_I2 --> V4_I3[I3: Capture Unification]:::v4Class
+    V4_I3 --> V4_I4[I4: Ledger & Integrity]:::v4Class
+    V4_I4 --> CURRENT[🎯 Current State<br/>Production Ready]:::v4Class

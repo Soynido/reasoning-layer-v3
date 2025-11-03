@@ -53,7 +53,7 @@ Kernel automatically initialized in `extension.ts` activation.
 
 ## Configuration
 
-Edit `.reasoning/kernel_config.json`:
+Edit `.reasoning_rl4/kernel_config.json`:
 
 ```json
 {
@@ -136,7 +136,7 @@ Kernel will fallback to RL3 behavior.
 
 ## Metrics
 
-Health metrics logged to: `.reasoning/diagnostics/health.jsonl`
+Health metrics logged to: `.reasoning_rl4/diagnostics/health.jsonl`
 
 Format:
 ```json

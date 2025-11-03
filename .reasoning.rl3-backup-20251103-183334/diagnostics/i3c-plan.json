@@ -1,0 +1,55 @@
+{
+  "phase": "I3-C: AppendOnlyWriter + Data Isolation",
+  "goal": "Eliminate array rewrites on hot paths + isolate Kernel data",
+  
+  "hot_paths_to_migrate": [
+    {
+      "file": "extension/core/PersistenceManager.ts",
+      "method": "saveEvent()",
+      "line": 95,
+      "frequency": "Every event (~2685 events total)",
+      "current": "fs.writeFileSync(traceFile, JSON.stringify(events, null, 2))",
+      "replacement": "await appendOnlyWriter.append(event)",
+      "impact": "Eliminates array rewrite (O(n) → O(1))"
+    },
+    {
+      "file": "extension/core/inputs/GitCommitListener.ts",
+      "method": "saveToTraces()",
+      "line": 365,
+      "frequency": "Every commit",
+      "current": "fs.writeFileSync(traceFile, JSON.stringify(events, null, 2))",
+      "replacement": "await appendOnlyWriter.append(event)",
+      "impact": "Eliminates array rewrite on commits"
+    },
+    {
+      "file": "extension/core/inputs/FileChangeWatcher.ts",
+      "method": "saveToTraces()",
+      "line": 404,
+      "frequency": "Every burst",
+      "current": "fs.writeFileSync(traceFile, JSON.stringify(events, null, 2))",
+      "replacement": "await appendOnlyWriter.append(event)",
+      "impact": "Eliminates array rewrite on file bursts"
+    }
+  ],
+  
+  "data_isolation": {
+    "create_directories": [
+      ".reasoning_rl4/state",
+      ".reasoning_rl4/diagnostics",
+      ".reasoning_rl4/ledger",
+      ".reasoning_rl4/traces"
+    ],
+    "kernel_writes_to": ".reasoning_rl4/",
+    "rl3_writes_to": ".reasoning/",
+    "no_collision": true
+  },
+  
+  "watchers_to_disable": {
+    "note": "RL3 watchers keep running (no disabling needed)",
+    "reason": "Dual mode - RL3 and RL4 coexist peacefully",
+    "kernel_handles": "Scheduling only, not capture"
+  },
+  
+  "validation": "grep -R 'JSON.stringify.*fs.writeFileSync' extension/core --include='*.ts' | grep -E 'saveEvent|saveToTraces' → should be 0"
+}
+

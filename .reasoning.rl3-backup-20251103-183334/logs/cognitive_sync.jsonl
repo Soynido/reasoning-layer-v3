@@ -1,0 +1,8 @@
+{"timestamp":"2025-11-03T10:35:49.656Z","artifact":"spec","message":"1 sections · 1 contraintes repérées","metrics":{"sections":1,"personas":0,"constraints":1}}
+{"timestamp":"2025-11-03T10:35:49.950Z","artifact":"plan","message":"0 sections · 0 étapes","metrics":{"sections":0,"sectionTitles":[],"steps":0}}
+{"timestamp":"2025-11-03T10:35:49.988Z","artifact":"tasks","message":"170/236 tâches accomplies (72%) · +170 terminées","metrics":{"totalTasks":236,"completedTasks":170,"pendingTasks":66,"completionRate":0.72}}
+{"timestamp":"2025-11-03T13:45:00.749Z","artifact":"plan","message":"source supprimée","metrics":{}}
+{"timestamp":"2025-11-03T13:45:00.749Z","artifact":"spec","message":"source supprimée","metrics":{}}
+{"timestamp":"2025-11-03T13:45:01.374Z","artifact":"plan","message":"source supprimée","metrics":{}}
+{"timestamp":"2025-11-03T13:45:21.656Z","artifact":"spec","message":"1 sections · 1 contraintes repérées","metrics":{"sections":1,"personas":0,"constraints":1}}
+{"timestamp":"2025-11-03T13:45:21.657Z","artifact":"plan","message":"0 sections · 0 étapes","metrics":{"sections":0,"sectionTitles":[],"steps":0}}

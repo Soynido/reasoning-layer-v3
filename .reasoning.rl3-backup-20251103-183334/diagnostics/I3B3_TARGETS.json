@@ -1,0 +1,76 @@
+{
+  "phase": "I3-B3 Targets",
+  "total_exec_remaining": 12,
+  "modules_to_migrate": 3,
+  
+  "targets": [
+    {
+      "file": "extension/core/HumanContextManager.ts",
+      "exec_calls": 2,
+      "lines": [
+        "const execAsync = promisify(exec)",
+        "const { stdout } = await execAsync(...)"
+      ],
+      "commands": [
+        "git log (contributor extraction)"
+      ],
+      "priority": "HIGH (contributor tracking)"
+    },
+    {
+      "file": "extension/core/gitUtils.ts",
+      "exec_calls": 8,
+      "lines": [
+        "const execAsync = promisify(exec)",
+        "git branch --show-current (×1)",
+        "git rev-parse --abbrev-ref HEAD (×1)",
+        "git diff-tree --stat (×1)",
+        "git show --pretty=format (×1)",
+        "git branch -v (×1)",
+        "git rev-parse HEAD (×1)",
+        "git rev-parse --git-dir (×1)"
+      ],
+      "commands": [
+        "getCurrentBranch",
+        "getGitDiffSummary",
+        "getCommitInfo",
+        "getAllBranches",
+        "getCurrentCommit",
+        "isGitRepository"
+      ],
+      "priority": "CRITICAL (utility used by many modules)"
+    },
+    {
+      "file": "extension/core/environment/CognitiveSandbox.ts",
+      "exec_calls": 2,
+      "lines": [
+        "const execAsync = util.promisify(exec)",
+        "const { stdout, stderr } = await execAsync(...)"
+      ],
+      "commands": [
+        "npm test (sandbox execution)"
+      ],
+      "priority": "MEDIUM (experimental feature)"
+    }
+  ],
+  
+  "modules_not_found": [
+    "CodeScanner.ts (likely already clean or doesn't exist)"
+  ],
+  
+  "migration_strategy": {
+    "order": [
+      "1. gitUtils.ts (8 calls, CRITICAL - affects all modules)",
+      "2. HumanContextManager.ts (2 calls, contributor tracking)",
+      "3. CognitiveSandbox.ts (2 calls, sandbox execution)"
+    ],
+    "note": "gitUtils.ts must be migrated first as it exports utilities used by other modules"
+  },
+  
+  "expected_outcome": {
+    "exec_calls_after": 0,
+    "modules_using_execpool": 8,
+    "total_exec_eliminated": 36,
+    "validation": "grep -R 'execAsync' extension/core | wc -l → 0"
+  }
+}
+

@@ -50,7 +50,7 @@ export class HealthMonitor {
     ) {
         this.timerRegistry = timerRegistry;
         this.writer = new AppendOnlyWriter(
-            `${workspaceRoot}/.reasoning/diagnostics/health.jsonl`
+            `${workspaceRoot}/.reasoning_rl4/diagnostics/health.jsonl`
         );
         this.startTime = Date.now();
     }

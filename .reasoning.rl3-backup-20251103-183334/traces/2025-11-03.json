@@ -1,0 +1,5517 @@
+[
+  {
+    "id": "6f661466-e451-4aa0-83c1-4fd2fbbf2c9c",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:31:43.843Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/extension.ts",
+          "extension": ".ts",
+          "size": 98064
+        },
+        {
+          "type": "change",
+          "path": "extension/core/inputs/GitCommitListener.ts",
+          "extension": ".ts",
+          "size": 15311
+        },
+        {
+          "type": "change",
+          "path": "extension/core/PersistenceManager.ts",
+          "extension": ".ts",
+          "size": 7408
+        },
+        {
+          "type": "change",
+          "path": "extension/core/inputs/FileChangeWatcher.ts",
+          "extension": ".ts",
+          "size": 14403
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.7,
+        "indicators": [
+          "multi_file_change"
+        ]
+      },
+      "file_count": 4,
+      "total_size": 135186,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "3e084ad0-7e5b-47b3-84be-905387976645",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:35:48.434Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "add",
+          "path": "bench/results/events-10k.json",
+          "extension": ".json",
+          "size": 186
+        }
+      ],
+      "pattern": {
+        "type": "config",
+        "confidence": 0.8,
+        "indicators": [
+          "new_files",
+          "config_files"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 186,
+      "extensions": [
+        ".json"
+      ],
+      "cognitive_relevance": 0.7,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "89c68cc8-90a4-4bba-a85c-076accec64e9",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:36:31.490Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "add",
+          "path": "bench/stability-2h.ts",
+          "extension": ".ts",
+          "size": 7043
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "new_files",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 7043,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "9249a99b-7eb9-4f9d-9695-26ff3237d3ca",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:37:53.602Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "add",
+          "path": "scripts/generate-report.ts",
+          "extension": ".ts",
+          "size": 8667
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "new_files",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 8667,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "c86eddd9-11b0-488f-a149-13bc469659ee",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:38:21.111Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "scripts/generate-report.ts",
+          "extension": ".ts",
+          "size": 8677
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 8677,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "1762177166948-815so2mkj",
+    "timestamp": "2025-11-03T13:39:26.948Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 14:39:26 2025 +0100",
+        "message": "docs: add benchmarks, stability test, and I3 final reports",
+        "files": [
+          ".reasoning/manifest.json",
+          ".reasoning_rl4/diagnostics/REPORT_I3_FINAL.json",
+          "bench/results/events-10k.json",
+          "bench/stability-2h.ts",
+          "scripts/generate-report.ts"
+        ],
+        "insertions": 524,
+        "deletions": 2,
+        "branch": "feat/rl4-i3-autonomy"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/manifest.json",
+          "changes": [],
+          "insertions": 104,
+          "deletions": 0,
+          "type": "modified"
+        },
+        {
+          "file": ".reasoning_rl4/diagnostics/REPORT_I3_FINAL.json",
+          "changes": [],
+          "insertions": 104,
+          "deletions": 0,
+          "type": "added"
+        },
+        {
+          "file": "bench/results/events-10k.json",
+          "changes": [],
+          "insertions": 104,
+          "deletions": 0,
+          "type": "added"
+        },
+        {
+          "file": "bench/stability-2h.ts",
+          "changes": [],
+          "insertions": 104,
+          "deletions": 0,
+          "type": "added"
+        },
+        {
+          "file": "scripts/generate-report.ts",
+          "changes": [],
+          "insertions": 104,
+          "deletions": 0,
+          "type": "added"
+        }
+      ],
+      "totalFiles": 5,
+      "totalChanges": 526,
+      "diffSummary": {
+        "insertions": 524,
+        "deletions": 2,
+        "files": 5
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "2909563e-e5dc-45eb-9b46-59fae960e97f",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:29:48+01:00",
+    "source": "git:08004c4ebe189bfc1ae47ad9ddc19709d23d437b",
+    "metadata": {
+      "commit": {
+        "hash": "08004c4ebe189bfc1ae47ad9ddc19709d23d437b",
+        "message": "kernel(i3-c): AppendOnlyWriter + data isolation",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:29:48+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          ".reasoning_rl4/README.md",
+          "bench/results/git-pool.json",
+          "extension/core/PersistenceManager.ts",
+          "extension/core/inputs/FileChangeWatcher.ts",
+          "extension/core/inputs/GitCommitListener.ts",
+          "extension/extension.ts"
+        ],
+        "insertions": 242,
+        "deletions": 15
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "04203f9d-dbc2-4357-a21c-ee75e6288bdc",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:39:26+01:00",
+    "source": "git:631419aa57f785d4522ed04ea7d9c304c4444bc4",
+    "metadata": {
+      "commit": {
+        "hash": "631419aa57f785d4522ed04ea7d9c304c4444bc4",
+        "message": "docs: add benchmarks, stability test, and I3 final reports",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:39:26+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          ".reasoning_rl4/diagnostics/REPORT_I3_FINAL.json",
+          "bench/results/events-10k.json",
+          "bench/stability-2h.ts",
+          "scripts/generate-report.ts"
+        ],
+        "insertions": 524,
+        "deletions": 2
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762177168307-qfxb15o68",
+    "timestamp": "2025-11-03T13:39:28.307Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": true,
+          "lastCommit": "631419a",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "6bb796b",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i3-autonomy",
+      "totalBranches": 4
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "b2346c45-cd1d-46ed-8503-a4f7a2871b42",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:39:26+01:00",
+    "source": "git:631419aa57f785d4522ed04ea7d9c304c4444bc4",
+    "metadata": {
+      "commit": {
+        "hash": "631419aa57f785d4522ed04ea7d9c304c4444bc4",
+        "message": "docs: add benchmarks, stability test, and I3 final reports",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:39:26+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          ".reasoning_rl4/diagnostics/REPORT_I3_FINAL.json",
+          "bench/results/events-10k.json",
+          "bench/stability-2h.ts",
+          "scripts/generate-report.ts"
+        ],
+        "insertions": 524,
+        "deletions": 2
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762177247503-po2ok92y5",
+    "timestamp": "2025-11-03T13:40:47.503Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/scripts/generate-report.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Saves",
+      "action": "save",
+      "language": "typescript",
+      "lineCount": 237
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "f20bd1db-2d6a-425b-a2ff-e422eb9b3995",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:40:48.881Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "scripts/generate-report.ts",
+          "extension": ".ts",
+          "size": 8677
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 8677,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "1762177298333-ocjppscac",
+    "timestamp": "2025-11-03T13:41:38.333Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": true,
+          "lastCommit": "8e0fc75",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "6bb796b",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i3-autonomy",
+      "totalBranches": 4
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "59f8866e-92c0-490c-a870-87f222a1b5fa",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:39:26+01:00",
+    "source": "git:631419aa57f785d4522ed04ea7d9c304c4444bc4",
+    "metadata": {
+      "commit": {
+        "hash": "631419aa57f785d4522ed04ea7d9c304c4444bc4",
+        "message": "docs: add benchmarks, stability test, and I3 final reports",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:39:26+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          ".reasoning_rl4/diagnostics/REPORT_I3_FINAL.json",
+          "bench/results/events-10k.json",
+          "bench/stability-2h.ts",
+          "scripts/generate-report.ts"
+        ],
+        "insertions": 524,
+        "deletions": 2
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "a4704249-4d42-4aa7-91df-ce0432dcd35a",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:41:38+01:00",
+    "source": "git:8e0fc75450db295c2aa8d416dfffc6c5bc049814",
+    "metadata": {
+      "commit": {
+        "hash": "8e0fc75450db295c2aa8d416dfffc6c5bc049814",
+        "message": "docs: add I3 executive summaries (4 documents)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:41:38+01:00",
+        "files_changed": [
+          ".reasoning/I3_FINAL_SUMMARY.md",
+          ".reasoning/RL4_ITERATION_3_COMPLETE.md",
+          ".reasoning/diagnostics/I3_EXECUTIVE_SUMMARY.txt",
+          ".reasoning/diagnostics/VALIDATION_SUMMARY_I3.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762177302009-uonvfpq8t",
+    "timestamp": "2025-11-03T13:41:42.009Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 14:41:38 2025 +0100",
+        "message": "docs: add I3 executive summaries (4 documents)",
+        "files": [
+          ".reasoning/I3_FINAL_SUMMARY.md",
+          ".reasoning/RL4_ITERATION_3_COMPLETE.md",
+          ".reasoning/diagnostics/I3_EXECUTIVE_SUMMARY.txt",
+          ".reasoning/diagnostics/VALIDATION_SUMMARY_I3.md"
+        ],
+        "insertions": 650,
+        "deletions": 0,
+        "branch": "feat/rl4-i3-autonomy"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/I3_FINAL_SUMMARY.md",
+          "changes": [],
+          "insertions": 162,
+          "deletions": 0,
+          "type": "added"
+        },
+        {
+          "file": ".reasoning/RL4_ITERATION_3_COMPLETE.md",
+          "changes": [],
+          "insertions": 162,
+          "deletions": 0,
+          "type": "added"
+        },
+        {
+          "file": ".reasoning/diagnostics/I3_EXECUTIVE_SUMMARY.txt",
+          "changes": [],
+          "insertions": 162,
+          "deletions": 0,
+          "type": "added"
+        },
+        {
+          "file": ".reasoning/diagnostics/VALIDATION_SUMMARY_I3.md",
+          "changes": [],
+          "insertions": 162,
+          "deletions": 0,
+          "type": "added"
+        }
+      ],
+      "totalFiles": 4,
+      "totalChanges": 650,
+      "diffSummary": {
+        "insertions": 650,
+        "deletions": 0,
+        "files": 4
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "d72fc27b-645b-4a24-9bf5-561f365989dc",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:41:38+01:00",
+    "source": "git:8e0fc75450db295c2aa8d416dfffc6c5bc049814",
+    "metadata": {
+      "commit": {
+        "hash": "8e0fc75450db295c2aa8d416dfffc6c5bc049814",
+        "message": "docs: add I3 executive summaries (4 documents)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:41:38+01:00",
+        "files_changed": [
+          ".reasoning/I3_FINAL_SUMMARY.md",
+          ".reasoning/RL4_ITERATION_3_COMPLETE.md",
+          ".reasoning/diagnostics/I3_EXECUTIVE_SUMMARY.txt",
+          ".reasoning/diagnostics/VALIDATION_SUMMARY_I3.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762177487133-g7zx9iplh",
+    "timestamp": "2025-11-03T13:44:47.133Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 14:44:45 2025 +0100",
+        "message": "chore: RL3 runtime updates (ADRs, ledger, manifest)",
+        "files": [
+          ".cursor/context/architecture-decisions.md",
+          ".cursor/rules/[RL3]-47783298-dd15-4d2a-81dd-6e149a4e6f15.mdc",
+          ".reasoning/adrs/index.json",
+          ".reasoning/ledger/ledger.jsonl",
+          ".reasoning/manifest.json"
+        ],
+        "insertions": 27,
+        "deletions": 4,
+        "branch": "feat/rl4-i3-autonomy"
+      },
+      "diffs": [
+        {
+          "file": ".cursor/context/architecture-decisions.md",
+          "changes": [],
+          "insertions": 5,
+          "deletions": 0,
+          "type": "modified"
+        },
+        {
+          "file": ".cursor/rules/[RL3]-47783298-dd15-4d2a-81dd-6e149a4e6f15.mdc",
+          "changes": [],
+          "insertions": 5,
+          "deletions": 0,
+          "type": "added"
+        },
+        {
+          "file": ".reasoning/adrs/index.json",
+          "changes": [],
+          "insertions": 5,
+          "deletions": 0,
+          "type": "modified"
+        },
+        {
+          "file": ".reasoning/ledger/ledger.jsonl",
+          "changes": [],
+          "insertions": 5,
+          "deletions": 0,
+          "type": "modified"
+        },
+        {
+          "file": ".reasoning/manifest.json",
+          "changes": [],
+          "insertions": 5,
+          "deletions": 0,
+          "type": "modified"
+        }
+      ],
+      "totalFiles": 5,
+      "totalChanges": 31,
+      "diffSummary": {
+        "insertions": 27,
+        "deletions": 4,
+        "files": 5
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177488395-eeuf9473g",
+    "timestamp": "2025-11-03T13:44:48.395Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": true,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "6bb796b",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i3-autonomy",
+      "totalBranches": 4
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "7c54d280-9f95-4f20-a731-8deb26693c82",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:41:38+01:00",
+    "source": "git:8e0fc75450db295c2aa8d416dfffc6c5bc049814",
+    "metadata": {
+      "commit": {
+        "hash": "8e0fc75450db295c2aa8d416dfffc6c5bc049814",
+        "message": "docs: add I3 executive summaries (4 documents)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:41:38+01:00",
+        "files_changed": [
+          ".reasoning/I3_FINAL_SUMMARY.md",
+          ".reasoning/RL4_ITERATION_3_COMPLETE.md",
+          ".reasoning/diagnostics/I3_EXECUTIVE_SUMMARY.txt",
+          ".reasoning/diagnostics/VALIDATION_SUMMARY_I3.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "b783b96f-67e2-44c8-b5ad-84baae7c0e24",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:44:45+01:00",
+    "source": "git:2b3c062c4b1e0d07f29397811613f03658288458",
+    "metadata": {
+      "commit": {
+        "hash": "2b3c062c4b1e0d07f29397811613f03658288458",
+        "message": "chore: RL3 runtime updates (ADRs, ledger, manifest)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:44:45+01:00",
+        "files_changed": [
+          ".cursor/context/architecture-decisions.md",
+          ".cursor/rules/[RL3]-47783298-dd15-4d2a-81dd-6e149a4e6f15.mdc",
+          ".reasoning/adrs/index.json",
+          ".reasoning/ledger/ledger.jsonl",
+          ".reasoning/manifest.json"
+        ],
+        "insertions": 27,
+        "deletions": 4
+      },
+      "intent": {
+        "type": "chore",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "bf91969a-9780-4a6a-980a-ffde4ead1722",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:44:45+01:00",
+    "source": "git:2b3c062c4b1e0d07f29397811613f03658288458",
+    "metadata": {
+      "commit": {
+        "hash": "2b3c062c4b1e0d07f29397811613f03658288458",
+        "message": "chore: RL3 runtime updates (ADRs, ledger, manifest)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:44:45+01:00",
+        "files_changed": [
+          ".cursor/context/architecture-decisions.md",
+          ".cursor/rules/[RL3]-47783298-dd15-4d2a-81dd-6e149a4e6f15.mdc",
+          ".reasoning/adrs/index.json",
+          ".reasoning/ledger/ledger.jsonl",
+          ".reasoning/manifest.json"
+        ],
+        "insertions": 27,
+        "deletions": 4
+      },
+      "intent": {
+        "type": "chore",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "f512da0e-1972-4a50-9af7-ab47d068e0c2",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:45:02.053Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "delete",
+          "path": "spec.md",
+          "extension": ".md",
+          "size": 0
+        },
+        {
+          "type": "delete",
+          "path": "scripts/generate-report.ts",
+          "extension": ".ts",
+          "size": 0
+        },
+        {
+          "type": "delete",
+          "path": "bench/stability-2h.ts",
+          "extension": ".ts",
+          "size": 0
+        },
+        {
+          "type": "delete",
+          "path": "plan.md",
+          "extension": ".md",
+          "size": 0
+        },
+        {
+          "type": "delete",
+          "path": "bench/results/git-pool.json",
+          "extension": ".json",
+          "size": 0
+        },
+        {
+          "type": "delete",
+          "path": "bench/results/events-10k.json",
+          "extension": ".json",
+          "size": 0
+        },
+        {
+          "type": "change",
+          "path": "package.json",
+          "extension": ".json",
+          "size": 14037
+        },
+        {
+          "type": "change",
+          "path": "extension/kernel/ExecPool.ts",
+          "extension": ".ts",
+          "size": 5676
+        },
+        {
+          "type": "change",
+          "path": "extension/core/PersistenceManager.ts",
+          "extension": ".ts",
+          "size": 6001
+        },
+        {
+          "type": "change",
+          "path": "extension/extension.ts",
+          "extension": ".ts",
+          "size": 91111
+        },
+        {
+          "type": "change",
+          "path": "extension/core/environment/CognitiveSandbox.ts",
+          "extension": ".ts",
+          "size": 8932
+        },
+        {
+          "type": "change",
+          "path": "extension/core/inputs/FileChangeWatcher.ts",
+          "extension": ".ts",
+          "size": 13740
+        },
+        {
+          "type": "change",
+          "path": "extension/core/GitMetadataEngine.ts",
+          "extension": ".ts",
+          "size": 16115
+        },
+        {
+          "type": "change",
+          "path": "extension/core/gitUtils.ts",
+          "extension": ".ts",
+          "size": 6922
+        },
+        {
+          "type": "change",
+          "path": "extension/core/inputs/GitCommitListener.ts",
+          "extension": ".ts",
+          "size": 14470
+        },
+        {
+          "type": "change",
+          "path": "extension/core/inputs/GitHubDiscussionListener.ts",
+          "extension": ".ts",
+          "size": 13767
+        },
+        {
+          "type": "change",
+          "path": "extension/core/integrations/GitHubCLIManager.ts",
+          "extension": ".ts",
+          "size": 14653
+        },
+        {
+          "type": "change",
+          "path": "extension/core/retroactive/scanners/GitHistoryScanner.ts",
+          "extension": ".ts",
+          "size": 4758
+        },
+        {
+          "type": "change",
+          "path": "extension/core/HumanContextManager.ts",
+          "extension": ".ts",
+          "size": 8031
+        },
+        {
+          "type": "change",
+          "path": "tsconfig.json",
+          "extension": ".json",
+          "size": 399
+        }
+      ],
+      "pattern": {
+        "type": "config",
+        "confidence": 0.8,
+        "indicators": [
+          "multi_file_change",
+          "test_files",
+          "documentation",
+          "config_files"
+        ]
+      },
+      "file_count": 20,
+      "total_size": 218612,
+      "extensions": [
+        ".md",
+        ".ts",
+        ".json"
+      ],
+      "cognitive_relevance": 0.7,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "1762177502161-znmil1shu",
+    "timestamp": "2025-11-03T13:45:02.161Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 13:37:52 2025 +0100",
+        "message": "Merge kernel scaffold v2.0.0-beta1",
+        "files": [],
+        "insertions": 2116,
+        "deletions": 0,
+        "branch": "main"
+      },
+      "diffs": [],
+      "totalFiles": 0,
+      "totalChanges": 2116,
+      "diffSummary": {
+        "insertions": 2116,
+        "deletions": 0,
+        "files": 18
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177502668-5kg8pr2rw",
+    "timestamp": "2025-11-03T13:45:02.668Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/extension/extension.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 1918
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177502680-m9zc4s208",
+    "timestamp": "2025-11-03T13:45:02.680Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer ***AWS_SECRET_REDACTED***itHistoryScanner.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 155
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177502687-i4anq2s9u",
+    "timestamp": "2025-11-03T13:45:02.687Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer ***AWS_SECRET_REDACTED***er.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 436
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177502692-uobrz9yp4",
+    "timestamp": "2025-11-03T13:45:02.692Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/extension/kernel/ExecPool.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 216
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177502697-l7zw45qx5",
+    "timestamp": "2025-11-03T13:45:02.697Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/extension/core/gitUtils.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 216
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177502701-cqb8cf853",
+    "timestamp": "2025-11-03T13:45:02.701Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer ***AWS_SECRET_REDACTED***er.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 461
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177502707-21lcq47h3",
+    "timestamp": "2025-11-03T13:45:02.707Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/extension/core/PersistenceManager.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 158
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "4f57592a-a4e4-4b05-8d7f-ec58fd76d1b5",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T13:37:52+01:00",
+    "source": "git:6bb796b8f5940cc3d70bcc01e535ed1fb1ce186b",
+    "metadata": {
+      "commit": {
+        "hash": "6bb796b8f5940cc3d70bcc01e535ed1fb1ce186b",
+        "message": "Merge kernel scaffold v2.0.0-beta1",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T13:37:52+01:00",
+        "files_changed": [],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "3f4d13f9-ae6b-4cdc-b801-0e6eec4f3281",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T13:37:52+01:00",
+    "source": "git:6bb796b8f5940cc3d70bcc01e535ed1fb1ce186b",
+    "metadata": {
+      "commit": {
+        "hash": "6bb796b8f5940cc3d70bcc01e535ed1fb1ce186b",
+        "message": "Merge kernel scaffold v2.0.0-beta1",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T13:37:52+01:00",
+        "files_changed": [],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762177508399-zi4wofpi4",
+    "timestamp": "2025-11-03T13:45:08.399Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": true,
+          "lastCommit": "6bb796b",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "main",
+      "totalBranches": 4
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177522144-k9vpn7gtg",
+    "timestamp": "2025-11-03T13:45:22.144Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 14:45:21 2025 +0100",
+        "message": "Merge feat/rl4-i3-autonomy: RL4 Kernel Integration (I3)",
+        "files": [],
+        "insertions": 2600,
+        "deletions": 189,
+        "branch": "main"
+      },
+      "diffs": [],
+      "totalFiles": 0,
+      "totalChanges": 2789,
+      "diffSummary": {
+        "insertions": 2600,
+        "deletions": 189,
+        "files": 55
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177522405-jjzq0yro2",
+    "timestamp": "2025-11-03T13:45:22.405Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/extension/extension.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 2060
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177522412-a707j07kt",
+    "timestamp": "2025-11-03T13:45:22.412Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer ***AWS_SECRET_REDACTED***itHistoryScanner.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 161
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177522425-cnn2jjsfa",
+    "timestamp": "2025-11-03T13:45:22.425Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer ***AWS_SECRET_REDACTED***er.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 447
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177522430-hus092317",
+    "timestamp": "2025-11-03T13:45:22.430Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/extension/kernel/ExecPool.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 267
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177522435-6wzcrejyx",
+    "timestamp": "2025-11-03T13:45:22.435Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/extension/core/gitUtils.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 233
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177522442-fg9qqrc74",
+    "timestamp": "2025-11-03T13:45:22.442Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/extension/core/PersistenceManager.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 185
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177522447-9cs2axuut",
+    "timestamp": "2025-11-03T13:45:22.447Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer ***AWS_SECRET_REDACTED***er.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Changes",
+      "language": "typescript",
+      "lineCount": 473
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "7298e0bc-e5e5-4ebe-8aab-73adc86bd862",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:45:22.657Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/core/PersistenceManager.ts",
+          "extension": ".ts",
+          "size": 7408
+        },
+        {
+          "type": "change",
+          "path": "package.json",
+          "extension": ".json",
+          "size": 14481
+        },
+        {
+          "type": "change",
+          "path": "tsconfig.json",
+          "extension": ".json",
+          "size": 572
+        },
+        {
+          "type": "change",
+          "path": "extension/core/inputs/GitCommitListener.ts",
+          "extension": ".ts",
+          "size": 15311
+        },
+        {
+          "type": "change",
+          "path": "extension/core/HumanContextManager.ts",
+          "extension": ".ts",
+          "size": 8128
+        },
+        {
+          "type": "change",
+          "path": "extension/kernel/ExecPool.ts",
+          "extension": ".ts",
+          "size": 7499
+        },
+        {
+          "type": "change",
+          "path": "extension/core/GitMetadataEngine.ts",
+          "extension": ".ts",
+          "size": 16392
+        },
+        {
+          "type": "change",
+          "path": "extension/core/environment/CognitiveSandbox.ts",
+          "extension": ".ts",
+          "size": 8960
+        },
+        {
+          "type": "change",
+          "path": "extension/core/gitUtils.ts",
+          "extension": ".ts",
+          "size": 7621
+        },
+        {
+          "type": "change",
+          "path": "extension/core/inputs/FileChangeWatcher.ts",
+          "extension": ".ts",
+          "size": 14403
+        },
+        {
+          "type": "change",
+          "path": "extension/core/integrations/GitHubCLIManager.ts",
+          "extension": ".ts",
+          "size": 15100
+        },
+        {
+          "type": "change",
+          "path": "extension/extension.ts",
+          "extension": ".ts",
+          "size": 98064
+        },
+        {
+          "type": "change",
+          "path": "extension/core/inputs/GitHubDiscussionListener.ts",
+          "extension": ".ts",
+          "size": 13854
+        },
+        {
+          "type": "change",
+          "path": "extension/core/retroactive/scanners/GitHistoryScanner.ts",
+          "extension": ".ts",
+          "size": 4928
+        },
+        {
+          "type": "add",
+          "path": "plan.md",
+          "extension": ".md",
+          "size": 218
+        },
+        {
+          "type": "add",
+          "path": "scripts/generate-report.ts",
+          "extension": ".ts",
+          "size": 8677
+        },
+        {
+          "type": "add",
+          "path": "bench/results/events-10k.json",
+          "extension": ".json",
+          "size": 186
+        },
+        {
+          "type": "add",
+          "path": "bench/results/git-pool.json",
+          "extension": ".json",
+          "size": 319
+        },
+        {
+          "type": "add",
+          "path": "spec.md",
+          "extension": ".md",
+          "size": 149
+        },
+        {
+          "type": "add",
+          "path": "bench/stability-2h.ts",
+          "extension": ".ts",
+          "size": 7043
+        }
+      ],
+      "pattern": {
+        "type": "config",
+        "confidence": 0.8,
+        "indicators": [
+          "multi_file_change",
+          "new_files",
+          "test_files",
+          "documentation",
+          "config_files"
+        ]
+      },
+      "file_count": 20,
+      "total_size": 249313,
+      "extensions": [
+        ".ts",
+        ".json",
+        ".md"
+      ],
+      "cognitive_relevance": 0.7,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "47a58d6c-84d6-4f94-8a24-91cc2dd0dbe6",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:45:21+01:00",
+    "source": "git:75798fd728982565f232eea12d75b6dedadd675b",
+    "metadata": {
+      "commit": {
+        "hash": "75798fd728982565f232eea12d75b6dedadd675b",
+        "message": "Merge feat/rl4-i3-autonomy: RL4 Kernel Integration (I3)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:45:21+01:00",
+        "files_changed": [],
+        "insertions": 2600,
+        "deletions": 189
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "0186c287-d251-409a-8d9a-d8d8c3d8ec13",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:45:21+01:00",
+    "source": "git:75798fd728982565f232eea12d75b6dedadd675b",
+    "metadata": {
+      "commit": {
+        "hash": "75798fd728982565f232eea12d75b6dedadd675b",
+        "message": "Merge feat/rl4-i3-autonomy: RL4 Kernel Integration (I3)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:45:21+01:00",
+        "files_changed": [],
+        "insertions": 2600,
+        "deletions": 189
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762177528397-1n161tihl",
+    "timestamp": "2025-11-03T13:45:28.397Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": true,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "main",
+      "totalBranches": 4
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177598426-nsx2lzmo4",
+    "timestamp": "2025-11-03T13:46:38.426Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i4-ledger",
+          "isCurrent": true,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i4-ledger",
+      "totalBranches": 5
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "0e885912-8526-4885-b28d-d32dc2d3af8c",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:45:21+01:00",
+    "source": "git:75798fd728982565f232eea12d75b6dedadd675b",
+    "metadata": {
+      "commit": {
+        "hash": "75798fd728982565f232eea12d75b6dedadd675b",
+        "message": "Merge feat/rl4-i3-autonomy: RL4 Kernel Integration (I3)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:45:21+01:00",
+        "files_changed": [],
+        "insertions": 2600,
+        "deletions": 189
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "59f31038-5c27-4d27-8758-2ca10bc19713",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:47:14+01:00",
+    "source": "git:602248f86dbf143ff690e55f26089ad782f8a39b",
+    "metadata": {
+      "commit": {
+        "hash": "602248f86dbf143ff690e55f26089ad782f8a39b",
+        "message": "docs: add Iteration 4 plan (RBOMLedger + EvidenceGraph + Extraction)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:47:14+01:00",
+        "files_changed": [
+          ".reasoning/I4_PLAN.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762177637198-2bz3pyaqe",
+    "timestamp": "2025-11-03T13:47:17.198Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 14:47:14 2025 +0100",
+        "message": "docs: add Iteration 4 plan (RBOMLedger + EvidenceGraph + Extraction)",
+        "files": [
+          ".reasoning/I4_PLAN.md"
+        ],
+        "insertions": 182,
+        "deletions": 0,
+        "branch": "feat/rl4-i4-ledger"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/I4_PLAN.md",
+          "changes": [],
+          "insertions": 182,
+          "deletions": 0,
+          "type": "added"
+        }
+      ],
+      "totalFiles": 1,
+      "totalChanges": 182,
+      "diffSummary": {
+        "insertions": 182,
+        "deletions": 0,
+        "files": 1
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762177638401-9hcm540n1",
+    "timestamp": "2025-11-03T13:47:18.401Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i4-ledger",
+          "isCurrent": true,
+          "lastCommit": "602248f",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i4-ledger",
+      "totalBranches": 5
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "8b6d8b23-f031-4f85-80b7-b59466d0b0c0",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:47:14+01:00",
+    "source": "git:602248f86dbf143ff690e55f26089ad782f8a39b",
+    "metadata": {
+      "commit": {
+        "hash": "602248f86dbf143ff690e55f26089ad782f8a39b",
+        "message": "docs: add Iteration 4 plan (RBOMLedger + EvidenceGraph + Extraction)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:47:14+01:00",
+        "files_changed": [
+          ".reasoning/I4_PLAN.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "42f5c718-e98f-4433-88fa-f6b9b47efb92",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:49:34.927Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "add",
+          "path": "scripts/reflect_global.ts",
+          "extension": ".ts",
+          "size": 15320
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "new_files",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 15320,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "1762177790650-y1991advh",
+    "timestamp": "2025-11-03T13:49:50.650Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/scripts/reflect_global.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Saves",
+      "action": "save",
+      "language": "typescript",
+      "lineCount": 458
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "51da2afe-a735-46cf-b67e-87c841cef5d7",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:49:52.013Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "scripts/reflect_global.ts",
+          "extension": ".ts",
+          "size": 15320
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 15320,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "1762177823324-t64pvowpy",
+    "timestamp": "2025-11-03T13:50:23.324Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/scripts/reflect_global.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Saves",
+      "action": "save",
+      "language": "typescript",
+      "lineCount": 458
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "40947538-2a65-4221-83b3-93541e74264f",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:50:24.679Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "scripts/reflect_global.ts",
+          "extension": ".ts",
+          "size": 15320
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 15320,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "0071f480-886e-45e9-aeba-22a60eaebbc8",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:50:52.988Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/core/rbom/RBOMEngine.ts",
+          "extension": ".ts",
+          "size": 20667
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 20667,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "cce9a5a3-ac8f-46b4-a17b-b9a46becd76d",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:51:06.724Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/core/rbom/RBOMEngine.ts",
+          "extension": ".ts",
+          "size": 21462
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 21462,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "1762177869347-2fp5kqit5",
+    "timestamp": "2025-11-03T13:51:09.347Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/extension/core/rbom/RBOMEngine.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Saves",
+      "action": "save",
+      "language": "typescript",
+      "lineCount": 638
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "a0aff296-53c7-4c2d-aa83-7cc5103dcfd9",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:51:10.691Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/core/rbom/RBOMEngine.ts",
+          "extension": ".ts",
+          "size": 21462
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 21462,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "fcc14da0-52fc-4038-9fd5-49d88cc21ae8",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:51:31.899Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/core/rbom/RBOMEngine.ts",
+          "extension": ".ts",
+          "size": 21899
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 21899,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "1762177899670-g5vnbuxwd",
+    "timestamp": "2025-11-03T13:51:39.670Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/extension/core/rbom/RBOMEngine.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Saves",
+      "action": "save",
+      "language": "typescript",
+      "lineCount": 647
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "ebf13231-51f7-4bfb-bc81-2ff4a5f4e43c",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:51:41.106Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/core/rbom/RBOMEngine.ts",
+          "extension": ".ts",
+          "size": 21899
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 21899,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "b468b0c5-bd85-4402-a4c5-aefde1025a7f",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:56:35.391Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 5337
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 5337,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "57a537ee-5304-4601-918c-319cff30559c",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:56:48.650Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 5496
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 5496,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "a949e6a2-9b14-4ab9-878c-94a22d06c3d6",
+    "type": "file_change",
+    "timestamp": "2025-11-03T13:56:57.670Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 7423
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 7423,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "8db22151-5f73-424a-ace1-6dd5c43c00b4",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:47:14+01:00",
+    "source": "git:602248f86dbf143ff690e55f26089ad782f8a39b",
+    "metadata": {
+      "commit": {
+        "hash": "602248f86dbf143ff690e55f26089ad782f8a39b",
+        "message": "docs: add Iteration 4 plan (RBOMLedger + EvidenceGraph + Extraction)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:47:14+01:00",
+        "files_changed": [
+          ".reasoning/I4_PLAN.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "fb1a7eff-f1df-4dfe-b5a3-8a6c0a3295ec",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:57:19+01:00",
+    "source": "git:9a4ee4a77d824c88b64168e68cda802f663c86c6",
+    "metadata": {
+      "commit": {
+        "hash": "9a4ee4a77d824c88b64168e68cda802f663c86c6",
+        "message": "kernel(i4-a-wip): RBOMLedger enhancement + RBOMEngine integration (WIP)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:57:19+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          "extension/core/rbom/RBOMEngine.ts",
+          "extension/kernel/RBOMLedger.ts",
+          "scripts/reflect_global.ts"
+        ],
+        "insertions": 577,
+        "deletions": 16
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": [
+          "engine"
+        ]
+      },
+      "cognitive_relevance": 0.8,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762178242580-1gr4r53n7",
+    "timestamp": "2025-11-03T13:57:22.580Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 14:57:19 2025 +0100",
+        "message": "kernel(i4-a-wip): RBOMLedger enhancement + RBOMEngine integration (WIP)",
+        "files": [
+          ".reasoning/manifest.json",
+          "extension/core/rbom/RBOMEngine.ts",
+          "extension/kernel/RBOMLedger.ts",
+          "scripts/reflect_global.ts"
+        ],
+        "insertions": 577,
+        "deletions": 16,
+        "branch": "feat/rl4-i4-ledger"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/manifest.json",
+          "changes": [],
+          "insertions": 144,
+          "deletions": 4,
+          "type": "modified"
+        },
+        {
+          "file": "extension/core/rbom/RBOMEngine.ts",
+          "changes": [],
+          "insertions": 144,
+          "deletions": 4,
+          "type": "modified"
+        },
+        {
+          "file": "extension/kernel/RBOMLedger.ts",
+          "changes": [],
+          "insertions": 144,
+          "deletions": 4,
+          "type": "modified"
+        },
+        {
+          "file": "scripts/reflect_global.ts",
+          "changes": [],
+          "insertions": 144,
+          "deletions": 4,
+          "type": "added"
+        }
+      ],
+      "totalFiles": 4,
+      "totalChanges": 593,
+      "diffSummary": {
+        "insertions": 577,
+        "deletions": 16,
+        "files": 4
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "6428e089-0eb9-4d1d-89fb-40ee0ed633d1",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:57:19+01:00",
+    "source": "git:9a4ee4a77d824c88b64168e68cda802f663c86c6",
+    "metadata": {
+      "commit": {
+        "hash": "9a4ee4a77d824c88b64168e68cda802f663c86c6",
+        "message": "kernel(i4-a-wip): RBOMLedger enhancement + RBOMEngine integration (WIP)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:57:19+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          "extension/core/rbom/RBOMEngine.ts",
+          "extension/kernel/RBOMLedger.ts",
+          "scripts/reflect_global.ts"
+        ],
+        "insertions": 577,
+        "deletions": 16
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": [
+          "engine"
+        ]
+      },
+      "cognitive_relevance": 0.8,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762178248614-qb4syx8ap",
+    "timestamp": "2025-11-03T13:57:28.614Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i4-ledger",
+          "isCurrent": true,
+          "lastCommit": "9a4ee4a",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i4-ledger",
+      "totalBranches": 5
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "ee2335a2-398c-447f-a8d4-6719e1747efa",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:00:41.044Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 7483
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 7483,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "fab63cb2-d1e2-47cf-85cf-49d5870c894f",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:00:50.748Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 7854
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 7854,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "056e7a36-6a34-42fd-a4f8-301281d29c2e",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:01:06.019Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 8648
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 8648,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "a4799d82-edb9-4d9f-bd59-5bb385e78051",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:01:14.947Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 8713
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 8713,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "47399334-e9fd-4b4e-b3e1-a28577af29f2",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:01:21.740Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 9231
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 9231,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "b8a074fe-d249-482f-a542-e95e427bdd8b",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:01:53.870Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "add",
+          "path": "tests/kernel/RBOMLedger.test.ts",
+          "extension": ".ts",
+          "size": 3882
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.9,
+        "indicators": [
+          "new_files",
+          "test_files",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 3882,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "6ec3c7ad-84cd-4ebb-a2bc-2a0812b5cc44",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:01:59+01:00",
+    "source": "git:ccf29f32ca4c982922fce9f094b8d05669ac3ea7",
+    "metadata": {
+      "commit": {
+        "hash": "ccf29f32ca4c982922fce9f094b8d05669ac3ea7",
+        "message": "kernel(i4-a): cryptographic integrity complete (chain + canonical)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:01:59+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          "extension/kernel/RBOMLedger.ts",
+          "tests/kernel/RBOMLedger.test.ts"
+        ],
+        "insertions": 168,
+        "deletions": 12
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762178522771-phpgwl7bz",
+    "timestamp": "2025-11-03T14:02:02.771Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 15:01:59 2025 +0100",
+        "message": "kernel(i4-a): cryptographic integrity complete (chain + canonical)",
+        "files": [
+          ".reasoning/manifest.json",
+          "extension/kernel/RBOMLedger.ts",
+          "tests/kernel/RBOMLedger.test.ts"
+        ],
+        "insertions": 168,
+        "deletions": 12,
+        "branch": "feat/rl4-i4-ledger"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/manifest.json",
+          "changes": [],
+          "insertions": 56,
+          "deletions": 4,
+          "type": "modified"
+        },
+        {
+          "file": "extension/kernel/RBOMLedger.ts",
+          "changes": [],
+          "insertions": 56,
+          "deletions": 4,
+          "type": "modified"
+        },
+        {
+          "file": "tests/kernel/RBOMLedger.test.ts",
+          "changes": [],
+          "insertions": 56,
+          "deletions": 4,
+          "type": "added"
+        }
+      ],
+      "totalFiles": 3,
+      "totalChanges": 180,
+      "diffSummary": {
+        "insertions": 168,
+        "deletions": 12,
+        "files": 3
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "a977ea2d-5553-4387-a3d7-8198f30a2d21",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T14:57:19+01:00",
+    "source": "git:9a4ee4a77d824c88b64168e68cda802f663c86c6",
+    "metadata": {
+      "commit": {
+        "hash": "9a4ee4a77d824c88b64168e68cda802f663c86c6",
+        "message": "kernel(i4-a-wip): RBOMLedger enhancement + RBOMEngine integration (WIP)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T14:57:19+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          "extension/core/rbom/RBOMEngine.ts",
+          "extension/kernel/RBOMLedger.ts",
+          "scripts/reflect_global.ts"
+        ],
+        "insertions": 577,
+        "deletions": 16
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": [
+          "engine"
+        ]
+      },
+      "cognitive_relevance": 0.8,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "386775a0-ebb6-4aaa-aec1-62cbc0bd3433",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:01:59+01:00",
+    "source": "git:ccf29f32ca4c982922fce9f094b8d05669ac3ea7",
+    "metadata": {
+      "commit": {
+        "hash": "ccf29f32ca4c982922fce9f094b8d05669ac3ea7",
+        "message": "kernel(i4-a): cryptographic integrity complete (chain + canonical)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:01:59+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          "extension/kernel/RBOMLedger.ts",
+          "tests/kernel/RBOMLedger.test.ts"
+        ],
+        "insertions": 168,
+        "deletions": 12
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762178528679-rxiu00h2c",
+    "timestamp": "2025-11-03T14:02:08.679Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i4-ledger",
+          "isCurrent": true,
+          "lastCommit": "ccf29f3",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i4-ledger",
+      "totalBranches": 5
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762178562776-92wwdbgvz",
+    "timestamp": "2025-11-03T14:02:42.776Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 15:02:39 2025 +0100",
+        "message": "docs: end of day summary + I4-A integrity design",
+        "files": [
+          ".reasoning/END_OF_DAY_SUMMARY.md",
+          ".reasoning/FINAL_STATUS_2025-11-03.md",
+          ".reasoning/I4A_INTEGRITY_DESIGN.md"
+        ],
+        "insertions": 645,
+        "deletions": 0,
+        "branch": "feat/rl4-i4-ledger"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/END_OF_DAY_SUMMARY.md",
+          "changes": [],
+          "insertions": 215,
+          "deletions": 0,
+          "type": "added"
+        },
+        {
+          "file": ".reasoning/FINAL_STATUS_2025-11-03.md",
+          "changes": [],
+          "insertions": 215,
+          "deletions": 0,
+          "type": "added"
+        },
+        {
+          "file": ".reasoning/I4A_INTEGRITY_DESIGN.md",
+          "changes": [],
+          "insertions": 215,
+          "deletions": 0,
+          "type": "added"
+        }
+      ],
+      "totalFiles": 3,
+      "totalChanges": 645,
+      "diffSummary": {
+        "insertions": 645,
+        "deletions": 0,
+        "files": 3
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "d2e0cb81-10b9-45c0-a092-5d776f9ed00a",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:01:59+01:00",
+    "source": "git:ccf29f32ca4c982922fce9f094b8d05669ac3ea7",
+    "metadata": {
+      "commit": {
+        "hash": "ccf29f32ca4c982922fce9f094b8d05669ac3ea7",
+        "message": "kernel(i4-a): cryptographic integrity complete (chain + canonical)",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:01:59+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          "extension/kernel/RBOMLedger.ts",
+          "tests/kernel/RBOMLedger.test.ts"
+        ],
+        "insertions": 168,
+        "deletions": 12
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "923dbb28-b1f7-4166-bb0a-86d290cdc4c3",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:02:39+01:00",
+    "source": "git:8bb32605772a467d0bdc4f326b44ecc6934d87f7",
+    "metadata": {
+      "commit": {
+        "hash": "8bb32605772a467d0bdc4f326b44ecc6934d87f7",
+        "message": "docs: end of day summary + I4-A integrity design",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:02:39+01:00",
+        "files_changed": [
+          ".reasoning/END_OF_DAY_SUMMARY.md",
+          ".reasoning/FINAL_STATUS_2025-11-03.md",
+          ".reasoning/I4A_INTEGRITY_DESIGN.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "b0606c1d-ce74-43d7-be2a-18ed3a6a7261",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:02:39+01:00",
+    "source": "git:8bb32605772a467d0bdc4f326b44ecc6934d87f7",
+    "metadata": {
+      "commit": {
+        "hash": "8bb32605772a467d0bdc4f326b44ecc6934d87f7",
+        "message": "docs: end of day summary + I4-A integrity design",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:02:39+01:00",
+        "files_changed": [
+          ".reasoning/END_OF_DAY_SUMMARY.md",
+          ".reasoning/FINAL_STATUS_2025-11-03.md",
+          ".reasoning/I4A_INTEGRITY_DESIGN.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762178568698-pe7upm4kj",
+    "timestamp": "2025-11-03T14:02:48.698Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i4-ledger",
+          "isCurrent": true,
+          "lastCommit": "8bb3260",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i4-ledger",
+      "totalBranches": 5
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762178717849-e3ev93wx4",
+    "timestamp": "2025-11-03T14:05:17.849Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 15:05:17 2025 +0100",
+        "message": "docs(adr): ADR-001 Foundational - Universal Git Reasoning Infrastructure",
+        "files": [
+          ".reasoning/I4A_INTEGRITY_DESIGN.md"
+        ],
+        "insertions": 609,
+        "deletions": 3,
+        "branch": "feat/rl4-i4-ledger"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/I4A_INTEGRITY_DESIGN.md",
+          "changes": [],
+          "insertions": 609,
+          "deletions": 3,
+          "type": "modified"
+        }
+      ],
+      "totalFiles": 1,
+      "totalChanges": 612,
+      "diffSummary": {
+        "insertions": 609,
+        "deletions": 3,
+        "files": 1
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762178718736-1f3aaeaxs",
+    "timestamp": "2025-11-03T14:05:18.736Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i4-ledger",
+          "isCurrent": true,
+          "lastCommit": "f27c046",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i4-ledger",
+      "totalBranches": 5
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "4f9f5648-f06a-448e-aa7b-6bb68d9a2de1",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:02:39+01:00",
+    "source": "git:8bb32605772a467d0bdc4f326b44ecc6934d87f7",
+    "metadata": {
+      "commit": {
+        "hash": "8bb32605772a467d0bdc4f326b44ecc6934d87f7",
+        "message": "docs: end of day summary + I4-A integrity design",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:02:39+01:00",
+        "files_changed": [
+          ".reasoning/END_OF_DAY_SUMMARY.md",
+          ".reasoning/FINAL_STATUS_2025-11-03.md",
+          ".reasoning/I4A_INTEGRITY_DESIGN.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "917eb87d-4071-4e00-8556-0f90e7002c5f",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:05:17+01:00",
+    "source": "git:f27c046c537cc06f8df5ec30c902461605c420e7",
+    "metadata": {
+      "commit": {
+        "hash": "f27c046c537cc06f8df5ec30c902461605c420e7",
+        "message": "docs(adr): ADR-001 Foundational - Universal Git Reasoning Infrastructure",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:05:17+01:00",
+        "files_changed": [
+          ".reasoning/I4A_INTEGRITY_DESIGN.md"
+        ],
+        "insertions": 609,
+        "deletions": 3
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": [
+          "reasoning"
+        ]
+      },
+      "cognitive_relevance": 0.8,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "3611c104-116b-403d-9e7e-175e05f1adc8",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:05:17+01:00",
+    "source": "git:f27c046c537cc06f8df5ec30c902461605c420e7",
+    "metadata": {
+      "commit": {
+        "hash": "f27c046c537cc06f8df5ec30c902461605c420e7",
+        "message": "docs(adr): ADR-001 Foundational - Universal Git Reasoning Infrastructure",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:05:17+01:00",
+        "files_changed": [
+          ".reasoning/I4A_INTEGRITY_DESIGN.md"
+        ],
+        "insertions": 609,
+        "deletions": 3
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": [
+          "reasoning"
+        ]
+      },
+      "cognitive_relevance": 0.8,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "48e311ca-d510-4a06-a538-9a61f63fd4d3",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:10:47.576Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "scripts/test-100-cycles.ts",
+          "extension": ".ts",
+          "size": 9920
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.9,
+        "indicators": [
+          "single_file",
+          "test_files",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 9920,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "41a99124-0a6f-44fa-b813-9ec45597ff4b",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:10:58.264Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 9408
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 9408,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "fd023e84-1ce5-4ba7-ac15-54629dfb77aa",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:11:28.152Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "scripts/test-100-cycles.ts",
+          "extension": ".ts",
+          "size": 10015
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.9,
+        "indicators": [
+          "single_file",
+          "test_files",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 10015,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "0abdc8a0-3d09-44c8-9b0b-249226269221",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:11:54.261Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 9471
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 9471,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "7cc5d310-8d37-4da6-94e0-d5759b761652",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:12:17.749Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 9553
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 9553,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "1762179156722-zb98xsqw2",
+    "timestamp": "2025-11-03T14:12:36.722Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/extension/kernel/RBOMLedger.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Saves",
+      "action": "save",
+      "language": "typescript",
+      "lineCount": 324
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "e4d9d10f-988f-4af1-9bd8-3a2adaa3fbd8",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:12:37.996Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 9553
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 9553,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "1762179158090-n2n1e1vdi",
+    "timestamp": "2025-11-03T14:12:38.090Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/scripts/test-100-cycles.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Saves",
+      "action": "save",
+      "language": "typescript",
+      "lineCount": 270
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "bf3e3574-ec13-4459-ab07-000be0de380e",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:12:39.449Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "scripts/test-100-cycles.ts",
+          "extension": ".ts",
+          "size": 10015
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.9,
+        "indicators": [
+          "single_file",
+          "test_files",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 10015,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "6810e211-5938-4f33-a8a5-b8453453ed25",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:12:53.998Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 9343
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 9343,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "efc29814-3727-4277-9706-9208355c35f7",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:05:17+01:00",
+    "source": "git:f27c046c537cc06f8df5ec30c902461605c420e7",
+    "metadata": {
+      "commit": {
+        "hash": "f27c046c537cc06f8df5ec30c902461605c420e7",
+        "message": "docs(adr): ADR-001 Foundational - Universal Git Reasoning Infrastructure",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:05:17+01:00",
+        "files_changed": [
+          ".reasoning/I4A_INTEGRITY_DESIGN.md"
+        ],
+        "insertions": 609,
+        "deletions": 3
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": [
+          "reasoning"
+        ]
+      },
+      "cognitive_relevance": 0.8,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "3edc11bc-4a11-4cbb-9e2e-6655a62b72d7",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:13:24+01:00",
+    "source": "git:f8e6d38866255fd6aa02585fb6d8972caecceb42",
+    "metadata": {
+      "commit": {
+        "hash": "f8e6d38866255fd6aa02585fb6d8972caecceb42",
+        "message": "kernel(i4-a): ✅ 100-cycle validation PASSED - extraction authorized",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:13:24+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          "extension/kernel/RBOMLedger.ts",
+          "scripts/test-100-cycles.ts"
+        ],
+        "insertions": 283,
+        "deletions": 11
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1efe9f22-fd29-4edc-9ee8-2aa2f0be6759",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:13:24+01:00",
+    "source": "git:f8e6d38866255fd6aa02585fb6d8972caecceb42",
+    "metadata": {
+      "commit": {
+        "hash": "f8e6d38866255fd6aa02585fb6d8972caecceb42",
+        "message": "kernel(i4-a): ✅ 100-cycle validation PASSED - extraction authorized",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:13:24+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          "extension/kernel/RBOMLedger.ts",
+          "scripts/test-100-cycles.ts"
+        ],
+        "insertions": 283,
+        "deletions": 11
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762179208179-4e7b06ooo",
+    "timestamp": "2025-11-03T14:13:28.179Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 15:13:24 2025 +0100",
+        "message": "kernel(i4-a): ✅ 100-cycle validation PASSED - extraction authorized",
+        "files": [
+          ".reasoning/manifest.json",
+          "extension/kernel/RBOMLedger.ts",
+          "scripts/test-100-cycles.ts"
+        ],
+        "insertions": 283,
+        "deletions": 11,
+        "branch": "feat/rl4-i4-ledger"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/manifest.json",
+          "changes": [],
+          "insertions": 94,
+          "deletions": 3,
+          "type": "modified"
+        },
+        {
+          "file": "extension/kernel/RBOMLedger.ts",
+          "changes": [],
+          "insertions": 94,
+          "deletions": 3,
+          "type": "modified"
+        },
+        {
+          "file": "scripts/test-100-cycles.ts",
+          "changes": [],
+          "insertions": 94,
+          "deletions": 3,
+          "type": "added"
+        }
+      ],
+      "totalFiles": 3,
+      "totalChanges": 294,
+      "diffSummary": {
+        "insertions": 283,
+        "deletions": 11,
+        "files": 3
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762179208887-lqe9q3rzx",
+    "timestamp": "2025-11-03T14:13:28.887Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i4-ledger",
+          "isCurrent": true,
+          "lastCommit": "f8e6d38",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i4-ledger",
+      "totalBranches": 5
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762179215483-ch1ibyl11",
+    "timestamp": "2025-11-03T14:13:35.483Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/extension/kernel/RBOMLedger.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Saves",
+      "action": "save",
+      "language": "typescript",
+      "lineCount": 317
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "17bb152c-f699-44e3-a2aa-4e6df4d4551b",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:13:36.753Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 9343
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 9343,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "b77d39c2-40ba-43db-854f-549a466cac16",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:13:24+01:00",
+    "source": "git:f8e6d38866255fd6aa02585fb6d8972caecceb42",
+    "metadata": {
+      "commit": {
+        "hash": "f8e6d38866255fd6aa02585fb6d8972caecceb42",
+        "message": "kernel(i4-a): ✅ 100-cycle validation PASSED - extraction authorized",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:13:24+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          "extension/kernel/RBOMLedger.ts",
+          "scripts/test-100-cycles.ts"
+        ],
+        "insertions": 283,
+        "deletions": 11
+      },
+      "intent": {
+        "type": "unknown",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "a018d1cc-af1b-486d-a898-e4f1a336012d",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:14:19+01:00",
+    "source": "git:2dc893f9487775f40af0b0779eb570b160ee3003",
+    "metadata": {
+      "commit": {
+        "hash": "2dc893f9487775f40af0b0779eb570b160ee3003",
+        "message": "docs(i4-a): validation report - mathematical proof of integrity",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:14:19+01:00",
+        "files_changed": [
+          ".reasoning/diagnostics/I4A_VALIDATION_COMPLETE.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "7279142e-c747-4734-aa9a-02dc0ffac912",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:14:19+01:00",
+    "source": "git:2dc893f9487775f40af0b0779eb570b160ee3003",
+    "metadata": {
+      "commit": {
+        "hash": "2dc893f9487775f40af0b0779eb570b160ee3003",
+        "message": "docs(i4-a): validation report - mathematical proof of integrity",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:14:19+01:00",
+        "files_changed": [
+          ".reasoning/diagnostics/I4A_VALIDATION_COMPLETE.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762179263220-uqoaxpjqv",
+    "timestamp": "2025-11-03T14:14:23.220Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 15:14:19 2025 +0100",
+        "message": "docs(i4-a): validation report - mathematical proof of integrity",
+        "files": [
+          ".reasoning/diagnostics/I4A_VALIDATION_COMPLETE.md"
+        ],
+        "insertions": 355,
+        "deletions": 0,
+        "branch": "feat/rl4-i4-ledger"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/diagnostics/I4A_VALIDATION_COMPLETE.md",
+          "changes": [],
+          "insertions": 355,
+          "deletions": 0,
+          "type": "added"
+        }
+      ],
+      "totalFiles": 1,
+      "totalChanges": 355,
+      "diffSummary": {
+        "insertions": 355,
+        "deletions": 0,
+        "files": 1
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762179268908-l86nemlg1",
+    "timestamp": "2025-11-03T14:14:28.908Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i4-ledger",
+          "isCurrent": true,
+          "lastCommit": "2dc893f",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i4-ledger",
+      "totalBranches": 5
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "759d858e-c23d-42fc-b410-77ca36362c65",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:14:19+01:00",
+    "source": "git:2dc893f9487775f40af0b0779eb570b160ee3003",
+    "metadata": {
+      "commit": {
+        "hash": "2dc893f9487775f40af0b0779eb570b160ee3003",
+        "message": "docs(i4-a): validation report - mathematical proof of integrity",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:14:19+01:00",
+        "files_changed": [
+          ".reasoning/diagnostics/I4A_VALIDATION_COMPLETE.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "469a05f2-b68f-4a64-8030-1b4051d40c90",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:15:43+01:00",
+    "source": "git:943a672c35465c7c96af909363887ab6bc18228b",
+    "metadata": {
+      "commit": {
+        "hash": "943a672c35465c7c96af909363887ab6bc18228b",
+        "message": "docs: final status update - I4-A validation complete",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:15:43+01:00",
+        "files_changed": [
+          ".reasoning/FINAL_STATUS_2025-11-03.md"
+        ],
+        "insertions": 91,
+        "deletions": 42
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "295e68cb-a9f6-4935-b2ec-79bd1331426e",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:15:43+01:00",
+    "source": "git:943a672c35465c7c96af909363887ab6bc18228b",
+    "metadata": {
+      "commit": {
+        "hash": "943a672c35465c7c96af909363887ab6bc18228b",
+        "message": "docs: final status update - I4-A validation complete",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:15:43+01:00",
+        "files_changed": [
+          ".reasoning/FINAL_STATUS_2025-11-03.md"
+        ],
+        "insertions": 91,
+        "deletions": 42
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762179348275-rsf6lfisc",
+    "timestamp": "2025-11-03T14:15:48.275Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 15:15:43 2025 +0100",
+        "message": "docs: final status update - I4-A validation complete",
+        "files": [
+          ".reasoning/FINAL_STATUS_2025-11-03.md"
+        ],
+        "insertions": 91,
+        "deletions": 42,
+        "branch": "feat/rl4-i4-ledger"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/FINAL_STATUS_2025-11-03.md",
+          "changes": [],
+          "insertions": 91,
+          "deletions": 42,
+          "type": "modified"
+        }
+      ],
+      "totalFiles": 1,
+      "totalChanges": 133,
+      "diffSummary": {
+        "insertions": 91,
+        "deletions": 42,
+        "files": 1
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762179348932-hfdmhlf9y",
+    "timestamp": "2025-11-03T14:15:48.932Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i4-ledger",
+          "isCurrent": true,
+          "lastCommit": "943a672",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i4-ledger",
+      "totalBranches": 5
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762179398797-4c24472fm",
+    "timestamp": "2025-11-03T14:16:38.797Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/scripts/test-100-cycles.ts",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Saves",
+      "action": "save",
+      "language": "typescript",
+      "lineCount": 270
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "e13afe65-0f56-47bf-8af6-5b3a24c2a227",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:16:40.148Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "scripts/test-100-cycles.ts",
+          "extension": ".ts",
+          "size": 10015
+        },
+        {
+          "type": "change",
+          "path": "extension/kernel/RBOMLedger.ts",
+          "extension": ".ts",
+          "size": 9343
+        }
+      ],
+      "pattern": {
+        "type": "test",
+        "confidence": 0.9,
+        "indicators": [
+          "test_files"
+        ]
+      },
+      "file_count": 2,
+      "total_size": 19358,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.6,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "f5018fce-3437-4630-9c26-bbba18d7b197",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:27:37.842Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "tsconfig.json",
+          "extension": ".json",
+          "size": 573
+        }
+      ],
+      "pattern": {
+        "type": "config",
+        "confidence": 0.8,
+        "indicators": [
+          "single_file",
+          "config_files"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 573,
+      "extensions": [
+        ".json"
+      ],
+      "cognitive_relevance": 0.7,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "1762180060636-5fmy3o4qs",
+    "timestamp": "2025-11-03T14:27:40.636Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/tsconfig.json",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Saves",
+      "action": "save",
+      "language": "jsonc",
+      "lineCount": 22
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "307b20e2-54d0-4ab5-b071-a78a5e8ea2fe",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:27:41.943Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "tsconfig.json",
+          "extension": ".json",
+          "size": 573
+        }
+      ],
+      "pattern": {
+        "type": "config",
+        "confidence": 0.8,
+        "indicators": [
+          "single_file",
+          "config_files"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 573,
+      "extensions": [
+        ".json"
+      ],
+      "cognitive_relevance": 0.7,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "dd057cf2-ce3a-4a38-97b9-16650d54593b",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:28:11.348Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "extension/core/rbom/RBOMEngine.ts",
+          "extension": ".ts",
+          "size": 21906
+        }
+      ],
+      "pattern": {
+        "type": "refactor",
+        "confidence": 0.85,
+        "indicators": [
+          "single_file",
+          "shared_refactor"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 21906,
+      "extensions": [
+        ".ts"
+      ],
+      "cognitive_relevance": 0.9,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "52f0b6e3-8077-46bb-858b-9787250171de",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:28:51.888Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "add",
+          "path": "reasoning-layer-v3-1.0.87.vsix",
+          "extension": ".vsix",
+          "size": 950007
+        }
+      ],
+      "pattern": {
+        "type": "feature",
+        "confidence": 0.8,
+        "indicators": [
+          "new_files"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 950007,
+      "extensions": [
+        ".vsix"
+      ],
+      "cognitive_relevance": 0.8,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "9832287f-cc88-44d0-9a2a-d94c63b708f8",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:15:43+01:00",
+    "source": "git:943a672c35465c7c96af909363887ab6bc18228b",
+    "metadata": {
+      "commit": {
+        "hash": "943a672c35465c7c96af909363887ab6bc18228b",
+        "message": "docs: final status update - I4-A validation complete",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:15:43+01:00",
+        "files_changed": [
+          ".reasoning/FINAL_STATUS_2025-11-03.md"
+        ],
+        "insertions": 91,
+        "deletions": 42
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "fba7533d-f7ca-4af2-a88a-d3b1943846c1",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:30:05+01:00",
+    "source": "git:64ae0a607ab929f90e866b0bf8528803196e6f04",
+    "metadata": {
+      "commit": {
+        "hash": "64ae0a607ab929f90e866b0bf8528803196e6f04",
+        "message": "fix(build): resolve TypeScript compilation errors",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:30:05+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          "extension/core/rbom/RBOMEngine.ts",
+          "tsconfig.json"
+        ],
+        "insertions": 5,
+        "deletions": 5
+      },
+      "intent": {
+        "type": "fix",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "cebf2665-d232-4d43-bfe0-918b47876470",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:30:05+01:00",
+    "source": "git:64ae0a607ab929f90e866b0bf8528803196e6f04",
+    "metadata": {
+      "commit": {
+        "hash": "64ae0a607ab929f90e866b0bf8528803196e6f04",
+        "message": "fix(build): resolve TypeScript compilation errors",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:30:05+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          "extension/core/rbom/RBOMEngine.ts",
+          "tsconfig.json"
+        ],
+        "insertions": 5,
+        "deletions": 5
+      },
+      "intent": {
+        "type": "fix",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762180208793-z0r2g0qmi",
+    "timestamp": "2025-11-03T14:30:08.793Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 15:30:05 2025 +0100",
+        "message": "fix(build): resolve TypeScript compilation errors",
+        "files": [
+          ".reasoning/manifest.json",
+          "extension/core/rbom/RBOMEngine.ts",
+          "tsconfig.json"
+        ],
+        "insertions": 5,
+        "deletions": 5,
+        "branch": "feat/rl4-i4-ledger"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/manifest.json",
+          "changes": [],
+          "insertions": 1,
+          "deletions": 1,
+          "type": "modified"
+        },
+        {
+          "file": "extension/core/rbom/RBOMEngine.ts",
+          "changes": [],
+          "insertions": 1,
+          "deletions": 1,
+          "type": "modified"
+        },
+        {
+          "file": "tsconfig.json",
+          "changes": [],
+          "insertions": 1,
+          "deletions": 1,
+          "type": "modified"
+        }
+      ],
+      "totalFiles": 3,
+      "totalChanges": 10,
+      "diffSummary": {
+        "insertions": 5,
+        "deletions": 5,
+        "files": 3
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762180209240-7gdyzosi4",
+    "timestamp": "2025-11-03T14:30:09.240Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i4-ledger",
+          "isCurrent": true,
+          "lastCommit": "64ae0a6",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i4-ledger",
+      "totalBranches": 5
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762180218808-8avzu25zr",
+    "timestamp": "2025-11-03T14:30:18.808Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 15:30:18 2025 +0100",
+        "message": "docs: compile fix investigation report",
+        "files": [
+          ".reasoning/diagnostics/COMPILE_FIX_2025-11-03.md"
+        ],
+        "insertions": 264,
+        "deletions": 0,
+        "branch": "feat/rl4-i4-ledger"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/diagnostics/COMPILE_FIX_2025-11-03.md",
+          "changes": [],
+          "insertions": 264,
+          "deletions": 0,
+          "type": "added"
+        }
+      ],
+      "totalFiles": 1,
+      "totalChanges": 264,
+      "diffSummary": {
+        "insertions": 264,
+        "deletions": 0,
+        "files": 1
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762180219245-2kkfsmcp5",
+    "timestamp": "2025-11-03T14:30:19.246Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i4-ledger",
+          "isCurrent": true,
+          "lastCommit": "cdfbab4",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i4-ledger",
+      "totalBranches": 5
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "cbf15d77-a8e4-4277-8ef3-47a03b7929eb",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:30:05+01:00",
+    "source": "git:64ae0a607ab929f90e866b0bf8528803196e6f04",
+    "metadata": {
+      "commit": {
+        "hash": "64ae0a607ab929f90e866b0bf8528803196e6f04",
+        "message": "fix(build): resolve TypeScript compilation errors",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:30:05+01:00",
+        "files_changed": [
+          ".reasoning/manifest.json",
+          "extension/core/rbom/RBOMEngine.ts",
+          "tsconfig.json"
+        ],
+        "insertions": 5,
+        "deletions": 5
+      },
+      "intent": {
+        "type": "fix",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "17c628bc-a56a-44bb-b6a8-84fd63b1cd29",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:30:18+01:00",
+    "source": "git:cdfbab4236c0c6e6206d0c0a03c12764effbd254",
+    "metadata": {
+      "commit": {
+        "hash": "cdfbab4236c0c6e6206d0c0a03c12764effbd254",
+        "message": "docs: compile fix investigation report",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:30:18+01:00",
+        "files_changed": [
+          ".reasoning/diagnostics/COMPILE_FIX_2025-11-03.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "aa20e56e-85c1-4d7d-bb14-704ea0cbe1d6",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:30:18+01:00",
+    "source": "git:cdfbab4236c0c6e6206d0c0a03c12764effbd254",
+    "metadata": {
+      "commit": {
+        "hash": "cdfbab4236c0c6e6206d0c0a03c12764effbd254",
+        "message": "docs: compile fix investigation report",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:30:18+01:00",
+        "files_changed": [
+          ".reasoning/diagnostics/COMPILE_FIX_2025-11-03.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "1762180245886-1y47x7naq",
+    "timestamp": "2025-11-03T14:30:45.886Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/tsconfig.json",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Saves",
+      "action": "save",
+      "language": "jsonc",
+      "lineCount": 22
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762180247241-6bwoe23b1",
+    "timestamp": "2025-11-03T14:30:47.241Z",
+    "type": "file_change",
+    "source": "/Users/valentingaludec/Reasoning Layer V3/tsconfig.json",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "File Saves",
+      "action": "save",
+      "language": "jsonc",
+      "lineCount": 22
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "141622fc-434b-43d8-9b82-6ec435041c8b",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:30:47.249Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "tsconfig.json",
+          "extension": ".json",
+          "size": 573
+        }
+      ],
+      "pattern": {
+        "type": "config",
+        "confidence": 0.8,
+        "indicators": [
+          "single_file",
+          "config_files"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 573,
+      "extensions": [
+        ".json"
+      ],
+      "cognitive_relevance": 0.7,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "de1d16c4-472b-4aa6-8526-aba5fc54ddf2",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:30:48.600Z",
+    "source": "FileChangeWatcher",
+    "metadata": {
+      "burst": true,
+      "changes": [
+        {
+          "type": "change",
+          "path": "tsconfig.json",
+          "extension": ".json",
+          "size": 573
+        }
+      ],
+      "pattern": {
+        "type": "config",
+        "confidence": 0.8,
+        "indicators": [
+          "single_file",
+          "config_files"
+        ]
+      },
+      "file_count": 1,
+      "total_size": 573,
+      "extensions": [
+        ".json"
+      ],
+      "cognitive_relevance": 0.7,
+      "auto_captured": true,
+      "captured_by": "FileChangeWatcher"
+    }
+  },
+  {
+    "id": "1762180328872-2ukz346wm",
+    "timestamp": "2025-11-03T14:32:08.872Z",
+    "type": "file_change",
+    "source": "git:***AWS_SECRET_REDACTED***",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_commit",
+      "commit": {
+        "hash": "***AWS_SECRET_REDACTED***",
+        "author": "Soynido",
+        "email": "vgaludec@gmail.com",
+        "timestamp": "Mon Nov 3 15:32:08 2025 +0100",
+        "message": "docs: installation success report",
+        "files": [
+          ".reasoning/diagnostics/INSTALL_SUCCESS_2025-11-03.md"
+        ],
+        "insertions": 268,
+        "deletions": 0,
+        "branch": "feat/rl4-i4-ledger"
+      },
+      "diffs": [
+        {
+          "file": ".reasoning/diagnostics/INSTALL_SUCCESS_2025-11-03.md",
+          "changes": [],
+          "insertions": 268,
+          "deletions": 0,
+          "type": "added"
+        }
+      ],
+      "totalFiles": 1,
+      "totalChanges": 268,
+      "diffSummary": {
+        "insertions": 268,
+        "deletions": 0,
+        "files": 1
+      }
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "1762180329265-ekrpuitie",
+    "timestamp": "2025-11-03T14:32:09.266Z",
+    "type": "file_change",
+    "source": "git:branches",
+    "metadata": {
+      "level": "1 - Code & Structure Technique",
+      "category": "Git Metadata",
+      "type": "git_branches",
+      "branches": [
+        {
+          "name": "feat/rl4-i1-hotfix",
+          "isCurrent": false,
+          "lastCommit": "02d2a32",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i2-kernel",
+          "isCurrent": false,
+          "lastCommit": "b4b9fc0",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i3-autonomy",
+          "isCurrent": false,
+          "lastCommit": "2b3c062",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "feat/rl4-i4-ledger",
+          "isCurrent": true,
+          "lastCommit": "8076acc",
+          "ahead": 0,
+          "behind": 0
+        },
+        {
+          "name": "main",
+          "isCurrent": false,
+          "lastCommit": "75798fd",
+          "ahead": 0,
+          "behind": 0
+        }
+      ],
+      "currentBranch": "feat/rl4-i4-ledger",
+      "totalBranches": 5
+    },
+    "version": "1.0"
+  },
+  {
+    "id": "a176b7eb-3798-49d2-b50c-d3b7022cedb6",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:30:18+01:00",
+    "source": "git:cdfbab4236c0c6e6206d0c0a03c12764effbd254",
+    "metadata": {
+      "commit": {
+        "hash": "cdfbab4236c0c6e6206d0c0a03c12764effbd254",
+        "message": "docs: compile fix investigation report",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:30:18+01:00",
+        "files_changed": [
+          ".reasoning/diagnostics/COMPILE_FIX_2025-11-03.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "f45fb1cd-e69d-4d3d-94f2-2e98a026a851",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:32:08+01:00",
+    "source": "git:8076acc017bdef6e034d4da1be0f8e692937f3a7",
+    "metadata": {
+      "commit": {
+        "hash": "8076acc017bdef6e034d4da1be0f8e692937f3a7",
+        "message": "docs: installation success report",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:32:08+01:00",
+        "files_changed": [
+          ".reasoning/diagnostics/INSTALL_SUCCESS_2025-11-03.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "11887cd3-0cb6-41bf-85ad-0a7ac7082f44",
+    "type": "git_commit",
+    "timestamp": "2025-11-03T15:32:08+01:00",
+    "source": "git:8076acc017bdef6e034d4da1be0f8e692937f3a7",
+    "metadata": {
+      "commit": {
+        "hash": "8076acc017bdef6e034d4da1be0f8e692937f3a7",
+        "message": "docs: installation success report",
+        "author": "Soynido",
+        "timestamp": "2025-11-03T15:32:08+01:00",
+        "files_changed": [
+          ".reasoning/diagnostics/INSTALL_SUCCESS_2025-11-03.md"
+        ],
+        "insertions": 0,
+        "deletions": 0
+      },
+      "intent": {
+        "type": "docs",
+        "keywords": []
+      },
+      "cognitive_relevance": 0.5,
+      "auto_captured": true,
+      "captured_by": "GitCommitListener"
+    }
+  },
+  {
+    "id": "ad1a1cc4-cb37-4fde-8098-f98f09e8dfbf",
+    "type": "file_change",
+    "timestamp": "2025-11-03T14:33:08.215Z",
+    "source": "terminal:Cursor (cd \"/Users/valentingalu...)",
+    "metadata": {
+      "terminal_session": {
+        "id": "Cursor (cd \"/Users/valentingalu...)",
+        "name": "Cursor (cd \"/Users/valentingalu...)",
+        "created_at": "2025-11-03T12:19:04.995Z",
+        "working_directory": "/Users/valentingaludec/Reasoning Layer V3",
+        "active_file": "/Users/valentingaludec/Reasoning Layer V3/.reasoning/plan.md"
+      },
+      "session_context": {
+        "has_commands": true,
+        "has_errors": true,
+        "has_outputs": true,
+        "command_count": 1,
+        "error_count": 1,
+        "output_line_count": 10,
+        "detected_patterns": [
+          "npm_command",
+          "git_command",
+          "test_execution",
+          "typescript_compilation"
+        ]
+      },
+      "cognitive_relevance": 0.8,
+      "auto_captured": true,
+      "captured_by": "ShellMessageCapture"
+    }
+  },
+  {
+    "id": "64fa00e1-2cb6-4951-88f6-7bc5dbb359a2",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T14:33:24.907Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "26cd6d47-5f13-4f9f-a84d-2839bfaa7be9",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T14:46:17.486Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "c77b8fff-0138-45bb-a02c-1cecb173ebb2",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T14:49:44.959Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "ff79c43d-8e1d-4943-960d-b921122db3c0",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T14:52:28.803Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "b62aa6b3-7583-4410-8883-4b6075f3606d",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T16:15:10.079Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "73f8546f-9195-4a8b-97c1-b2c102e30c3c",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T16:21:28.929Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "740f050a-ae98-4442-b3d6-236de244c8c6",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T16:25:08.865Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "db472887-13e6-45bd-b05c-45355aa7213a",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T16:33:56.412Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "842da2af-70ec-4599-835b-2e35393229fb",
+    "type": "file_change",
+    "timestamp": "2025-11-03T16:39:31.895Z",
+    "source": "terminal:Cursor (cd \"/Users/valentingalu...)",
+    "metadata": {
+      "terminal_session": {
+        "id": "Cursor (cd \"/Users/valentingalu...)",
+        "name": "Cursor (cd \"/Users/valentingalu...)",
+        "created_at": "2025-11-03T16:39:20.017Z",
+        "working_directory": "/Users/valentingaludec/Reasoning Layer V3",
+        "active_file": "/Users/valentingaludec/Reasoning Layer V3/RETEST_INSTRUCTIONS.md"
+      },
+      "session_context": {
+        "has_commands": true,
+        "has_errors": true,
+        "has_outputs": true,
+        "command_count": 1,
+        "error_count": 1,
+        "output_line_count": 10,
+        "detected_patterns": [
+          "npm_command",
+          "git_command",
+          "test_execution",
+          "typescript_compilation"
+        ]
+      },
+      "cognitive_relevance": 0.8,
+      "auto_captured": true,
+      "captured_by": "ShellMessageCapture"
+    }
+  },
+  {
+    "id": "ed543781-bc75-43ad-afff-6a0a76e42865",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T16:39:46.271Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "f06527a2-41ff-45bd-b43a-ff6f4674decd",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T16:40:09.325Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "5e1ad634-611e-4dff-8f46-3843e3f26474",
+    "type": "file_change",
+    "timestamp": "2025-11-03T16:53:28.493Z",
+    "source": "terminal:Cursor (cd \"/Users/valentingalu...)",
+    "metadata": {
+      "terminal_session": {
+        "id": "Cursor (cd \"/Users/valentingalu...)",
+        "name": "Cursor (cd \"/Users/valentingalu...)",
+        "created_at": "2025-11-03T16:44:02.144Z",
+        "working_directory": "/Users/valentingaludec/Reasoning Layer V3",
+        "active_file": "/Users/valentingaludec/Reasoning Layer V3/plan.md"
+      },
+      "session_context": {
+        "has_commands": true,
+        "has_errors": true,
+        "has_outputs": true,
+        "command_count": 1,
+        "error_count": 1,
+        "output_line_count": 10,
+        "detected_patterns": [
+          "npm_command",
+          "git_command",
+          "test_execution",
+          "typescript_compilation"
+        ]
+      },
+      "cognitive_relevance": 0.8,
+      "auto_captured": true,
+      "captured_by": "ShellMessageCapture"
+    }
+  },
+  {
+    "id": "e4c24dd9-f504-46df-9f7b-cfcb53fd92c5",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T16:53:43.017Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "b534005a-b0f4-46f5-b506-022c36383e85",
+    "type": "file_change",
+    "timestamp": "2025-11-03T16:59:02.212Z",
+    "source": "terminal:Cursor (cd \"/Users/valentingalu...)",
+    "metadata": {
+      "terminal_session": {
+        "id": "Cursor (cd \"/Users/valentingalu...)",
+        "name": "Cursor (cd \"/Users/valentingalu...)",
+        "created_at": "2025-11-03T16:55:09.074Z",
+        "working_directory": "/Users/valentingaludec/Reasoning Layer V3",
+        "active_file": "/Users/valentingaludec/Reasoning Layer V3/V2.0.1_VALIDATION_INSTRUCTIONS.md"
+      },
+      "session_context": {
+        "has_commands": true,
+        "has_errors": true,
+        "has_outputs": true,
+        "command_count": 1,
+        "error_count": 1,
+        "output_line_count": 10,
+        "detected_patterns": [
+          "npm_command",
+          "git_command",
+          "test_execution",
+          "typescript_compilation"
+        ]
+      },
+      "cognitive_relevance": 0.8,
+      "auto_captured": true,
+      "captured_by": "ShellMessageCapture"
+    }
+  },
+  {
+    "id": "b4bf56c0-253b-4868-83f8-e9fb412ebb15",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T16:59:16.523Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "1c255d8f-d35e-437e-8289-92ca085df680",
+    "type": "file_change",
+    "timestamp": "2025-11-03T17:07:18.792Z",
+    "source": "terminal:Cursor (cd \"/Users/valentingalu...)",
+    "metadata": {
+      "terminal_session": {
+        "id": "Cursor (cd \"/Users/valentingalu...)",
+        "name": "Cursor (cd \"/Users/valentingalu...)",
+        "created_at": "2025-11-03T17:03:38.042Z",
+        "working_directory": "/Users/valentingaludec/Reasoning Layer V3",
+        "active_file": "/Users/valentingaludec/Reasoning Layer V3/V2.0.1_VALIDATION_INSTRUCTIONS.md"
+      },
+      "session_context": {
+        "has_commands": true,
+        "has_errors": true,
+        "has_outputs": true,
+        "command_count": 1,
+        "error_count": 1,
+        "output_line_count": 10,
+        "detected_patterns": [
+          "npm_command",
+          "git_command",
+          "test_execution",
+          "typescript_compilation"
+        ]
+      },
+      "cognitive_relevance": 0.8,
+      "auto_captured": true,
+      "captured_by": "ShellMessageCapture"
+    }
+  },
+  {
+    "id": "e5800626-5921-4355-ae3e-16b24723bf5b",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T17:07:33.464Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "55f570e9-984e-405e-86d4-e11b0fe5aa55",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T17:13:12.489Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  },
+  {
+    "id": "882b717d-1b53-4637-8b18-a3579fc87b32",
+    "type": "issue_linked",
+    "timestamp": "2025-11-03T17:18:11.451Z",
+    "source": "github:Soynido/reasoning-layer-v3#1",
+    "metadata": {
+      "discussion": {
+        "number": 1,
+        "title": "🧠 Cognitive State Report — 29/10/2025",
+        "body": "# 🧠 Reasoning Layer V3 — État Cognitif\n\n**Date**: 2025-10-29T10:28:10.134Z\n**Version**: 1.0\n**Total Events**: 1994\n\n---\n\n## 📊 Métriques Cognitive\n\n| Métrique | Valeur |\n|----------|--------|\n| 🧩 Patterns détectés | 4 |\n| 🔗 Corrélations actives | 597 |\n| 🔮 Forecasts générés | 4 |\n| 🎯 Objectifs actifs | 4 |\n\n---\n\n## 🧩 Top 3 Patterns (par confiance)\n\n1. **Incident + Feedback → Config Update ADR** (87.0%)\n   - Impact: Stability\n   - Occurrences: 4\n\n2. **Compliance Requirements → Security ADRs",
+        "state": "OPEN",
+        "author": "Soynido",
+        "labels": [],
+        "created_at": "2025-10-29T10:28:10Z",
+        "updated_at": "2025-10-29T10:28:15Z"
+      },
+      "cognitive_score": {
+        "overall": 0.85,
+        "keywords": [
+          "decision",
+          "reasoning",
+          "pattern",
+          "adr"
+        ],
+        "category": "decision"
+      },
+      "adr_candidate": true,
+      "cognitive_relevance": 0.85,
+      "auto_captured": true,
+      "captured_by": "GitHubDiscussionListener"
+    }
+  }
+]
