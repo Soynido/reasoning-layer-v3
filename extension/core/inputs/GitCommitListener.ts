@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { CaptureEvent } from '../types';
 import { UnifiedLogger } from '../UnifiedLogger';
 import { ExecPool } from '../../kernel/ExecPool';
+import { AppendOnlyWriter } from '../../kernel/AppendOnlyWriter';
 
 /**
  * GitCommitListener - Input Layer Component
@@ -24,12 +25,14 @@ export class GitCommitListener {
     private isWatching: boolean = false;
     private lastCommitHash: string = '';
     private execPool: ExecPool;
+    private appendWriter: AppendOnlyWriter | null = null;
 
-    constructor(workspaceRoot: string, execPool?: ExecPool) {
+    constructor(workspaceRoot: string, execPool?: ExecPool, appendWriter?: AppendOnlyWriter) {
         this.workspaceRoot = workspaceRoot;
         this.gitDir = path.join(workspaceRoot, '.git');
         this.logger = UnifiedLogger.getInstance();
         this.execPool = execPool || new ExecPool(2, 2000); // Default pool
+        this.appendWriter = appendWriter || null; // Optional append-only writer (RL4 mode)
     }
 
     /**
@@ -331,9 +334,17 @@ exit 0
     }
 
     /**
-     * Save event to traces
+     * Save event to traces (RL4: append-only JSONL, RL3: array JSON)
      */
     private async saveToTraces(event: CaptureEvent): Promise<void> {
+        // RL4 Mode: Append-only JSONL (O(1))
+        if (this.appendWriter) {
+            await this.appendWriter.append(event);
+            this.logger.log(`💾 Event saved (RL4 append-only): ${event.type}`);
+            return;
+        }
+        
+        // RL3 Legacy Mode: Array rewrite (O(n))
         const reasoningDir = path.join(this.workspaceRoot, '.reasoning');
         const tracesDir = path.join(reasoningDir, 'traces');
         
@@ -362,6 +373,7 @@ exit 0
 
         // Save
         fs.writeFileSync(traceFile, JSON.stringify(events, null, 2));
+        this.logger.log(`💾 Event saved (RL3 array): ${event.type}`);
 
         // Update manifest
         await this.updateManifest();

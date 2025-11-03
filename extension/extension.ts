@@ -159,7 +159,8 @@ export async function activate(context: vscode.ExtensionContext) {
     
     try {
         // STEP 1: PersistenceManager (core stable)
-        persistence = new PersistenceManager(workspaceRoot);
+        const useAppendOnly = kernelConfig.USE_APPEND_ONLY_IO || false;
+        persistence = new PersistenceManager(workspaceRoot, useAppendOnly);
         persistence.logWithEmoji('🧠', 'Reasoning Layer V3 - Activated successfully!');
 
         // Status bar indicator (bottom-left): opens output channel on click
@@ -357,7 +358,15 @@ export async function activate(context: vscode.ExtensionContext) {
             if (!persistence) return;
             
             try {
-                gitCommitListener = new GitCommitListener(workspaceRoot, kernel?.execPool);
+                // Create AppendOnlyWriter for commit events if RL4 mode
+                const commitWriter = kernelConfig.USE_APPEND_ONLY_IO
+                    ? new (await import('./kernel/AppendOnlyWriter')).AppendOnlyWriter(
+                        path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'commits.jsonl'),
+                        50 * 1024 * 1024
+                      )
+                    : undefined;
+                
+                gitCommitListener = new GitCommitListener(workspaceRoot, kernel?.execPool, commitWriter);
                 if (gitCommitListener.isGitRepository()) {
                     await gitCommitListener.startWatching();
                     persistence.logWithEmoji('🎧', 'GitCommitListener started - Input Layer active');
@@ -1492,7 +1501,15 @@ ${adr.evidenceIds.length} evidence(s) linked
         // 🎧 Input Layer - GitCommitListener (Phase 1)
         setTimeout(async () => {
             try {
-                gitCommitListener = new GitCommitListener(workspaceRoot, kernel?.execPool);
+                // Create AppendOnlyWriter for commit events if RL4 mode (legacy path)
+                const commitWriterLegacy = kernelConfig.USE_APPEND_ONLY_IO
+                    ? new (await import('./kernel/AppendOnlyWriter')).AppendOnlyWriter(
+                        path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'commits.jsonl'),
+                        50 * 1024 * 1024
+                      )
+                    : undefined;
+                
+                gitCommitListener = new GitCommitListener(workspaceRoot, kernel?.execPool, commitWriterLegacy);
                 if (gitCommitListener.isGitRepository()) {
                     await gitCommitListener.startWatching();
                     persistence?.logWithEmoji('🎧', 'Input Layer: GitCommitListener activated');
@@ -1512,7 +1529,15 @@ ${adr.evidenceIds.length} evidence(s) linked
         // 🎧 Input Layer - FileChangeWatcher (Phase 2)
         setTimeout(async () => {
             try {
-                fileChangeWatcher = new FileChangeWatcher(workspaceRoot);
+                // Create AppendOnlyWriter for file change events if RL4 mode
+                const fileChangeWriter = kernelConfig.USE_APPEND_ONLY_IO 
+                    ? new (await import('./kernel/AppendOnlyWriter')).AppendOnlyWriter(
+                        path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'file_changes.jsonl'),
+                        50 * 1024 * 1024
+                      )
+                    : undefined;
+                
+                fileChangeWatcher = new FileChangeWatcher(workspaceRoot, fileChangeWriter);
                 await fileChangeWatcher.startWatching();
                 persistence?.logWithEmoji('🎧', 'Input Layer: FileChangeWatcher activated');
                 
