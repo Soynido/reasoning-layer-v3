@@ -138,8 +138,8 @@ export class CognitiveScheduler {
             result.duration = Date.now() - startTime;
         }
         
-        // Log cycle to ledger
-        await this.ledger.append('correlation', result); // Using 'correlation' type as proxy
+        // Aggregate cycle summary and append to cycles.jsonl (CycleAggregator)
+        await this.aggregateAndPersistCycle(result);
         
         return result;
     }
@@ -201,6 +201,61 @@ export class CognitiveScheduler {
             inputHash: '',
             success: false
         };
+    }
+    
+    /**
+     * CycleAggregator - Aggregate cycle results and persist to cycles.jsonl
+     * 
+     * This method:
+     * 1. Extracts phase metrics (patterns, correlations, forecasts, ADRs)
+     * 2. Hashes each phase output for integrity
+     * 3. Appends cycle summary to ledger with inter-cycle chaining
+     */
+    private async aggregateAndPersistCycle(result: CycleResult): Promise<void> {
+        try {
+            // Extract phase metrics and hash each phase output
+            const phases = {
+                patterns: this.hashPhaseMetrics(result.phases.find(p => p.name === 'pattern-learning')?.metrics || {}),
+                correlations: this.hashPhaseMetrics(result.phases.find(p => p.name === 'correlation')?.metrics || {}),
+                forecasts: this.hashPhaseMetrics(result.phases.find(p => p.name === 'forecasting')?.metrics || {}),
+                adrs: this.hashPhaseMetrics(result.phases.find(p => p.name === 'adr-synthesis')?.metrics || {})
+            };
+            
+            // Append cycle summary to ledger (with inter-cycle chaining)
+            // Note: prevMerkleRoot is automatically retrieved by RBOMLedger from cache
+            await this.ledger.appendCycle({
+                cycleId: result.cycleId,
+                timestamp: result.completedAt,
+                phases,
+                merkleRoot: '' // Will be computed by RBOMLedger
+            });
+            
+            console.log(`✅ Cycle ${result.cycleId} aggregated and persisted to cycles.jsonl`);
+            
+        } catch (error) {
+            console.error(`❌ Failed to aggregate cycle ${result.cycleId}:`, error);
+            // Non-critical error: don't throw, just log
+        }
+    }
+    
+    /**
+     * Hash phase metrics for integrity verification
+     */
+    private hashPhaseMetrics(metrics: any): { hash: string; count: number } {
+        const metricsStr = JSON.stringify(metrics);
+        const hash = crypto.createHash('sha256')
+            .update(metricsStr)
+            .digest('hex')
+            .substring(0, 16);
+        
+        // Extract count from metrics (default to 0)
+        const count = metrics.patternsDetected || 
+                     metrics.correlationsFound || 
+                     metrics.forecastsGenerated || 
+                     metrics.adrsGenerated || 
+                     0;
+        
+        return { hash, count };
     }
 }
 

@@ -1956,6 +1956,17 @@ ${adr.evidenceIds.length} evidence(s) linked
 export async function deactivate() {
     console.log('🧠 Reasoning Layer V3 - Deactivating...');
     
+    // RL4 Ledger flush (critical for data integrity)
+    try {
+        const ledger = (globalThis as any).RBOM_LEDGER;
+        if (ledger && typeof ledger.flush === 'function') {
+            ledger.flush(); // Synchronous flush to guarantee completion
+            console.log('✅ RL4 Ledger flushed successfully');
+        }
+    } catch (error) {
+        console.error('❌ RL4 Ledger flush error:', error);
+    }
+    
     // RL4 Kernel shutdown (if active)
     if (kernel) {
         try {
@@ -2092,3 +2103,4 @@ function shouldIgnoreFile(filePath: string): boolean {
 
     return ignoredPatterns.some(pattern => pattern.test(filePath));
 }
+
