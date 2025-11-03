@@ -1,13 +1,13 @@
 {
-  "name": "reasoning-layer-v3",
-  "displayName": "Reasoning Layer V3",
-  "version": "1.0.87",
+  "name": "reasoning-layer-rl4",
+  "displayName": "Reasoning Layer RL4 (Kernel)",
+  "version": "2.0.1",
   "publisher": "valentingaludec",
   "author": {
     "name": "Valentin Galudec",
     "email": ""
   },
-  "description": "Technical Decision Intelligence System",
+  "description": "RL4 Kernel - Append-only ledger, Merkle verification, autonomous cognitive scheduler with watchdog",
   "license": "PROPRIETARY",
   "copyright": "Copyright © 2025 Valentin Galudec. All rights reserved.",
   "repository": {
