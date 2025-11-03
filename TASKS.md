@@ -878,6 +878,33 @@ extension/core/retroactive/
 
 ### 🔴 NEXT PRIORITIES - OPERATIONAL EXECUTION PHASE
 
+#### Task #T-17 — Temporal Snapshot Engine *(Réf. `ROADMAP.md`, Level 7 — Temporal Graph)*
+- **Objectif**: Permettre au RL3 de restituer l'état cognitif d'un produit à une date donnée en s'appuyant sur ses traces historiques.
+- **Portée**:
+  - Créer un module `TemporalSnapshotEngine` pour rechercher l'événement le plus proche d'un timestamp ciblé.
+  - Détecter les requêtes temporelles dans `cli.js` (`synthesize`) et afficher un résumé contextualisé.
+  - Enregistrer un snapshot quotidien minimal (`.reasoning/snapshots/`) pour accélérer les reconstructions temporelles.
+- **Livrables attendus**: nouveau module dans `.reasoning/core/`, mise à jour du CLI, snapshots quotidiens JSON.
+- **Statut**: ✅ Completed (2025-10-31)
+
+#### Task #T-18 — Temporal Snapshot Refinement *(Réf. `ROADMAP.md`, Level 7 — Temporal Graph)*
+- **Objectif**: Accroître la fiabilité des réponses temporelles en ajoutant une tolérance configurable et un contexte localisé.
+- **Portée**:
+  - Introduire `MAX_TEMPORAL_DELTA_MINUTES` pour signaler les événements trouvés trop loin dans le temps.
+  - Étendre `TemporalSnapshotEngine` pour retourner les événements adjacents (±5) autour du point trouvé.
+  - Mettre à jour `cli.js` afin d’afficher l’avertissement et le mini-contexte lorsque l’utilisateur interroge une date précise.
+- **Livrables attendus**: nouvelles constantes, API de snapshot enrichie, rendu CLI localisé.
+- **Statut**: ✅ Completed (2025-10-31)
+
+#### Task #T-19 — Cognitive Stress Test Campaign *(Réf. `ROADMAP.md`, Level 7 — Testing & Validation)*
+- **Objectif**: Automatiser la campagne de tests cognitifs sur la matrice d’intentions RL3 pour valider l’interprétation des prompts.
+- **Portée**:
+  - Exécuter automatiquement chaque prompt défini dans `tests/intents_full.json` via le CLI RL3.
+  - Collecter les sorties ASCII, analyser les marqueurs clés et produire un rapport `reports/rl3_full_eval.json`.
+  - Mettre à jour `README.md` avec une section “🧪 RL3 Cognitive Stress Test Results” et pousser les résultats si le taux de réussite ≥ 80 %.
+- **Livrables attendus**: script d’exécution, rapport JSON, mise à jour documentation, push automatique conditionnel.
+- **Statut**: ✅ Completed (2025-10-31)
+
 #### Level 10.1: TaskMemoryManager (Memory Ledger)
 **Status**: ✅ **COMPLETED**
 - [x] Create `TaskMemoryManager.ts` - Persist task execution ledger ✅

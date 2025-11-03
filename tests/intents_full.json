@@ -1,0 +1,195 @@
+[
+  {
+    "id": "CTX-001",
+    "category": "Context Awareness",
+    "prompt": "Quel est l’état actuel du projet ?",
+    "expected_behavior": "Retourne un résumé global : nombre d’événements, ADRs, tâches P0/P1, patterns détectés."
+  },
+  {
+    "id": "CTX-002",
+    "category": "Context Awareness",
+    "prompt": "Quels fichiers ont changé depuis hier ?",
+    "expected_behavior": "Compare les traces récentes et liste les fichiers modifiés avec timestamp."
+  },
+  {
+    "id": "CTX-003",
+    "category": "Context Awareness",
+    "prompt": "Quelle a été la dernière décision prise ?",
+    "expected_behavior": "Affiche le dernier ADR créé avec date, auteur, et justification."
+  },
+  {
+    "id": "CTX-004",
+    "category": "Context Awareness",
+    "prompt": "Quels patterns cognitifs sont actuellement actifs ?",
+    "expected_behavior": "Liste les patterns détectés dans le Reasoning Layer et leur niveau de confiance."
+  },
+  {
+    "id": "TEMP-001",
+    "category": "Temporal Reasoning",
+    "prompt": "Que faisions-nous le 28 octobre 2025 à 17h32 ?",
+    "expected_behavior": "Utilise le TemporalSnapshotEngine pour restituer l’événement le plus proche."
+  },
+  {
+    "id": "TEMP-002",
+    "category": "Temporal Reasoning",
+    "prompt": "Quels événements ont eu lieu cette semaine ?",
+    "expected_behavior": "Filtre les traces entre lundi et aujourd’hui, regroupées par jour."
+  },
+  {
+    "id": "TEMP-003",
+    "category": "Temporal Reasoning",
+    "prompt": "Quelle a été la dernière modification avant le 30 octobre 2025 ?",
+    "expected_behavior": "Retourne le commit et le fichier concernés juste avant cette date."
+  },
+  {
+    "id": "DEC-001",
+    "category": "Decision Analytics",
+    "prompt": "Pourquoi avons-nous ajouté le moteur temporel ?",
+    "expected_behavior": "Recherche les ADRs et commits mentionnant TemporalSnapshotEngine et synthétise les raisons."
+  },
+  {
+    "id": "DEC-002",
+    "category": "Decision Analytics",
+    "prompt": "Quels ADRs sont encore en statut proposé ?",
+    "expected_behavior": "Filtre les ADRs avec status 'proposed' non validés."
+  },
+  {
+    "id": "DEC-003",
+    "category": "Decision Analytics",
+    "prompt": "Quelle décision a mené à la refonte du CLI ?",
+    "expected_behavior": "Identifie l’ADR ou commit lié à la refactorisation du CLI."
+  },
+  {
+    "id": "ARCH-001",
+    "category": "Architectural Insight",
+    "prompt": "Quels modules composent le Reasoning Layer ?",
+    "expected_behavior": "Analyse la structure du code source et liste les sous-modules du RL3."
+  },
+  {
+    "id": "ARCH-002",
+    "category": "Architectural Insight",
+    "prompt": "Quels fichiers appartiennent au cœur cognitif ?",
+    "expected_behavior": "Renvoie les fichiers du répertoire .reasoning/core/ avec rôle résumé."
+  },
+  {
+    "id": "ARCH-003",
+    "category": "Architectural Insight",
+    "prompt": "Quelle est la topologie des dépendances entre modules ?",
+    "expected_behavior": "Construit une carte de dépendances entre les fichiers principaux."
+  },
+  {
+    "id": "SELF-001",
+    "category": "Self-Reflexion",
+    "prompt": "Quels patterns cognitifs utilises-tu actuellement ?",
+    "expected_behavior": "Répertorie les modèles de reasoning actifs (pattern learning, correlation, forecast)."
+  },
+  {
+    "id": "SELF-002",
+    "category": "Self-Reflexion",
+    "prompt": "Quelle est ta confiance dans le dernier reasoning ?",
+    "expected_behavior": "Retourne un score de confiance basé sur la cohérence et le contexte des décisions."
+  },
+  {
+    "id": "SELF-003",
+    "category": "Self-Reflexion",
+    "prompt": "Quels biais as-tu détectés dans ton historique ?",
+    "expected_behavior": "Analyse des boucles de reasoning répétitives ou des décisions sans justification."
+  },
+  {
+    "id": "OPS-001",
+    "category": "Operational Control",
+    "prompt": "Lance une auto-documentation du projet.",
+    "expected_behavior": "Exécute synthèse des events + ADR → README/ROADMAP.md mis à jour."
+  },
+  {
+    "id": "OPS-002",
+    "category": "Operational Control",
+    "prompt": "Reconstruis les traces manquantes depuis Git.",
+    "expected_behavior": "Déclenche GitTraceRebuilder et logue les pseudo-traces générées."
+  },
+  {
+    "id": "OPS-003",
+    "category": "Operational Control",
+    "prompt": "Crée un nouveau snapshot quotidien.",
+    "expected_behavior": "Exécute recordDailySnapshot et sauvegarde sous .reasoning/snapshots/."
+  },
+  {
+    "id": "OPS-004",
+    "category": "Operational Control",
+    "prompt": "Synchronise le README avec le Reasoning State.",
+    "expected_behavior": "Met à jour le README avec l’état cognitif courant."
+  },
+  {
+    "id": "ANA-001",
+    "category": "Analytics & Forecast",
+    "prompt": "Combien d’événements ont été capturés aujourd’hui ?",
+    "expected_behavior": "Compte les traces datées du jour dans .reasoning/traces."
+  },
+  {
+    "id": "ANA-002",
+    "category": "Analytics & Forecast",
+    "prompt": "Quels fichiers changent le plus fréquemment ?",
+    "expected_behavior": "Classement par fréquence de modification dans les traces."
+  },
+  {
+    "id": "ANA-003",
+    "category": "Analytics & Forecast",
+    "prompt": "Quels patterns se renforcent dans le temps ?",
+    "expected_behavior": "Analyse temporelle des patterns récurrents dans le reasoning."
+  },
+  {
+    "id": "COL-001",
+    "category": "Collaborative Reasoning",
+    "prompt": "Qui a modifié le CLI pour la dernière fois ?",
+    "expected_behavior": "Analyse du dernier commit lié à .reasoning/cli.js et affiche auteur + date."
+  },
+  {
+    "id": "COL-002",
+    "category": "Collaborative Reasoning",
+    "prompt": "Quels fichiers sont co-édités par plusieurs devs ?",
+    "expected_behavior": "Croise les auteurs Git par fichier pour détecter la co-édition."
+  },
+  {
+    "id": "COL-003",
+    "category": "Collaborative Reasoning",
+    "prompt": "Quels commits proviennent de Nicolas ?",
+    "expected_behavior": "Filtre les commits et événements liés à l’auteur 'Nicolas'."
+  },
+  {
+    "id": "LEARN-001",
+    "category": "Learning & Adaptation",
+    "prompt": "Quelles optimisations suggères-tu pour le CLI ?",
+    "expected_behavior": "Analyse des patterns de changement récents et propose des simplifications."
+  },
+  {
+    "id": "LEARN-002",
+    "category": "Learning & Adaptation",
+    "prompt": "Quelles heuristiques de scoring devrais-tu revoir ?",
+    "expected_behavior": "Identifie les scores de confiance trop faibles ou incohérents."
+  },
+  {
+    "id": "LEARN-003",
+    "category": "Learning & Adaptation",
+    "prompt": "Quels modules gagneraient à être parallélisés ?",
+    "expected_behavior": "Analyse du temps de traitement des modules et suggère du multi-thread."
+  },
+  {
+    "id": "META-001",
+    "category": "Meta-Cognition",
+    "prompt": "Quelle est ta fiabilité moyenne actuelle ?",
+    "expected_behavior": "Retourne un indicateur global de cohérence et taux d’erreurs récentes."
+  },
+  {
+    "id": "META-002",
+    "category": "Meta-Cognition",
+    "prompt": "Quels apprentissages as-tu consolidés cette semaine ?",
+    "expected_behavior": "Liste les nouveaux patterns et ADRs validés sur 7 jours."
+  },
+  {
+    "id": "META-003",
+    "category": "Meta-Cognition",
+    "prompt": "Comment évalues-tu ton propre niveau de maturité cognitive ?",
+    "expected_behavior": "Synthèse qualitative basée sur nombre d’événements, stabilité, et auto-reviews."
+  }
+]
+

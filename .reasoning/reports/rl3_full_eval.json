@@ -1,0 +1,491 @@
+{
+  "generated_at": "2025-10-31T15:08:28.311Z",
+  "total": 32,
+  "success": 32,
+  "success_rate": 1,
+  "errors": 0,
+  "error_rate": 0,
+  "incomplete_prompts": [],
+  "results": [
+    {
+      "id": "CTX-001",
+      "category": "Context Awareness",
+      "prompt": "Quel est l’état actuel du projet ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 228,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:23.169Z] Starting synthesis with goal: \"Quel est l’état actuel du projet ?\"\n📊 [2025-10-31T15:08:23.205Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "CTX-002",
+      "category": "Context Awareness",
+      "prompt": "Quels fichiers ont changé depuis hier ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 125,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:23.345Z] Starting synthesis with goal: \"Quels fichiers ont changé depuis hier ?\"\n📊 [2025-10-31T15:08:23.362Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "CTX-003",
+      "category": "Context Awareness",
+      "prompt": "Quelle a été la dernière décision prise ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 130,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:23.502Z] Starting synthesis with goal: \"Quelle a été la dernière décision prise ?\"\n📊 [2025-10-31T15:08:23.519Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "CTX-004",
+      "category": "Context Awareness",
+      "prompt": "Quels patterns cognitifs sont actuellement actifs ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 124,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:23.658Z] Starting synthesis with goal: \"Quels patterns cognitifs sont actuellement actifs ?\"\n📊 [2025-10-31T15:08:23.676Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "TEMP-001",
+      "category": "Temporal Reasoning",
+      "prompt": "Que faisions-nous le 28 octobre 2025 à 17h32 ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 164,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:23.811Z] Starting synthesis with goal: \"Que faisions-nous le 28 octobre 2025 à 17h32 ?\"\n📊 [2025-10-31T15:08:23.828Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "TEMP-002",
+      "category": "Temporal Reasoning",
+      "prompt": "Quels événements ont eu lieu cette semaine ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 126,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:24.002Z] Starting synthesis with goal: \"Quels événements ont eu lieu cette semaine ?\"\n📊 [2025-10-31T15:08:24.019Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "TEMP-003",
+      "category": "Temporal Reasoning",
+      "prompt": "Quelle a été la dernière modification avant le 30 octobre 2025 ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 149,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:24.158Z] Starting synthesis with goal: \"Quelle a été la dernière modification avant le 30 octobre 2025 ?\"\n📊 [2025-10-31T15:08:24.176Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "DEC-001",
+      "category": "Decision Analytics",
+      "prompt": "Pourquoi avons-nous ajouté le moteur temporel ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 128,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:24.334Z] Starting synthesis with goal: \"Pourquoi avons-nous ajouté le moteur temporel ?\"\n📊 [2025-10-31T15:08:24.351Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "DEC-002",
+      "category": "Decision Analytics",
+      "prompt": "Quels ADRs sont encore en statut proposé ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 130,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:24.493Z] Starting synthesis with goal: \"Quels ADRs sont encore en statut proposé ?\"\n📊 [2025-10-31T15:08:24.510Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "DEC-003",
+      "category": "Decision Analytics",
+      "prompt": "Quelle décision a mené à la refonte du CLI ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 129,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:24.647Z] Starting synthesis with goal: \"Quelle décision a mené à la refonte du CLI ?\"\n📊 [2025-10-31T15:08:24.665Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "ARCH-001",
+      "category": "Architectural Insight",
+      "prompt": "Quels modules composent le Reasoning Layer ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 129,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:24.809Z] Starting synthesis with goal: \"Quels modules composent le Reasoning Layer ?\"\n📊 [2025-10-31T15:08:24.827Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "ARCH-002",
+      "category": "Architectural Insight",
+      "prompt": "Quels fichiers appartiennent au cœur cognitif ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 147,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:24.966Z] Starting synthesis with goal: \"Quels fichiers appartiennent au cœur cognitif ?\"\n📊 [2025-10-31T15:08:24.989Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "ARCH-003",
+      "category": "Architectural Insight",
+      "prompt": "Quelle est la topologie des dépendances entre modules ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 164,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:25.219Z] Starting synthesis with goal: \"Quelle est la topologie des dépendances entre modules ?\"\n📊 [2025-10-31T15:08:25.241Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "SELF-001",
+      "category": "Self-Reflexion",
+      "prompt": "Quels patterns cognitifs utilises-tu actuellement ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 124,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:25.375Z] Starting synthesis with goal: \"Quels patterns cognitifs utilises-tu actuellement ?\"\n📊 [2025-10-31T15:08:25.393Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "SELF-002",
+      "category": "Self-Reflexion",
+      "prompt": "Quelle est ta confiance dans le dernier reasoning ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 147,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:25.540Z] Starting synthesis with goal: \"Quelle est ta confiance dans le dernier reasoning ?\"\n📊 [2025-10-31T15:08:25.562Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "SELF-003",
+      "category": "Self-Reflexion",
+      "prompt": "Quels biais as-tu détectés dans ton historique ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 133,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:25.707Z] Starting synthesis with goal: \"Quels biais as-tu détectés dans ton historique ?\"\n📊 [2025-10-31T15:08:25.726Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "OPS-001",
+      "category": "Operational Control",
+      "prompt": "Lance une auto-documentation du projet.",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 136,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:25.867Z] Starting synthesis with goal: \"Lance une auto-documentation du projet.\"\n📊 [2025-10-31T15:08:25.884Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "OPS-002",
+      "category": "Operational Control",
+      "prompt": "Reconstruis les traces manquantes depuis Git.",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 157,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:26.035Z] Starting synthesis with goal: \"Reconstruis les traces manquantes depuis Git.\"\n📊 [2025-10-31T15:08:26.053Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "OPS-003",
+      "category": "Operational Control",
+      "prompt": "Crée un nouveau snapshot quotidien.",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 135,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:26.220Z] Starting synthesis with goal: \"Crée un nouveau snapshot quotidien.\"\n📊 [2025-10-31T15:08:26.240Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "OPS-004",
+      "category": "Operational Control",
+      "prompt": "Synchronise le README avec le Reasoning State.",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 131,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:26.388Z] Starting synthesis with goal: \"Synchronise le README avec le Reasoning State.\"\n📊 [2025-10-31T15:08:26.405Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "ANA-001",
+      "category": "Analytics & Forecast",
+      "prompt": "Combien d’événements ont été capturés aujourd’hui ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 127,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:26.543Z] Starting synthesis with goal: \"Combien d’événements ont été capturés aujourd’hui ?\"\n📊 [2025-10-31T15:08:26.560Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "ANA-002",
+      "category": "Analytics & Forecast",
+      "prompt": "Quels fichiers changent le plus fréquemment ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 129,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:26.697Z] Starting synthesis with goal: \"Quels fichiers changent le plus fréquemment ?\"\n📊 [2025-10-31T15:08:26.715Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "ANA-003",
+      "category": "Analytics & Forecast",
+      "prompt": "Quels patterns se renforcent dans le temps ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 127,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:26.855Z] Starting synthesis with goal: \"Quels patterns se renforcent dans le temps ?\"\n📊 [2025-10-31T15:08:26.872Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "COL-001",
+      "category": "Collaborative Reasoning",
+      "prompt": "Qui a modifié le CLI pour la dernière fois ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 127,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:27.010Z] Starting synthesis with goal: \"Qui a modifié le CLI pour la dernière fois ?\"\n📊 [2025-10-31T15:08:27.027Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "COL-002",
+      "category": "Collaborative Reasoning",
+      "prompt": "Quels fichiers sont co-édités par plusieurs devs ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 126,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:27.164Z] Starting synthesis with goal: \"Quels fichiers sont co-édités par plusieurs devs ?\"\n📊 [2025-10-31T15:08:27.181Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "COL-003",
+      "category": "Collaborative Reasoning",
+      "prompt": "Quels commits proviennent de Nicolas ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 153,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:27.320Z] Starting synthesis with goal: \"Quels commits proviennent de Nicolas ?\"\n📊 [2025-10-31T15:08:27.338Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "LEARN-001",
+      "category": "Learning & Adaptation",
+      "prompt": "Quelles optimisations suggères-tu pour le CLI ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 126,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:27.499Z] Starting synthesis with goal: \"Quelles optimisations suggères-tu pour le CLI ?\"\n📊 [2025-10-31T15:08:27.516Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "LEARN-002",
+      "category": "Learning & Adaptation",
+      "prompt": "Quelles heuristiques de scoring devrais-tu revoir ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 126,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:27.653Z] Starting synthesis with goal: \"Quelles heuristiques de scoring devrais-tu revoir ?\"\n📊 [2025-10-31T15:08:27.670Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "LEARN-003",
+      "category": "Learning & Adaptation",
+      "prompt": "Quels modules gagneraient à être parallélisés ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 127,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:27.810Z] Starting synthesis with goal: \"Quels modules gagneraient à être parallélisés ?\"\n📊 [2025-10-31T15:08:27.827Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "META-001",
+      "category": "Meta-Cognition",
+      "prompt": "Quelle est ta fiabilité moyenne actuelle ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 126,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:27.963Z] Starting synthesis with goal: \"Quelle est ta fiabilité moyenne actuelle ?\"\n📊 [2025-10-31T15:08:27.979Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "META-002",
+      "category": "Meta-Cognition",
+      "prompt": "Quels apprentissages as-tu consolidés cette semaine ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 126,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:28.119Z] Starting synthesis with goal: \"Quels apprentissages as-tu consolidés cette semaine ?\"\n📊 [2025-10-31T15:08:28.136Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    },
+    {
+      "id": "META-003",
+      "category": "Meta-Cognition",
+      "prompt": "Comment évalues-tu ton propre niveau de maturité cognitive ?",
+      "status": "ok",
+      "semantic_intent": "unknown (confidence: 0%)",
+      "duration_ms": 120,
+      "markers": {
+        "brain": true,
+        "target": true,
+        "stats": true,
+        "check": true
+      },
+      "output_summary": "🎯 [2025-10-31T15:08:28.274Z] Starting synthesis with goal: \"Comment évalues-tu ton propre niveau de maturité cognitive ?\"\n📊 [2025-10-31T15:08:28.291Z] Loaded: 2888 events, 21 ADRs\n==================== CURRENT COGNITIVE STATE ====================\nPatterns:     4\nCorrelations: 0\nADRs:         21"
+    }
+  ]
+}

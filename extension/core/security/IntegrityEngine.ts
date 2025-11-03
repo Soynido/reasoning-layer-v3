@@ -176,13 +176,29 @@ export class IntegrityEngine {
     public appendToLedger(entry: Omit<LedgerEntry, 'entry_id' | 'previous_hash' | 'timestamp'>): void {
         const ledgerFile = path.join(this.ledgerPath, 'ledger.jsonl');
         
-        // Get previous hash from last entry
+        // ✅ ROBUSTNESS: Validate input type
+        const validTypes = ['ADR', 'SNAPSHOT', 'EVIDENCE', 'MANIFEST'];
+        if (!validTypes.includes(entry.type)) {
+            throw new Error(`Invalid ledger entry type: ${entry.type}. Must be one of: ${validTypes.join(', ')}`);
+        }
+        
+        // Get previous hash from last VALID entry
         let previousHash: string | null = null;
         if (fs.existsSync(ledgerFile)) {
             const lines = fs.readFileSync(ledgerFile, 'utf-8').split('\n').filter(l => l.trim());
-            if (lines.length > 0) {
-                const lastEntry = JSON.parse(lines[lines.length - 1]) as LedgerEntry;
-                previousHash = lastEntry.current_hash;
+            
+            // ✅ ROBUSTNESS: Find last valid entry (skip corrupted ones)
+            for (let i = lines.length - 1; i >= 0; i--) {
+                try {
+                    const lastEntry = JSON.parse(lines[i]) as LedgerEntry;
+                    if (this.isValidLedgerEntry(lastEntry)) {
+                        previousHash = lastEntry.current_hash;
+                        break;
+                    }
+                } catch (error) {
+                    // Skip invalid line, continue searching
+                    continue;
+                }
             }
         }
 
@@ -210,27 +226,59 @@ export class IntegrityEngine {
 
         const lines = fs.readFileSync(ledgerFile, 'utf-8').split('\n').filter(l => l.trim());
         const errors: string[] = [];
+        const warnings: string[] = [];
         let previousHash: string | null = null;
+        let validEntryCount = 0;
 
         for (let i = 0; i < lines.length; i++) {
             try {
                 const entry = JSON.parse(lines[i]) as LedgerEntry;
                 
+                // ✅ ROBUSTNESS: Validate schema before processing
+                if (!this.isValidLedgerEntry(entry)) {
+                    warnings.push(`Line ${i + 1}: Invalid schema (entry_id: ${entry.entry_id || 'undefined'})`);
+                    continue; // Skip invalid entries
+                }
+                
                 // Verify hash chain
-                if (i > 0 && entry.previous_hash !== previousHash) {
-                    errors.push(`Entry ${entry.entry_id}: Hash chain broken`);
+                if (validEntryCount > 0 && entry.previous_hash !== previousHash) {
+                    errors.push(`Entry ${entry.entry_id || 'undefined'}: Hash chain broken (expected: ${previousHash}, got: ${entry.previous_hash})`);
                 }
                 
                 previousHash = entry.current_hash;
+                validEntryCount++;
             } catch (error) {
-                errors.push(`Line ${i + 1}: Invalid JSON`);
+                errors.push(`Line ${i + 1}: Invalid JSON - ${(error as Error).message}`);
             }
+        }
+        
+        // Add warnings to errors if any invalid entries found
+        if (warnings.length > 0) {
+            errors.push(`⚠️  Found ${warnings.length} invalid entries (use 'node scripts/repair-integrity-ledger.js' to fix)`);
         }
 
         return {
             valid: errors.length === 0,
             errors
         };
+    }
+    
+    /**
+     * Validate ledger entry schema
+     * @private
+     */
+    private isValidLedgerEntry(entry: any): boolean {
+        const validTypes = ['ADR', 'SNAPSHOT', 'EVIDENCE', 'MANIFEST'];
+        
+        // Check required fields
+        if (!entry.entry_id || typeof entry.entry_id !== 'string') return false;
+        if (!entry.type || !validTypes.includes(entry.type)) return false;
+        if (!entry.target_id || typeof entry.target_id !== 'string') return false;
+        if (!entry.current_hash || typeof entry.current_hash !== 'string') return false;
+        if (!('previous_hash' in entry)) return false; // Can be null
+        if (!entry.timestamp || typeof entry.timestamp !== 'string') return false;
+        
+        return true;
     }
 
     /**
