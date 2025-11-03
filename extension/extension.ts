@@ -1912,6 +1912,41 @@ ${adr.evidenceIds.length} evidence(s) linked
             }
         }, 2000);
 
+        // Register Flush RL4 Ledger command (with async readiness check)
+        const flushLedgerCommand = vscode.commands.registerCommand(
+            'reasoning.flushLedger',
+            async () => {
+                try {
+                    // Wait for ledger initialization (up to 10 seconds)
+                    const checkReady = async (maxRetries = 10) => {
+                        for (let i = 0; i < maxRetries; i++) {
+                            if ((globalThis as any).RBOM_LEDGER && typeof (globalThis as any).RBOM_LEDGER.flush === 'function') {
+                                return (globalThis as any).RBOM_LEDGER;
+                            }
+                            await new Promise((resolve) => setTimeout(resolve, 1000));
+                        }
+                        return null;
+                    };
+
+                    const ledger = await checkReady();
+                    if (!ledger) {
+                        vscode.window.showWarningMessage('⚠️ RL4 ledger not ready after waiting 10s.');
+                        persistence?.logWithEmoji('⚠️', 'Flush failed: Ledger not ready after 10s');
+                        return;
+                    }
+
+                    await ledger.flush();
+                    vscode.window.showInformationMessage('🧠 RL4 ledger flushed successfully!');
+                    persistence?.logWithEmoji('💾', 'RL4 Ledger flushed to disk');
+                } catch (err) {
+                    const errorMsg = (err as Error).message;
+                    vscode.window.showErrorMessage(`❌ Flush failed: ${errorMsg}`);
+                    persistence?.logWithEmoji('❌', `Flush error: ${errorMsg}`);
+                }
+            }
+        );
+        context.subscriptions.push(flushLedgerCommand);
+
     } catch (error) {
         console.error('❌ Activation failed:', error);
         vscode.window.showErrorMessage(`Failed to activate: ${error instanceof Error ? error.message : 'Unknown error'}`);

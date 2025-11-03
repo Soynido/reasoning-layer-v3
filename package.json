@@ -456,6 +456,11 @@
         "command": "reasoning.kernel.flush",
         "title": "💾 Flush All Queues",
         "category": "Reasoning › Kernel"
+      },
+      {
+        "command": "reasoning.flushLedger",
+        "title": "💾 Flush RL4 Ledger",
+        "category": "Reasoning › System"
       }
     ]
   },

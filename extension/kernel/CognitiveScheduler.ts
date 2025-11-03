@@ -13,7 +13,7 @@
  */
 
 import { TimerRegistry } from './TimerRegistry';
-import { RBOMLedger } from './RBOMLedger';
+import { RBOMLedger, setGlobalLedger } from './RBOMLedger';
 import * as crypto from 'crypto';
 
 export interface CycleResult {
@@ -45,6 +45,8 @@ export class CognitiveScheduler {
         private timerRegistry: TimerRegistry
     ) {
         this.ledger = new RBOMLedger(workspaceRoot);
+        // Expose to globalThis for VS Code commands
+        setGlobalLedger(this.ledger);
     }
     
     /**

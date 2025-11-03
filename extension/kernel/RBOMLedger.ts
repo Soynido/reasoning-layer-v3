@@ -15,6 +15,7 @@
 import { AppendOnlyWriter } from './AppendOnlyWriter';
 import * as crypto from 'crypto';
 import * as path from 'path';
+import * as fs from 'fs';
 
 export interface RBOMEntry {
     id: string;
@@ -50,10 +51,27 @@ export class RBOMLedger {
     private merkleRoots: MerkleRoot[] = [];
     private lastCycleMerkleRoot: string | null = null; // Cache for chain linking
     
-    constructor(ledgerPath: string) {
+    constructor(workspaceRootOrLedgerPath: string) {
+        // Smart path resolution: if it ends with .jsonl, it's a file path
+        // Otherwise, it's a workspace root and we construct the file paths
+        let ledgerPath: string;
+        let cyclesPath: string;
+        
+        if (workspaceRootOrLedgerPath.endsWith('.jsonl')) {
+            // File path provided (e.g., from RBOMEngine)
+            ledgerPath = workspaceRootOrLedgerPath;
+            cyclesPath = ledgerPath.replace('rbom_ledger.jsonl', 'cycles.jsonl');
+        } else {
+            // Workspace root provided (e.g., from CognitiveScheduler)
+            const ledgerDir = path.join(workspaceRootOrLedgerPath, '.reasoning_rl4', 'ledger');
+            if (!fs.existsSync(ledgerDir)) {
+                fs.mkdirSync(ledgerDir, { recursive: true });
+            }
+            ledgerPath = path.join(ledgerDir, 'rbom_ledger.jsonl');
+            cyclesPath = path.join(ledgerDir, 'cycles.jsonl');
+        }
+        
         this.writer = new AppendOnlyWriter(ledgerPath);
-        // Cycles writer in same directory
-        const cyclesPath = ledgerPath.replace('rbom_ledger.jsonl', 'cycles.jsonl');
         this.cyclesWriter = new AppendOnlyWriter(cyclesPath);
     }
     
@@ -312,5 +330,13 @@ export class RBOMLedger {
         await this.writer.flush(true); // fsync
         await this.cyclesWriter.flush(true); // fsync
     }
+}
+
+/**
+ * Expose ledger instance to globalThis for VS Code commands
+ * This allows async commands to wait for initialization
+ */
+export function setGlobalLedger(instance: RBOMLedger): void {
+    (globalThis as any).RBOM_LEDGER = instance;
 }
 
