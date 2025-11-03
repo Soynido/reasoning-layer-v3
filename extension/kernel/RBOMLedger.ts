@@ -48,6 +48,7 @@ export class RBOMLedger {
     private cyclesWriter: AppendOnlyWriter;
     private entries: RBOMEntry[] = [];
     private merkleRoots: MerkleRoot[] = [];
+    private lastCycleMerkleRoot: string | null = null; // Cache for chain linking
     
     constructor(ledgerPath: string) {
         this.writer = new AppendOnlyWriter(ledgerPath);
@@ -238,9 +239,8 @@ export class RBOMLedger {
      * Append cycle summary to cycles.jsonl (with chain linking)
      */
     async appendCycle(cycleData: Omit<CycleSummary, 'prevMerkleRoot'>): Promise<void> {
-        // Get previous cycle's Merkle root for chain linking
-        const lastCycle = await this.getLastCycle();
-        const prevMerkleRoot = lastCycle?.merkleRoot || '0000000000000000'; // Genesis
+        // Get previous cycle's Merkle root for chain linking (use cache)
+        const prevMerkleRoot = this.lastCycleMerkleRoot || '0000000000000000'; // Genesis
         
         const cycle: CycleSummary = {
             ...cycleData,
@@ -249,12 +249,8 @@ export class RBOMLedger {
         
         await this.cyclesWriter.append(cycle);
         
-        // Update merkle roots cache
-        this.merkleRoots.push({
-            root: cycle.merkleRoot,
-            entryCount: this.entries.length,
-            timestamp: cycle.timestamp
-        });
+        // Update cache for next cycle
+        this.lastCycleMerkleRoot = cycle.merkleRoot;
     }
     
     /**
@@ -263,6 +259,13 @@ export class RBOMLedger {
     async getLastCycle(): Promise<CycleSummary | null> {
         const cycles = await this.cyclesWriter.readAll();
         return cycles.length > 0 ? cycles[cycles.length - 1] : null;
+    }
+    
+    /**
+     * Get all cycles (for validation/analysis)
+     */
+    async getAllCycles(): Promise<CycleSummary[]> {
+        return await this.cyclesWriter.readAll();
     }
     
     /**
