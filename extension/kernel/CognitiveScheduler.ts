@@ -39,6 +39,9 @@ export class CognitiveScheduler {
     private isRunning: boolean = false;
     private lastInputHash: string = '';
     private ledger: RBOMLedger;
+    private lastCycleTime: number = Date.now();
+    private watchdogTimer: NodeJS.Timeout | null = null;
+    private intervalMs: number = 10000; // Default 10s
     
     constructor(
         workspaceRoot: string,
@@ -50,15 +53,66 @@ export class CognitiveScheduler {
     }
     
     /**
-     * Start periodic cycles
+     * Start periodic cycles with watchdog protection
      * @param periodMs - Period in milliseconds (default: 5-10s for testing, 2h for production)
      */
     start(periodMs: number = 10000): void {
+        this.intervalMs = periodMs;
+        
+        // Stop any existing timers first
+        this.stop();
+        
+        // Register main cycle timer
         this.timerRegistry.registerInterval(
             'kernel:cognitive-cycle',
             () => this.runCycle(),
             periodMs
         );
+        
+        // 🧠 Watchdog: Check if scheduler is still active every minute
+        // If no cycle executed for 2x interval → auto-restart
+        const watchdogInterval = Math.max(60000, periodMs); // Min 1 minute
+        this.timerRegistry.registerInterval(
+            'kernel:cognitive-watchdog',
+            () => this.checkWatchdog(),
+            watchdogInterval
+        );
+        
+        console.log(`🛡️ RL4 Watchdog active (checking every ${watchdogInterval}ms)`);
+    }
+    
+    /**
+     * Watchdog check - Detects if scheduler is stuck
+     */
+    private checkWatchdog(): void {
+        const delta = Date.now() - this.lastCycleTime;
+        const threshold = this.intervalMs * 2;
+        
+        if (delta > threshold) {
+            console.warn(`⚠️ [RL4 Watchdog] Scheduler inactive for ${delta}ms (threshold: ${threshold}ms) — auto-restarting...`);
+            this.restart();
+        } else {
+            console.log(`✅ [RL4 Watchdog] Scheduler healthy (last cycle: ${delta}ms ago)`);
+        }
+    }
+    
+    /**
+     * Restart scheduler (called by watchdog or manually)
+     */
+    restart(): void {
+        console.log('🔄 RL4 CognitiveScheduler restarting...');
+        const currentInterval = this.intervalMs;
+        this.stop();
+        this.start(currentInterval);
+        console.log('✅ RL4 CognitiveScheduler auto-restarted');
+    }
+    
+    /**
+     * Stop all timers (cycle + watchdog)
+     */
+    stop(): void {
+        this.timerRegistry.clear('kernel:cognitive-cycle');
+        this.timerRegistry.clear('kernel:cognitive-watchdog');
     }
     
     /**
@@ -136,6 +190,9 @@ export class CognitiveScheduler {
             this.isRunning = false;
             result.completedAt = new Date().toISOString();
             result.duration = Date.now() - startTime;
+            
+            // Update watchdog timestamp (successful or not, we ran)
+            this.lastCycleTime = Date.now();
         }
         
         // Aggregate cycle summary and append to cycles.jsonl (CycleAggregator)

@@ -57,8 +57,10 @@ export class TimerRegistry {
      * @throws Error if ID already registered
      */
     registerInterval(id: string, callback: () => void, interval: number): void {
+        // Auto-clear if already exists (idempotent registration)
         if (this.intervals.has(id)) {
-            throw new Error(`Interval ID already registered: ${id}`);
+            console.warn(`⚠️ Timer ID already registered: ${id} - auto-clearing`);
+            this.clear(id);
         }
         
         const timer = setInterval(callback, interval);

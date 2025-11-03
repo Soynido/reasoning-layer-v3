@@ -82,6 +82,9 @@ let kernel: {
     api: KernelAPI;
 } | null = null;
 
+// RL4 Scheduler Singleton (survives reloads)
+let cognitiveScheduler: CognitiveScheduler | null = null;
+
 // Autonomous cycle timers (DEPRECATED - replaced by CognitiveScheduler)
 let autonomousTimers: Array<ReturnType<typeof setInterval>> = [];
 
@@ -110,12 +113,18 @@ export async function activate(context: vscode.ExtensionContext) {
         const timerRegistry = new TimerRegistry();
         const stateRegistry = new StateRegistry(workspaceRoot);
         const healthMonitor = new HealthMonitor(workspaceRoot, timerRegistry);
-        const scheduler = new CognitiveScheduler(workspaceRoot, timerRegistry);
+        
+        // CRITICAL FIX: Always recreate scheduler on reload
+        // because it holds a reference to the OLD TimerRegistry (garbage collected)
+        // Simply reusing the scheduler would register timers in a dead registry!
+        cognitiveScheduler = new CognitiveScheduler(workspaceRoot, timerRegistry);
+        console.log('🧠 RL4 CognitiveScheduler created (fresh instance with current TimerRegistry)');
+        
         const api = new KernelAPI(
             timerRegistry,
             stateRegistry,
             healthMonitor,
-            scheduler,
+            cognitiveScheduler,
             new Map(), // writers (will be populated)
             undefined as any // execPool (will be added in I3-F)
         );
@@ -127,7 +136,7 @@ export async function activate(context: vscode.ExtensionContext) {
             timerRegistry,
             stateRegistry,
             healthMonitor,
-            scheduler,
+            scheduler: cognitiveScheduler,
             execPool,
             api
         };
@@ -1826,9 +1835,12 @@ ${adr.evidenceIds.length} evidence(s) linked
         // 🤖 Cognitive Cycle Scheduler (RL4 Kernel vs RL3 Legacy)
         // ───────────────────────────────────────────────────────────────────────
         if (kernel && kernelConfig.USE_TIMER_REGISTRY) {
-            // RL4 MODE: Use single CognitiveScheduler
+            // RL4 MODE: Use single CognitiveScheduler (auto-respawn on reload)
+            // CRITICAL: Always call start() even if scheduler exists, 
+            // because timer may have been cleared on previous deactivate
+            kernel.timerRegistry.clear('kernel:cognitive-cycle'); // Clear any existing timer first
             kernel.scheduler.start(kernelConfig.cognitive_cycle_interval_ms);
-            persistence?.logWithEmoji('🧠', `RL4 CognitiveScheduler started (${kernelConfig.cognitive_cycle_interval_ms}ms cycles)`);
+            persistence?.logWithEmoji('🧠', `RL4 CognitiveScheduler started (${kernelConfig.cognitive_cycle_interval_ms}ms cycles) - auto-respawn enabled`);
             
         } else {
             // RL3 LEGACY MODE: Use multiple autonomous timers (DEPRECATED)
@@ -1960,11 +1972,21 @@ export async function deactivate() {
     try {
         const ledger = (globalThis as any).RBOM_LEDGER;
         if (ledger && typeof ledger.flush === 'function') {
-            ledger.flush(); // Synchronous flush to guarantee completion
+            await ledger.flush(); // Async flush with fsync
             console.log('✅ RL4 Ledger flushed successfully');
         }
     } catch (error) {
         console.error('❌ RL4 Ledger flush error:', error);
+    }
+    
+    // Stop CognitiveScheduler timer (important for clean reload)
+    if (kernel && kernel.timerRegistry) {
+        try {
+            kernel.timerRegistry.clear('kernel:cognitive-cycle');
+            console.log('✅ CognitiveScheduler timer cleared');
+        } catch (error) {
+            console.error('❌ Timer clear error:', error);
+        }
     }
     
     // RL4 Kernel shutdown (if active)
