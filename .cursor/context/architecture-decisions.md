@@ -5,6 +5,7 @@
 - 31bd42ed-0ff0-4b82-a40b-a8879a465e2c: Auto-ADR: Config decision (fb3959f)
 - 3ad08407-051f-4786-8557-8af87f40481c: Stabilisation du contrat de persistance via manifest versionné
 - 3b3467ee-a009-43f4-bb3d-0b6c91147dc7: Auto-ADR: Dependency decision (1c15f36)
+- 47783298-dd15-4d2a-81dd-6e149a4e6f15: Major refactor of FileChangeWatcher
 - 52f13b9f-6071-429b-9e46-31a270efafa8: Using Git for decision traceability via history
 - 5ad6d1d1-6c32-4a04-b9f4-88d6b36b704a: Major refactor of extension.ts
 - 7051c680-fd39-4aba-a24c-2a848130f97b: Auto-ADR: Config decision (f0dab50)
