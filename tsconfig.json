@@ -16,6 +16,6 @@
       "@kernel/adapters/*": ["extension/kernel/adapters/*"]
     }
   },
-  "include": ["extension/**/*", "tests/**/*", "bench/**/*"],
-  "exclude": ["node_modules", "out", "extension/webview/ui"]
+  "include": ["extension/**/*"],
+  "exclude": ["node_modules", "out", "extension/webview/ui", "tests", "bench", "scripts"]
 }

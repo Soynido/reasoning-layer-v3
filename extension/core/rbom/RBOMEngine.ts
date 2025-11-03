@@ -552,7 +552,7 @@ export class RBOMEngine {
 
             // RL4 Mode: Append to immutable ledger
             if (this.useLedger && this.rbomLedger) {
-                await this.rbomLedger.append(adr);
+                await this.rbomLedger.append('adr', adr);
                 if (this.log) this.log(`💾 ADR saved to ledger (RL4): ${adr.id}`);
                 return;
             }
