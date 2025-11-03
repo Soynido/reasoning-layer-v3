@@ -9,6 +9,7 @@ import { StateRegistry } from './kernel/StateRegistry';
 import { HealthMonitor } from './kernel/HealthMonitor';
 import { CognitiveScheduler } from './kernel/CognitiveScheduler';
 import { KernelAPI } from './kernel/KernelAPI';
+import { ExecPool } from './kernel/ExecPool';
 import { loadKernelConfig } from './kernel/config';
 import { SBOMCaptureEngine } from './core/SBOMCaptureEngine';
 import { ConfigCaptureEngine } from './core/ConfigCaptureEngine';
@@ -77,6 +78,7 @@ let kernel: {
     stateRegistry: StateRegistry;
     healthMonitor: HealthMonitor;
     scheduler: CognitiveScheduler;
+    execPool: ExecPool;
     api: KernelAPI;
 } | null = null;
 
@@ -118,11 +120,15 @@ export async function activate(context: vscode.ExtensionContext) {
             undefined as any // execPool (will be added in I3-F)
         );
         
+        // Initialize shared ExecPool (CRITICAL for concurrency control)
+        const execPool = new ExecPool(2, 2000, workspaceRoot); // Max 2 concurrent, 2s timeout, JSONL logging
+        
         kernel = {
             timerRegistry,
             stateRegistry,
             healthMonitor,
             scheduler,
+            execPool,
             api
         };
         
@@ -322,7 +328,7 @@ export async function activate(context: vscode.ExtensionContext) {
             if (!persistence || !eventAggregator) return;
             
             try {
-                gitMetadata = new GitMetadataEngine(workspaceRoot, persistence, eventAggregator);
+                gitMetadata = new GitMetadataEngine(workspaceRoot, persistence, eventAggregator, kernel?.execPool);
                 await gitMetadata.start();
                 persistence.logWithEmoji('🌿', 'GitMetadataEngine started - monitoring Git metadata');
             } catch (gitError) {
@@ -351,7 +357,7 @@ export async function activate(context: vscode.ExtensionContext) {
             if (!persistence) return;
             
             try {
-                gitCommitListener = new GitCommitListener(workspaceRoot);
+                gitCommitListener = new GitCommitListener(workspaceRoot, kernel?.execPool);
                 if (gitCommitListener.isGitRepository()) {
                     await gitCommitListener.startWatching();
                     persistence.logWithEmoji('🎧', 'GitCommitListener started - Input Layer active');
@@ -1486,7 +1492,7 @@ ${adr.evidenceIds.length} evidence(s) linked
         // 🎧 Input Layer - GitCommitListener (Phase 1)
         setTimeout(async () => {
             try {
-                gitCommitListener = new GitCommitListener(workspaceRoot);
+                gitCommitListener = new GitCommitListener(workspaceRoot, kernel?.execPool);
                 if (gitCommitListener.isGitRepository()) {
                     await gitCommitListener.startWatching();
                     persistence?.logWithEmoji('🎧', 'Input Layer: GitCommitListener activated');
