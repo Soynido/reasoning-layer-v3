@@ -1,0 +1,91 @@
+{
+  "phase": "I3-B1",
+  "date": "2025-11-03",
+  "commit": "e090633",
+  "modules_migrated": 3,
+  "exec_calls_before": 15,
+  "exec_calls_after": 0,
+  
+  "modules": [
+    {
+      "file": "extension/core/GitMetadataEngine.ts",
+      "exec_calls_replaced": 7,
+      "lines_modified": [7, 43, 49-53, 75, 121-122, 130-131, 139-140, 255-256, 313-314, 353-354],
+      "changes": [
+        "Import ExecPool from ../kernel/ExecPool",
+        "Add execPool property to class",
+        "Inject execPool in constructor (optional param)",
+        "Replace 7× execAsync with this.execPool.run()"
+      ],
+      "commands_affected": [
+        "git rev-parse --git-dir",
+        "git rev-parse HEAD",
+        "git branch --show-current",
+        "git branch -v",
+        "git show --pretty=format...",
+        "git show --name-status"
+      ]
+    },
+    {
+      "file": "extension/core/inputs/GitCommitListener.ts",
+      "exec_calls_replaced": 6,
+      "lines_modified": [3-6, 26, 28-32, 62-63, 141-142, 196-200, 203-207, 210-214, 217-221, 224-228, 393-396],
+      "changes": [
+        "Remove child_process/promisify imports",
+        "Import ExecPool from ../../kernel/ExecPool",
+        "Add execPool property",
+        "Inject execPool in constructor (optional param)",
+        "Replace 6× execAsync with this.execPool.run()"
+      ],
+      "commands_affected": [
+        "git rev-parse HEAD (×2)",
+        "git log -1 --pretty=format:%s",
+        "git log -1 --pretty=format:%an",
+        "git log -1 --pretty=format:%aI",
+        "git diff-tree --no-commit-id",
+        "git show --stat",
+        "git log -n --pretty=format:%H"
+      ]
+    },
+    {
+      "file": "extension/core/retroactive/scanners/GitHistoryScanner.ts",
+      "exec_calls_replaced": 2,
+      "lines_modified": [2, 21, 23-29, 43-44, 102-106],
+      "changes": [
+        "Remove child_process/promisify imports",
+        "Import ExecPool from ../../../kernel/ExecPool",
+        "Add execPool property",
+        "Inject execPool in constructor (optional param)",
+        "Replace 2× execAsync with this.execPool.run()"
+      ],
+      "commands_affected": [
+        "git log (with custom format)",
+        "git show --stat"
+      ]
+    }
+  ],
+  
+  "exec_pool_configuration": {
+    "pool_size": 2,
+    "default_timeout_ms": 2000,
+    "concurrency_limit": "Max 2 concurrent git commands",
+    "timeout_protection": "All git commands timeout after 2s"
+  },
+  
+  "validation": {
+    "exec_async_remaining": 0,
+    "child_process_imports_removed": 3,
+    "exec_pool_injected": 3,
+    "compilation_status": "CLEAN (production code)",
+    "production_code_status": "✅ CLEAN",
+    "grep_verification": "grep execAsync on 3 files → 0 results"
+  },
+  
+  "test_errors_note": "Compilation shows errors in tests/kernel/TimerRegistry.test.ts (missing @types/jest). This is unrelated to I3-B1 changes and does not affect production code.",
+  
+  "pool_latency_p99": "PENDING_BENCHMARK",
+  "benchmark_command": "npx ts-node bench/git-pool.ts",
+  "benchmark_note": "Benchmark deferred to I3-B3 completion (after all modules use ExecPool)",
+  
+  "next_step": "I3-B2: Inject ExecPool in integration modules (GitHubCLIManager, GitHubDiscussionListener, FeatureMapper)"
+}
