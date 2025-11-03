@@ -30,15 +30,29 @@ export interface MerkleRoot {
     timestamp: string;
 }
 
+export interface CycleSummary {
+    cycleId: number;
+    timestamp: string;
+    phases: {
+        patterns: { hash: string; count: number };
+        correlations: { hash: string; count: number };
+        forecasts: { hash: string; count: number };
+        adrs: { hash: string; count: number };
+    };
+    merkleRoot: string;
+}
+
 export class RBOMLedger {
     private writer: AppendOnlyWriter;
+    private cyclesWriter: AppendOnlyWriter;
     private entries: RBOMEntry[] = [];
     private merkleRoots: MerkleRoot[] = [];
     
-    constructor(workspaceRoot: string) {
-        this.writer = new AppendOnlyWriter(
-            path.join(workspaceRoot, '.reasoning', 'rbom_ledger.jsonl')
-        );
+    constructor(ledgerPath: string) {
+        this.writer = new AppendOnlyWriter(ledgerPath);
+        // Cycles writer in same directory
+        const cyclesPath = ledgerPath.replace('rbom_ledger.jsonl', 'cycles.jsonl');
+        this.cyclesWriter = new AppendOnlyWriter(cyclesPath);
     }
     
     /**
@@ -182,10 +196,74 @@ export class RBOMLedger {
     }
     
     /**
-     * Flush writer
+     * Hash a batch of items (for phase-level integrity)
+     */
+    hashBatch(items: any[]): string {
+        if (items.length === 0) return '';
+        const combined = JSON.stringify(items);
+        return crypto.createHash('sha256').update(combined).digest('hex');
+    }
+    
+    /**
+     * Compute Merkle root from multiple hashes
+     */
+    computeRoot(hashes: string[]): string {
+        return this.merkleTreeRoot(hashes);
+    }
+    
+    /**
+     * Append cycle summary to cycles.jsonl
+     */
+    async appendCycle(cycle: CycleSummary): Promise<void> {
+        await this.cyclesWriter.append(cycle);
+        
+        // Update merkle roots cache
+        this.merkleRoots.push({
+            root: cycle.merkleRoot,
+            entryCount: this.entries.length,
+            timestamp: cycle.timestamp
+        });
+    }
+    
+    /**
+     * Get last cycle summary
+     */
+    async getLastCycle(): Promise<CycleSummary | null> {
+        const cycles = await this.cyclesWriter.readAll();
+        return cycles.length > 0 ? cycles[cycles.length - 1] : null;
+    }
+    
+    /**
+     * Verify entire chain (expensive - use sparingly)
+     */
+    async verifyChain(): Promise<boolean> {
+        const result = await this.verify();
+        
+        // Also verify cycles
+        const cycles = await this.cyclesWriter.readAll();
+        for (const cycle of cycles) {
+            // Recompute phase hashes and verify
+            const phaseHashes = [
+                cycle.phases.patterns.hash,
+                cycle.phases.correlations.hash,
+                cycle.phases.forecasts.hash,
+                cycle.phases.adrs.hash
+            ];
+            const recomputedRoot = this.computeRoot(phaseHashes);
+            if (recomputedRoot !== cycle.merkleRoot) {
+                return false;
+            }
+        }
+        
+        return result.valid;
+    }
+    
+    /**
+     * Flush writers
      */
     async flush(): Promise<void> {
         await this.writer.flush(true); // fsync
+        await this.cyclesWriter.flush(true); // fsync
     }
 }
 

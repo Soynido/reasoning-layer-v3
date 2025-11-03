@@ -3,6 +3,7 @@ import * as path from 'path';
 // ❌ Import uuid différé pour éviter le top-level load
 // import { v4 as uuidv4 } from 'uuid';
 import { ADR, ADRSearchFilter } from './types';
+import { RBOMLedger } from '../../kernel/RBOMLedger';
 
 /**
  * RBOMEngine - Gestion des ADRs (Architectural Decision Records)
@@ -22,8 +23,10 @@ export class RBOMEngine {
     private log: ((msg: string) => void) | null = null;
     private warn: ((msg: string) => void) | null = null;
     private workspaceRoot: string;
+    private rbomLedger: RBOMLedger | null = null;
+    private useLedger: boolean = false;
 
-    constructor(workspaceRoot: string, logFn?: (msg: string) => void, warnFn?: (msg: string) => void) {
+    constructor(workspaceRoot: string, logFn?: (msg: string) => void, warnFn?: (msg: string) => void, useLedger: boolean = false) {
         // ⊘ ROBUST: Use fallback if workspaceRoot undefined (following user's recommendation)
         if (!workspaceRoot) {
             const fallback = process.cwd();
@@ -36,6 +39,20 @@ export class RBOMEngine {
         this.adrsIndexPath = path.join(this.adrsDir, 'index.json');
         this.log = logFn || null;
         this.warn = warnFn || null;
+        this.useLedger = useLedger;
+        
+        // Initialize RBOMLedger if enabled (RL4 mode)
+        if (useLedger) {
+            const ledgerPath = path.join(workspaceRoot, '.reasoning_rl4', 'ledger', 'rbom_ledger.jsonl');
+            const ledgerDir = path.dirname(ledgerPath);
+            if (!fs.existsSync(ledgerDir)) {
+                fs.mkdirSync(ledgerDir, { recursive: true });
+            }
+            this.rbomLedger = new RBOMLedger(ledgerPath);
+            if (this.log) this.log('✅ RBOMEngine initialized (RL4 mode: immutable ledger)');
+        } else {
+            if (this.log) this.log('✅ RBOMEngine initialized (RL3 mode: file-based)');
+        }
         
         // Créer le dossier si nécessaire
         if (!fs.existsSync(this.adrsDir)) {
@@ -521,11 +538,11 @@ export class RBOMEngine {
 
     // Private methods
 
-    private saveADR(adr: ADR): void {
+    private async saveADR(adr: ADR): Promise<void> {
         try {
-            // ⊘ Safety check: ensure adrsDir is initialized
-            if (!this.adrsDir) {
-                const errorMsg = '❌ RBOMEngine.saveADR: adrsDir is undefined. Cannot save ADR.';
+            // ⊘ Safety check: ensure adr.id is defined
+            if (!adr || !adr.id) {
+                const errorMsg = `❌ RBOMEngine.saveADR: adr.id is undefined. ADR: ${JSON.stringify(adr).substring(0, 100)}`;
                 console.error(errorMsg);
                 if (this.warn) {
                     this.warn(errorMsg);
@@ -533,9 +550,17 @@ export class RBOMEngine {
                 return;
             }
 
-            // ⊘ Safety check: ensure adr.id is defined
-            if (!adr || !adr.id) {
-                const errorMsg = `❌ RBOMEngine.saveADR: adr.id is undefined. ADR: ${JSON.stringify(adr).substring(0, 100)}`;
+            // RL4 Mode: Append to immutable ledger
+            if (this.useLedger && this.rbomLedger) {
+                await this.rbomLedger.append(adr);
+                if (this.log) this.log(`💾 ADR saved to ledger (RL4): ${adr.id}`);
+                return;
+            }
+
+            // RL3 Legacy Mode: File-based storage
+            // ⊘ Safety check: ensure adrsDir is initialized
+            if (!this.adrsDir) {
+                const errorMsg = '❌ RBOMEngine.saveADR: adrsDir is undefined. Cannot save ADR.';
                 console.error(errorMsg);
                 if (this.warn) {
                     this.warn(errorMsg);
@@ -559,8 +584,9 @@ export class RBOMEngine {
                 }
                 return;
             }
-
+            
             fs.writeFileSync(filePath, JSON.stringify(adr, null, 2), 'utf-8');
+            if (this.log) this.log(`💾 ADR saved to file (RL3): ${adr.id}`);
             if (this.log) {
                 this.log(`💾 ADR saved: ${adr.id}.json`);
             }
