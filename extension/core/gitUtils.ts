@@ -1,7 +1,13 @@
-import { exec } from "child_process";
-import { promisify } from "util";
+import { ExecPool } from '../kernel/ExecPool';
 
-const execAsync = promisify(exec);
+// Default pool for backward compatibility (if no pool provided)
+let defaultPool: ExecPool | null = null;
+
+function getPool(pool?: ExecPool): ExecPool {
+    if (pool) return pool;
+    if (!defaultPool) defaultPool = new ExecPool(2, 2000);
+    return defaultPool;
+}
 
 export interface GitDiffSummary {
     files: string[];
@@ -29,18 +35,20 @@ export interface GitBranchInfo {
 /**
  * Get the current Git branch name with proper handling of detached HEAD state
  */
-export async function getCurrentBranch(workspaceRoot: string): Promise<string> {
+export async function getCurrentBranch(workspaceRoot: string, execPool?: ExecPool): Promise<string> {
     try {
+        const pool = getPool(execPool);
+        
         // Try git branch --show-current first
-        const { stdout: branchOut } = await execAsync(`git branch --show-current`, { cwd: workspaceRoot, timeout: 5000 });
-        const branch1 = branchOut.trim();
+        const branchResult = await pool.run(`git branch --show-current`, { cwd: workspaceRoot, timeout: 5000 });
+        const branch1 = branchResult.stdout.trim();
         if (branch1) {
             return branch1;
         }
 
         // Fallback to rev-parse for detached HEAD handling
-        const { stdout: revOut } = await execAsync(`git rev-parse --abbrev-ref HEAD`, { cwd: workspaceRoot, timeout: 5000 });
-        let branch2 = revOut.trim();
+        const revResult = await pool.run(`git rev-parse --abbrev-ref HEAD`, { cwd: workspaceRoot, timeout: 5000 });
+        let branch2 = revResult.stdout.trim();
 
         // Handle detached HEAD state
         if (branch2 === 'HEAD') {
@@ -57,15 +65,17 @@ export async function getCurrentBranch(workspaceRoot: string): Promise<string> {
 /**
  * Get Git diff summary for a specific commit using proven working commands
  */
-export async function getGitDiffSummary(commitHash: string, workspaceRoot: string): Promise<GitDiffSummary> {
+export async function getGitDiffSummary(commitHash: string, workspaceRoot: string, execPool?: ExecPool): Promise<GitDiffSummary> {
     try {
+        const pool = getPool(execPool);
         console.log(`[GitUtils] Getting diff for ${commitHash.substring(0, 8)}`);
 
         // Use the exact command that we tested and confirmed works
-        const { stdout: statOutput } = await execAsync(
+        const statResult = await pool.run(
             `git show --numstat ${commitHash}`,
             { cwd: workspaceRoot, timeout: 10000 }
         );
+        const statOutput = statResult.stdout;
 
         console.log(`[GitUtils] Raw numstat output: ${JSON.stringify(statOutput)}`);
 
@@ -106,13 +116,16 @@ export async function getGitDiffSummary(commitHash: string, workspaceRoot: strin
 /**
  * Get detailed commit information
  */
-export async function getGitCommitDetails(commitHash: string, workspaceRoot: string): Promise<GitCommitDetails | null> {
+export async function getGitCommitDetails(commitHash: string, workspaceRoot: string, execPool?: ExecPool): Promise<GitCommitDetails | null> {
     try {
+        const pool = getPool(execPool);
+        
         // Get commit metadata
-        const { stdout: commitInfo } = await execAsync(
+        const commitResult = await pool.run(
             `git show --pretty=format:"%H|%an|%ae|%ad|%s" --name-status ${commitHash}`,
             { cwd: workspaceRoot, timeout: 10000 }
         );
+        const commitInfo = commitResult.stdout;
 
         const lines = commitInfo.split('\n');
         const [hash, author, email, date, message] = lines[0].split('|');
@@ -130,7 +143,7 @@ export async function getGitCommitDetails(commitHash: string, workspaceRoot: str
         }
 
         // Get insertions/deletions
-        const diffSummary = await getGitDiffSummary(commitHash, workspaceRoot);
+        const diffSummary = await getGitDiffSummary(commitHash, workspaceRoot, pool);
 
         return {
             hash: hash || commitHash,
@@ -152,9 +165,11 @@ export async function getGitCommitDetails(commitHash: string, workspaceRoot: str
 /**
  * Get all Git branches with current branch indication
  */
-export async function getGitBranches(workspaceRoot: string): Promise<GitBranchInfo[]> {
+export async function getGitBranches(workspaceRoot: string, execPool?: ExecPool): Promise<GitBranchInfo[]> {
     try {
-        const { stdout } = await execAsync('git branch -v', { cwd: workspaceRoot, timeout: 5000 });
+        const pool = getPool(execPool);
+        const result = await pool.run('git branch -v', { cwd: workspaceRoot, timeout: 5000 });
+        const stdout = result.stdout;
 
         const branches: GitBranchInfo[] = [];
         const lines = stdout.split('\n');
@@ -193,10 +208,11 @@ export async function getGitBranches(workspaceRoot: string): Promise<GitBranchIn
 /**
  * Get current commit hash
  */
-export async function getCurrentCommitHash(workspaceRoot: string): Promise<string | null> {
+export async function getCurrentCommitHash(workspaceRoot: string, execPool?: ExecPool): Promise<string | null> {
     try {
-        const { stdout } = await execAsync('git rev-parse HEAD', { cwd: workspaceRoot, timeout: 5000 });
-        return stdout.trim();
+        const pool = getPool(execPool);
+        const result = await pool.run('git rev-parse HEAD', { cwd: workspaceRoot, timeout: 5000 });
+        return result.stdout.trim();
     } catch (error) {
         console.error(`[GitUtils] Failed to get current commit hash:`, error);
         return null;
@@ -206,9 +222,10 @@ export async function getCurrentCommitHash(workspaceRoot: string): Promise<strin
 /**
  * Check if the current directory is a Git repository
  */
-export async function isGitRepository(workspaceRoot: string): Promise<boolean> {
+export async function isGitRepository(workspaceRoot: string, execPool?: ExecPool): Promise<boolean> {
     try {
-        await execAsync('git rev-parse --git-dir', { cwd: workspaceRoot, timeout: 5000 });
+        const pool = getPool(execPool);
+        await pool.run('git rev-parse --git-dir', { cwd: workspaceRoot, timeout: 5000 });
         return true;
     } catch (error) {
         return false;
