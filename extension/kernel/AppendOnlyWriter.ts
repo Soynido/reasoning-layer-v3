@@ -43,8 +43,8 @@ export class AppendOnlyWriter {
         this.buffer.push(entry);
         this.bufferSize += entry.length;
         
-        // Auto-flush if buffer full
-        if (this.buffer.length >= this.maxBufferSize) {
+        // Auto-flush if buffer full OR every 10 lines (for low-frequency writes)
+        if (this.buffer.length >= this.maxBufferSize || this.buffer.length >= 10) {
             await this.flush();
         }
     }

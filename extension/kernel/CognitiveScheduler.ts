@@ -14,6 +14,10 @@
 
 import { TimerRegistry } from './TimerRegistry';
 import { RBOMLedger, setGlobalLedger } from './RBOMLedger';
+import { PatternLearningEngine } from './cognitive/PatternLearningEngine';
+import { CorrelationEngine } from './cognitive/CorrelationEngine';
+import { ForecastEngine } from './cognitive/ForecastEngine';
+import { ADRGeneratorV2 } from './cognitive/ADRGeneratorV2';
 import * as crypto from 'crypto';
 
 export interface CycleResult {
@@ -42,12 +46,17 @@ export class CognitiveScheduler {
     private lastCycleTime: number = Date.now();
     private watchdogTimer: NodeJS.Timeout | null = null;
     private intervalMs: number = 10000; // Default 10s
+    private logger: any = null; // OutputChannel for logging
+    private workspaceRoot: string; // Workspace root for engines
     
     constructor(
         workspaceRoot: string,
-        private timerRegistry: TimerRegistry
+        private timerRegistry: TimerRegistry,
+        logger?: any
     ) {
+        this.workspaceRoot = workspaceRoot;
         this.ledger = new RBOMLedger(workspaceRoot);
+        this.logger = logger;
         // Expose to globalThis for VS Code commands
         setGlobalLedger(this.ledger);
     }
@@ -64,36 +73,36 @@ export class CognitiveScheduler {
         
         // CRITICAL: Wait for VS Code Extension Host to stabilize
         // Without this delay, timers are registered but never fire
-        console.log(`⏳ [Scheduler] Waiting 2s for Extension Host to stabilize...`);
+        this.log(`⏳ Waiting 2s for Extension Host to stabilize...`);
         await new Promise(resolve => setTimeout(resolve, 2000));
-        console.log(`✅ [Scheduler] Extension Host ready`);
+        this.log(`✅ Extension Host ready`);
         
         // Register main cycle timer
-        console.log(`🧪 [Scheduler] Registering cycle timer (${periodMs}ms)...`);
+        this.log(`🧪 Registering cycle timer (${periodMs}ms)...`);
         this.timerRegistry.registerInterval(
             'kernel:cognitive-cycle',
             () => {
-                console.log('🔔 [Scheduler] Cycle timer FIRED!');
+                this.log('🔔 Cycle timer FIRED!');
                 this.runCycle();
             },
             periodMs
         );
-        console.log(`✅ [Scheduler] Cycle timer registered`);
+        this.log(`✅ Cycle timer registered successfully`);
         
         // 🧠 Watchdog: Check if scheduler is still active every minute
         // If no cycle executed for 2x interval → auto-restart
         const watchdogInterval = Math.max(60000, periodMs); // Min 1 minute
-        console.log(`🧪 [Scheduler] Registering watchdog timer (${watchdogInterval}ms)...`);
+        this.log(`🧪 Registering watchdog timer (${watchdogInterval}ms)...`);
         this.timerRegistry.registerInterval(
             'kernel:cognitive-watchdog',
             () => {
-                console.log('🔔 [Scheduler] Watchdog timer FIRED!');
+                this.log('🔔 Watchdog timer FIRED!');
                 this.checkWatchdog();
             },
             watchdogInterval
         );
-        console.log(`✅ [Scheduler] Watchdog timer registered`);
-        console.log(`🛡️ RL4 Watchdog active (checking every ${watchdogInterval}ms)`);
+        this.log(`✅ Watchdog timer registered successfully`);
+        this.log(`🛡️ Watchdog active (checking every ${watchdogInterval}ms)`);
     }
     
     /**
@@ -104,10 +113,10 @@ export class CognitiveScheduler {
         const threshold = this.intervalMs * 2;
         
         if (delta > threshold) {
-            console.warn(`⚠️ [RL4 Watchdog] Scheduler inactive for ${delta}ms (threshold: ${threshold}ms) — auto-restarting...`);
+            this.log(`⚠️ Watchdog: Inactive for ${delta}ms (threshold: ${threshold}ms) — auto-restarting...`);
             this.restart();
         } else {
-            console.log(`✅ [RL4 Watchdog] Scheduler healthy (last cycle: ${delta}ms ago)`);
+            this.log(`✅ Watchdog: Healthy (last cycle: ${delta}ms ago)`);
         }
     }
     
@@ -115,11 +124,11 @@ export class CognitiveScheduler {
      * Restart scheduler (called by watchdog or manually)
      */
     async restart(): Promise<void> {
-        console.log('🔄 RL4 CognitiveScheduler restarting...');
+        this.log('🔄 CognitiveScheduler restarting...');
         const currentInterval = this.intervalMs;
         this.stop();
         await this.start(currentInterval);
-        console.log('✅ RL4 CognitiveScheduler auto-restarted');
+        this.log('✅ CognitiveScheduler auto-restarted');
     }
     
     /**
@@ -131,16 +140,31 @@ export class CognitiveScheduler {
     }
     
     /**
+     * Log helper (uses outputChannel if available, fallback to console)
+     */
+    private log(message: string): void {
+        const timestamp = new Date().toISOString();
+        const timeDisplay = timestamp.substring(11, 23); // HH:MM:SS.mmm
+        
+        if (this.logger && this.logger.appendLine) {
+            this.logger.appendLine(`[${timeDisplay}] [Scheduler] ${message}`);
+        } else {
+            console.log(`[${timeDisplay}] [Scheduler] ${message}`);
+        }
+    }
+    
+    /**
      * Run a complete cognitive cycle
      */
     async runCycle(): Promise<CycleResult> {
         if (this.isRunning) {
-            console.warn('⚠️ Cognitive cycle already running, skipping');
+            this.log('⚠️ Cycle already running, skipping');
             return this.createSkippedResult();
         }
         
         this.isRunning = true;
         this.cycleCount++;
+        this.log(`🔄 Running cycle #${this.cycleCount}...`);
         
         const startTime = Date.now();
         const result: CycleResult = {
@@ -159,7 +183,7 @@ export class CognitiveScheduler {
             
             // Skip if same input as last cycle (idempotence)
             if (result.inputHash === this.lastInputHash) {
-                console.log('⏭️ Skipping cycle (same input hash)');
+                this.log('⏭️ Skipping cycle (same input hash)');
                 result.success = true;
                 result.phases.push({
                     name: 'idempotence-skip',
@@ -173,34 +197,41 @@ export class CognitiveScheduler {
             
             // Phase 1: Pattern Learning
             result.phases.push(await this.runPhase('pattern-learning', async () => {
-                // Placeholder: call PatternLearningEngine
-                console.log('🔍 Pattern Learning phase');
-                return { patternsDetected: 0 };
+                const engine = new PatternLearningEngine(this.workspaceRoot);
+                const patterns = await engine.analyzePatterns();
+                this.log(`🔍 Pattern Learning: ${patterns.length} patterns detected`);
+                return { patternsDetected: patterns.length, patterns };
             }));
             
             // Phase 2: Correlation
             result.phases.push(await this.runPhase('correlation', async () => {
-                console.log('🔗 Correlation phase');
-                return { correlationsFound: 0 };
+                const engine = new CorrelationEngine(this.workspaceRoot);
+                const correlations = await engine.analyze();
+                this.log(`🔗 Correlation: ${correlations.length} correlations found`);
+                return { correlationsFound: correlations.length, correlations };
             }));
             
             // Phase 3: Forecasting
             result.phases.push(await this.runPhase('forecasting', async () => {
-                console.log('🔮 Forecasting phase');
-                return { forecastsGenerated: 0 };
+                const engine = new ForecastEngine(this.workspaceRoot);
+                const forecasts = await engine.generate();
+                this.log(`🔮 Forecasting: ${forecasts.length} forecasts generated`);
+                return { forecastsGenerated: forecasts.length, forecasts };
             }));
             
             // Phase 4: ADR Synthesis
             result.phases.push(await this.runPhase('adr-synthesis', async () => {
-                console.log('📝 ADR Synthesis phase');
-                return { adrsGenerated: 0 };
+                const generator = new ADRGeneratorV2(this.workspaceRoot);
+                const proposals = await generator.generateProposals();
+                this.log(`📝 ADR Synthesis: ${proposals.length} proposals generated`);
+                return { adrsGenerated: proposals.length, proposals };
             }));
             
             result.success = true;
             
         } catch (error) {
             result.success = false;
-            console.error('❌ Cognitive cycle failed:', error);
+            this.log(`❌ Cycle failed: ${error}`);
         } finally {
             this.isRunning = false;
             result.completedAt = new Date().toISOString();
@@ -212,6 +243,7 @@ export class CognitiveScheduler {
         
         // Aggregate cycle summary and append to cycles.jsonl (CycleAggregator)
         await this.aggregateAndPersistCycle(result);
+        this.log(`✅ Cycle #${result.cycleId} completed in ${result.duration}ms`);
         
         return result;
     }
@@ -302,10 +334,13 @@ export class CognitiveScheduler {
                 merkleRoot: '' // Will be computed by RBOMLedger
             });
             
-            console.log(`✅ Cycle ${result.cycleId} aggregated and persisted to cycles.jsonl`);
+            // Force immediate flush for critical ledger data
+            await this.ledger.flush();
+            
+            this.log(`💾 Cycle ${result.cycleId} persisted to cycles.jsonl`);
             
         } catch (error) {
-            console.error(`❌ Failed to aggregate cycle ${result.cycleId}:`, error);
+            this.log(`❌ Failed to aggregate cycle ${result.cycleId}: ${error}`);
             // Non-critical error: don't throw, just log
         }
     }
