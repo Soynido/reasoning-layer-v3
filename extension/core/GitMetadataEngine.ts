@@ -1,14 +1,11 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import * as fs from 'fs';
 import * as path from 'path';
 import { PersistenceManager } from './PersistenceManager';
 import { EventAggregator } from './EventAggregator';
 import { getGitDiffSummary, GitDiffSummary } from './gitUtils';
 import { CodeAnalyzer, CodeImpact } from './CodeAnalyzer';
+import { ExecPool } from '../kernel/ExecPool';
 // ❌ Logger retiré pour éviter duplication d'OutputChannel
-
-const execAsync = promisify(exec);
 
 export interface GitCommit {
     hash: string;
@@ -43,14 +40,17 @@ export class GitMetadataEngine {
     private lastBranchHash: string | null = null;
     private watchers: NodeJS.Timeout[] = [];
     private codeAnalyzer: CodeAnalyzer;
+    private execPool: ExecPool;
 
     constructor(
         private workspaceRoot: string,
         private persistence: PersistenceManager,
-        private eventAggregator: EventAggregator
+        private eventAggregator: EventAggregator,
+        execPool?: ExecPool
     ) {
         this.codeAnalyzer = new CodeAnalyzer();
-        this.persistence.logWithEmoji('🌿', 'GitMetadataEngine initialized with CodeAnalyzer');
+        this.execPool = execPool || new ExecPool(2, 2000); // Default pool
+        this.persistence.logWithEmoji('🌿', 'GitMetadataEngine initialized with CodeAnalyzer + ExecPool');
     }
 
     public async start(): Promise<void> {
@@ -72,7 +72,7 @@ export class GitMetadataEngine {
 
     private async checkGitRepository(): Promise<boolean> {
         try {
-            await execAsync('git rev-parse --git-dir', { cwd: this.workspaceRoot });
+            await this.execPool.run('git rev-parse --git-dir', { cwd: this.workspaceRoot });
             return true;
         } catch (error) {
             return false;
@@ -118,8 +118,8 @@ export class GitMetadataEngine {
 
     private async getCurrentCommitHash(): Promise<string | null> {
         try {
-            const { stdout } = await execAsync('git rev-parse HEAD', { cwd: this.workspaceRoot });
-            return stdout.trim();
+            const result = await this.execPool.run('git rev-parse HEAD', { cwd: this.workspaceRoot });
+            return result.stdout.trim();
         } catch (error) {
             return null;
         }
@@ -127,8 +127,8 @@ export class GitMetadataEngine {
 
     private async getCurrentBranch(): Promise<string | null> {
         try {
-            const { stdout } = await execAsync('git branch --show-current', { cwd: this.workspaceRoot });
-            return stdout.trim();
+            const result = await this.execPool.run('git branch --show-current', { cwd: this.workspaceRoot });
+            return result.stdout.trim();
         } catch (error) {
             return null;
         }
@@ -136,8 +136,8 @@ export class GitMetadataEngine {
 
     private async generateBranchHash(): Promise<string> {
         try {
-            const { stdout } = await execAsync('git branch -v', { cwd: this.workspaceRoot });
-            return this.generateHash(stdout);
+            const result = await this.execPool.run('git branch -v', { cwd: this.workspaceRoot });
+            return this.generateHash(result.stdout);
         } catch (error) {
             return 'unknown';
         }
@@ -252,7 +252,8 @@ export class GitMetadataEngine {
     private async getCommitDetails(commitHash: string): Promise<GitCommit> {
         try {
             // Get commit details
-            const { stdout: commitInfo } = await execAsync(`git show --pretty=format:"%H|%an|%ae|%ad|%s" --name-only --numstat ${commitHash}`, { cwd: this.workspaceRoot });
+            const commitInfoResult = await this.execPool.run(`git show --pretty=format:"%H|%an|%ae|%ad|%s" --name-only --numstat ${commitHash}`, { cwd: this.workspaceRoot });
+            const commitInfo = commitInfoResult.stdout;
             
             const lines = commitInfo.split('\n');
             const [hash, author, email, date, message] = lines[0].split('|');
@@ -309,7 +310,8 @@ export class GitMetadataEngine {
 
     private async getCommitDiffs(commitHash: string): Promise<GitDiff[]> {
         try {
-            const { stdout } = await execAsync(`git show --name-status ${commitHash}`, { cwd: this.workspaceRoot });
+            const result = await this.execPool.run(`git show --name-status ${commitHash}`, { cwd: this.workspaceRoot });
+            const stdout = result.stdout;
             
             const diffs: GitDiff[] = [];
             const lines = stdout.split('\n');
@@ -348,7 +350,8 @@ export class GitMetadataEngine {
 
     private async getBranchInfo(): Promise<GitBranch[]> {
         try {
-            const { stdout } = await execAsync('git branch -v', { cwd: this.workspaceRoot });
+            const result = await this.execPool.run('git branch -v', { cwd: this.workspaceRoot });
+            const stdout = result.stdout;
             
             const branches: GitBranch[] = [];
             const lines = stdout.split('\n');

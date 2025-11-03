@@ -13,6 +13,8 @@
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const execAsync = promisify(exec);
 
@@ -47,6 +49,7 @@ export class ExecPool {
     private defaultTimeout: number;
     private activeJobs: number = 0;
     private queue: Array<() => Promise<void>> = [];
+    private logPath: string | null = null;
     
     // Metrics
     private latencies: number[] = [];
@@ -55,9 +58,18 @@ export class ExecPool {
     private failed: number = 0;
     private timedOut: number = 0;
     
-    constructor(poolSize: number = 2, defaultTimeout: number = 2000) {
+    constructor(poolSize: number = 2, defaultTimeout: number = 2000, workspaceRoot?: string) {
         this.poolSize = poolSize;
         this.defaultTimeout = defaultTimeout;
+        
+        // Setup JSONL logging if workspace provided
+        if (workspaceRoot) {
+            const logDir = path.join(workspaceRoot, '.reasoning_rl4', 'diagnostics');
+            if (!fs.existsSync(logDir)) {
+                fs.mkdirSync(logDir, { recursive: true });
+            }
+            this.logPath = path.join(logDir, 'git_pool.jsonl');
+        }
     }
     
     /**
@@ -106,6 +118,17 @@ export class ExecPool {
             this.latencies.push(duration);
             this.successful++;
             
+            // Log success metric
+            this.logMetric({
+                timestamp: new Date().toISOString(),
+                command: command.substring(0, 50),
+                latency_ms: duration,
+                success: true,
+                timedOut: false,
+                queue_size: this.queue.length,
+                active_jobs: this.activeJobs
+            });
+            
             return {
                 stdout: (result as any).stdout,
                 stderr: (result as any).stderr,
@@ -114,12 +137,25 @@ export class ExecPool {
             };
             
         } catch (error) {
+            const duration = Date.now() - start;
             this.failed++;
+            
+            // Log error metric
+            this.logMetric({
+                timestamp: new Date().toISOString(),
+                command: command.substring(0, 50),
+                latency_ms: duration,
+                success: false,
+                timedOut: false,
+                error: error instanceof Error ? error.message : String(error),
+                queue_size: this.queue.length,
+                active_jobs: this.activeJobs
+            });
             
             return {
                 stdout: '',
                 stderr: error instanceof Error ? error.message : String(error),
-                duration: Date.now() - start,
+                duration,
                 timedOut: false
             };
             
@@ -210,6 +246,21 @@ export class ExecPool {
             queued: this.queue.length,
             poolSize: this.poolSize
         };
+    }
+    
+    /**
+     * Log metric to JSONL file (single line JSON for monitoring)
+     */
+    private logMetric(entry: any): void {
+        if (!this.logPath) return;
+
+        try {
+            const line = JSON.stringify(entry) + '\n';
+            fs.appendFileSync(this.logPath, line);
+        } catch (err) {
+            // Fail silently to avoid breaking the pool
+            console.warn('ExecPool: Failed to log metric:', err);
+        }
     }
 }
 

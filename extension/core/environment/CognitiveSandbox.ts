@@ -23,6 +23,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import { promises as fsp } from 'fs';
+import { ExecPool } from '../../kernel/ExecPool';
 
 export class CognitiveSandbox {
     /**
@@ -216,7 +217,8 @@ export class CognitiveSandbox {
     static async executeScript(
         workspaceRoot: string, 
         filename: string, 
-        args: string[] = []
+        args: string[] = [],
+        execPool?: ExecPool
     ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
         const sandboxDir = this.getPath(workspaceRoot);
         const scriptPath = path.join(sandboxDir, filename);
@@ -225,27 +227,25 @@ export class CognitiveSandbox {
             throw new Error(`Script not found in sandbox: ${filename}`);
         }
         
-        const { exec } = require('child_process');
-        const util = require('util');
-        const execAsync = util.promisify(exec);
+        const pool = execPool || new ExecPool(2, 30000); // 30s timeout for sandbox scripts
         
         try {
             const command = `node "${scriptPath}" ${args.join(' ')}`;
-            const { stdout, stderr } = await execAsync(command, {
+            const result = await pool.run(command, {
                 cwd: workspaceRoot,
-                maxBuffer: 10 * 1024 * 1024 // 10MB
+                timeout: 30000 // 30s for sandbox scripts
             });
             
             return {
-                stdout: stdout || '',
-                stderr: stderr || '',
+                stdout: result.stdout || '',
+                stderr: result.stderr || '',
                 exitCode: 0
             };
         } catch (error: any) {
             return {
-                stdout: error.stdout || '',
-                stderr: error.stderr || '',
-                exitCode: error.code || 1
+                stdout: '',
+                stderr: error.message || 'Execution failed',
+                exitCode: 1
             };
         }
     }

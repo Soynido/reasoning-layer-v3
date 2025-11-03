@@ -1,0 +1,20 @@
+---
+description: [RL3] Stabilisation du contrat de persistance via manifest versionné
+globs: **/*.ts, **/*.md
+alwaysApply: false
+manual: false
+---
+
+# Stabilisation du contrat de persistance via manifest versionné
+
+**Identifiant**: 3ad08407-051f-4786-8557-8af87f40481c
+
+## Contexte
+- Le développeur a itéré 33 fois sur PersistenceManager et 11 fois sur ManifestGenerator. L'intention implicite était de garantir la cohérence des données capturées.
+
+## Décision
+- Le choix fait: implémenter un moteur de persistance local-first avec manifest versionné et schéma Zod pour validation. Cette décision visait à éviter la corruption de données et faciliter le debugging.
+
+## Conséquences
+- Impact observable: architecture locale sans dépendance serveur, validation systématique des événements, manifest toujours en cohérence avec les traces.
+

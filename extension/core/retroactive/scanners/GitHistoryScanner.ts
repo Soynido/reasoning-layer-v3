@@ -1,8 +1,5 @@
 import * as vscode from 'vscode';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { ExecPool } from '../../../kernel/ExecPool';
 
 export interface GitCommit {
     hash: string;
@@ -21,7 +18,15 @@ export interface ScanConfig {
 }
 
 export class GitHistoryScanner {
-    constructor(private workspaceRoot: string, private config: ScanConfig) {}
+    private execPool: ExecPool;
+    
+    constructor(
+        private workspaceRoot: string,
+        private config: ScanConfig,
+        execPool?: ExecPool
+    ) {
+        this.execPool = execPool || new ExecPool(2, 2000); // Default pool
+    }
 
     /**
      * Scan Git history and extract commits
@@ -35,8 +40,8 @@ export class GitHistoryScanner {
             },
             async () => {
                 const command = this.buildGitCommand();
-                const { stdout } = await execAsync(command, { cwd: this.workspaceRoot });
-                return stdout;
+                const result = await this.execPool.run(command, { cwd: this.workspaceRoot });
+                return result.stdout;
             }
         );
 
@@ -94,10 +99,11 @@ export class GitHistoryScanner {
      */
     private async getCommitFiles(hash: string): Promise<{ filePaths: string[]; insertions: number; deletions: number }> {
         try {
-            const { stdout } = await execAsync(
+            const result = await this.execPool.run(
                 `git show --stat --format="" ${hash}`,
                 { cwd: this.workspaceRoot }
             );
+            const stdout = result.stdout;
 
             let insertions = 0;
             let deletions = 0;

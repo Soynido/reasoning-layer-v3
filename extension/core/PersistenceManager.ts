@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { CaptureEvent, ProjectManifest, SerializableData } from './types';
 import { UnifiedLogger } from './UnifiedLogger';
+import { AppendOnlyWriter } from '../kernel/AppendOnlyWriter';
 
 export class PersistenceManager {
     private workspaceRoot: string;
@@ -10,8 +11,10 @@ export class PersistenceManager {
     private autoSaveInterval: NodeJS.Timeout | null = null;
     private manifest!: ProjectManifest;
     private tracesPath!: string;
+    private appendWriter: AppendOnlyWriter | null = null;
+    private useAppendOnly: boolean = false;
 
-    constructor(workspaceRoot?: string) {
+    constructor(workspaceRoot?: string, useAppendOnly: boolean = false) {
         // ⊘ ROBUST: Use fallback if workspaceRoot undefined (following user's recommendation)
         if (!workspaceRoot) {
             const fallback = process.cwd();
@@ -21,6 +24,7 @@ export class PersistenceManager {
             this.workspaceRoot = workspaceRoot;
         }
         this.logger = UnifiedLogger.getInstance();
+        this.useAppendOnly = useAppendOnly;
         this.initialize();
     }
 
@@ -73,7 +77,18 @@ export class PersistenceManager {
         this.logger.log(`📁 Workspace: ${this.workspaceRoot}`);
         this.logger.log('✅ === PERSISTENCE MANAGER READY ===');
         
-        this.logWithEmoji('✅', 'PersistenceManager initialized');
+        // Initialize AppendOnlyWriter if enabled (RL4 mode)
+        if (this.useAppendOnly) {
+            const tracesPath = path.join(this.workspaceRoot, '.reasoning_rl4', 'traces', 'events.jsonl');
+            const tracesDir = path.dirname(tracesPath);
+            if (!fs.existsSync(tracesDir)) {
+                fs.mkdirSync(tracesDir, { recursive: true });
+            }
+            this.appendWriter = new AppendOnlyWriter(tracesPath, 50 * 1024 * 1024); // 50MB rotation
+            this.logWithEmoji('✅', 'PersistenceManager initialized (RL4 mode: append-only JSONL)');
+        } else {
+            this.logWithEmoji('✅', 'PersistenceManager initialized (RL3 mode: array JSON)');
+        }
     }
 
     // Copied from V2 - Logging with emojis
@@ -91,8 +106,20 @@ export class PersistenceManager {
         this.logger.log(message);
     }
 
-    // NEW - Rotation by date
-    public saveEvent(event: CaptureEvent): void {
+    // NEW - Rotation by date (RL4: append-only JSONL, RL3: array JSON)
+    public async saveEvent(event: CaptureEvent): Promise<void> {
+        // RL4 Mode: Append-only JSONL (O(1))
+        if (this.useAppendOnly && this.appendWriter) {
+            await this.appendWriter.append(event);
+            
+            this.manifest.totalEvents++;
+            this.manifest.lastCaptureAt = new Date().toISOString();
+            
+            this.logWithEmoji('💾', `Event saved (RL4): ${event.type} - ${event.source}`);
+            return;
+        }
+        
+        // RL3 Legacy Mode: Array rewrite (O(n))
         const dateKey = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
         const tracesDir = path.join(this.workspaceRoot, '.reasoning', 'traces');
         const traceFile = path.join(tracesDir, `${dateKey}.json`);
@@ -108,7 +135,7 @@ export class PersistenceManager {
         this.manifest.totalEvents++;
         this.manifest.lastCaptureAt = new Date().toISOString();
 
-        this.logWithEmoji('💾', `Event saved: ${event.type} - ${event.source}`);
+        this.logWithEmoji('💾', `Event saved (RL3): ${event.type} - ${event.source}`);
     }
 
     public loadEvents(date?: string): CaptureEvent[] {

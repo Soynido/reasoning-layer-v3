@@ -1,12 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { CaptureEvent } from '../types';
 import { UnifiedLogger } from '../UnifiedLogger';
-
-const execAsync = promisify(exec);
+import { ExecPool } from '../../kernel/ExecPool';
+import { AppendOnlyWriter } from '../../kernel/AppendOnlyWriter';
 
 /**
  * GitCommitListener - Input Layer Component
@@ -26,11 +24,15 @@ export class GitCommitListener {
     private logger: UnifiedLogger;
     private isWatching: boolean = false;
     private lastCommitHash: string = '';
+    private execPool: ExecPool;
+    private appendWriter: AppendOnlyWriter | null = null;
 
-    constructor(workspaceRoot: string) {
+    constructor(workspaceRoot: string, execPool?: ExecPool, appendWriter?: AppendOnlyWriter) {
         this.workspaceRoot = workspaceRoot;
         this.gitDir = path.join(workspaceRoot, '.git');
         this.logger = UnifiedLogger.getInstance();
+        this.execPool = execPool || new ExecPool(2, 2000); // Default pool
+        this.appendWriter = appendWriter || null; // Optional append-only writer (RL4 mode)
     }
 
     /**
@@ -60,8 +62,8 @@ export class GitCommitListener {
 
         // Get current HEAD to avoid re-processing on start
         try {
-            const { stdout } = await execAsync('git rev-parse HEAD', { cwd: this.workspaceRoot });
-            this.lastCommitHash = stdout.trim();
+            const result = await this.execPool.run('git rev-parse HEAD', { cwd: this.workspaceRoot });
+            this.lastCommitHash = result.stdout.trim();
         } catch (error) {
             // No commits yet, that's ok
             this.lastCommitHash = '';
@@ -139,8 +141,8 @@ exit 0
             }
 
             // Also check HEAD directly
-            const { stdout } = await execAsync('git rev-parse HEAD', { cwd: this.workspaceRoot });
-            const currentHash = stdout.trim();
+            const result = await this.execPool.run('git rev-parse HEAD', { cwd: this.workspaceRoot });
+            const currentHash = result.stdout.trim();
 
             if (currentHash && currentHash !== this.lastCommitHash) {
                 this.lastCommitHash = currentHash;
@@ -194,39 +196,39 @@ exit 0
 
         try {
             // Get commit message
-            const { stdout: message } = await execAsync(
+            const messageResult = await this.execPool.run(
                 `git log -1 --pretty=format:%s ${commitHash}`,
                 { cwd: this.workspaceRoot }
             );
-            context.message = message.trim();
+            context.message = messageResult.stdout.trim();
 
             // Get author
-            const { stdout: author } = await execAsync(
+            const authorResult = await this.execPool.run(
                 `git log -1 --pretty=format:%an ${commitHash}`,
                 { cwd: this.workspaceRoot }
             );
-            context.author = author.trim();
+            context.author = authorResult.stdout.trim();
 
             // Get timestamp
-            const { stdout: timestamp } = await execAsync(
+            const timestampResult = await this.execPool.run(
                 `git log -1 --pretty=format:%aI ${commitHash}`,
                 { cwd: this.workspaceRoot }
             );
-            context.timestamp = timestamp.trim();
+            context.timestamp = timestampResult.stdout.trim();
 
             // Get files changed
-            const { stdout: files } = await execAsync(
+            const filesResult = await this.execPool.run(
                 `git diff-tree --no-commit-id --name-only -r ${commitHash}`,
                 { cwd: this.workspaceRoot }
             );
-            context.filesChanged = files.trim().split('\n').filter(f => f);
+            context.filesChanged = filesResult.stdout.trim().split('\n').filter(f => f);
 
             // Get stats (insertions/deletions)
-            const { stdout: stats } = await execAsync(
+            const statsResult = await this.execPool.run(
                 `git show --stat --format="" ${commitHash}`,
                 { cwd: this.workspaceRoot }
             );
-            const statMatch = stats.match(/(\d+) insertion.*?(\d+) deletion/);
+            const statMatch = statsResult.stdout.match(/(\d+) insertion.*?(\d+) deletion/);
             if (statMatch) {
                 context.insertions = parseInt(statMatch[1]) || 0;
                 context.deletions = parseInt(statMatch[2]) || 0;
@@ -332,9 +334,17 @@ exit 0
     }
 
     /**
-     * Save event to traces
+     * Save event to traces (RL4: append-only JSONL, RL3: array JSON)
      */
     private async saveToTraces(event: CaptureEvent): Promise<void> {
+        // RL4 Mode: Append-only JSONL (O(1))
+        if (this.appendWriter) {
+            await this.appendWriter.append(event);
+            this.logger.log(`💾 Event saved (RL4 append-only): ${event.type}`);
+            return;
+        }
+        
+        // RL3 Legacy Mode: Array rewrite (O(n))
         const reasoningDir = path.join(this.workspaceRoot, '.reasoning');
         const tracesDir = path.join(reasoningDir, 'traces');
         
@@ -363,6 +373,7 @@ exit 0
 
         // Save
         fs.writeFileSync(traceFile, JSON.stringify(events, null, 2));
+        this.logger.log(`💾 Event saved (RL3 array): ${event.type}`);
 
         // Update manifest
         await this.updateManifest();
@@ -391,12 +402,12 @@ exit 0
      */
     public async getRecentCommits(count: number = 10): Promise<CommitContext[]> {
         try {
-            const { stdout } = await execAsync(
+            const result = await this.execPool.run(
                 `git log -${count} --pretty=format:%H`,
                 { cwd: this.workspaceRoot }
             );
             
-            const hashes = stdout.trim().split('\n');
+            const hashes = result.stdout.trim().split('\n');
             const commits: CommitContext[] = [];
 
             for (const hash of hashes) {

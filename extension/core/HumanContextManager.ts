@@ -10,10 +10,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { ExecPool } from '../kernel/ExecPool';
 
 export interface Contributor {
     name: string;
@@ -45,10 +42,12 @@ export class HumanContextManager {
     private workspaceRoot: string;
     private contributors: Map<string, Contributor> = new Map();
     private log?: (msg: string) => void;
+    private execPool: ExecPool;
 
-    constructor(workspaceRoot: string, logFn?: (msg: string) => void) {
+    constructor(workspaceRoot: string, logFn?: (msg: string) => void, execPool?: ExecPool) {
         this.workspaceRoot = workspaceRoot;
         this.log = logFn;
+        this.execPool = execPool || new ExecPool(2, 2000);
     }
 
     /**
@@ -58,10 +57,11 @@ export class HumanContextManager {
         try {
             this.log?.('👥 Extracting contributors from Git history...');
             
-            const { stdout } = await execAsync(
+            const result = await this.execPool.run(
                 'git log --pretty=format:"%an|%ae|%aI" --name-only',
                 { cwd: this.workspaceRoot }
             );
+            const stdout = result.stdout;
 
             const lines = stdout.split('\n');
             const contributorMap = new Map<string, Contributor>();

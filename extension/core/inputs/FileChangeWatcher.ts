@@ -4,6 +4,7 @@ import * as chokidar from 'chokidar';
 import { v4 as uuidv4 } from 'uuid';
 import { CaptureEvent } from '../types';
 import { UnifiedLogger } from '../UnifiedLogger';
+import { AppendOnlyWriter } from '../../kernel/AppendOnlyWriter';
 
 /**
  * FileChangeWatcher - Input Layer Component (Phase 2)
@@ -25,10 +26,12 @@ export class FileChangeWatcher {
     private isWatching: boolean = false;
     private changeBuffer: Map<string, FileChange> = new Map();
     private burstTimeout: NodeJS.Timeout | null = null;
+    private appendWriter: AppendOnlyWriter | null = null;
 
-    constructor(workspaceRoot: string) {
+    constructor(workspaceRoot: string, appendWriter?: AppendOnlyWriter) {
         this.workspaceRoot = workspaceRoot;
         this.logger = UnifiedLogger.getInstance();
+        this.appendWriter = appendWriter || null; // Optional append-only writer (RL4 mode)
     }
 
     /**
@@ -371,9 +374,17 @@ export class FileChangeWatcher {
     }
 
     /**
-     * Save event to traces
+     * Save event to traces (RL4: append-only JSONL, RL3: array JSON)
      */
     private async saveToTraces(event: CaptureEvent): Promise<void> {
+        // RL4 Mode: Append-only JSONL (O(1))
+        if (this.appendWriter) {
+            await this.appendWriter.append(event);
+            this.logger.log(`💾 Event saved (RL4 append-only): ${event.type}`);
+            return;
+        }
+        
+        // RL3 Legacy Mode: Array rewrite (O(n))
         const reasoningDir = path.join(this.workspaceRoot, '.reasoning');
         const tracesDir = path.join(reasoningDir, 'traces');
 
@@ -402,6 +413,7 @@ export class FileChangeWatcher {
 
         // Save
         fs.writeFileSync(traceFile, JSON.stringify(events, null, 2));
+        this.logger.log(`💾 Event saved (RL3 array): ${event.type}`);
 
         // Update manifest
         await this.updateManifest();

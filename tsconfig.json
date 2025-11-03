@@ -9,8 +9,13 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@kernel/*": ["extension/kernel/*"],
+      "@kernel/adapters/*": ["extension/kernel/adapters/*"]
+    }
   },
-  "include": ["extension/**/*"],
+  "include": ["extension/**/*", "tests/**/*", "bench/**/*"],
   "exclude": ["node_modules", "out", "extension/webview/ui"]
 }

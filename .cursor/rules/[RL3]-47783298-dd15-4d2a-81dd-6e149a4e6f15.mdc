@@ -1,0 +1,20 @@
+---
+description: [RL3] Major refactor of FileChangeWatcher
+globs: **/*.ts, **/*.md
+alwaysApply: false
+manual: false
+---
+
+# Major refactor of FileChangeWatcher
+
+**Identifiant**: 47783298-dd15-4d2a-81dd-6e149a4e6f15
+
+## Contexte
+- 11 modifications detected across 11 files in Intensive development in .. The developer chose to refactor rather than add patches.
+
+## Décision
+- The choice made: refactor rather than add workarounds. This decision aimed to improve long-term maintainability.
+
+## Conséquences
+- Observable impact: cleaner code, clearer architecture, but risk of short-term breaking changes.
+

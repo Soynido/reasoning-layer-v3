@@ -1,0 +1,20 @@
+---
+description: [RL3] Major refactor of git:89a7e45f5abf0c8d115ec4c195f7a8600839a641
+globs: **/*.ts, **/*.md
+alwaysApply: false
+manual: false
+---
+
+# Major refactor of git:89a7e45f5abf0c8d115ec4c195f7a8600839a641
+
+**Identifiant**: 805d2583-52b3-4851-873e-34e60d34e4b6
+
+## Contexte
+- 212 modifications detected across 212 files in Intensive development in .. The developer chose to refactor rather than add patches.
+
+## Décision
+- The choice made: refactor rather than add workarounds. This decision aimed to improve long-term maintainability.
+
+## Conséquences
+- Observable impact: cleaner code, clearer architecture, but risk of short-term breaking changes.
+

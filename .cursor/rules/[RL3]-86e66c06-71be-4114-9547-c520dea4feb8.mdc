@@ -1,0 +1,20 @@
+---
+description: [RL3] Auto-ADR: Dependency decision (13ad65b)
+globs: **/*.ts, **/*.md
+alwaysApply: false
+manual: false
+---
+
+# Auto-ADR: Dependency decision (13ad65b)
+
+**Identifiant**: 86e66c06-71be-4114-9547-c520dea4feb8
+
+## Contexte
+- Detected dependency update with 5 file changes. The project structure shows modifications to package management and dependency files.
+
+## Décision
+- Updated package dependencies to improve security, reduce version conflicts, and modernize the dependency stack.
+
+## Conséquences
+- Reduced security vulnerabilities; improved dependency tree; potential API incompatibilities require testing.
+
