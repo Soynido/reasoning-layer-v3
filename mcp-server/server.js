@@ -110,6 +110,35 @@ app.get("/status", (req, res) => {
 });
 
 /**
+ * MCP Manifest
+ */
+app.get("/.well-known/mcp/rl4.json", (req, res) => {
+    res.json({
+        name: "RL4 Kernel MCP",
+        description: "Read-only access to Reasoning Layer 4 cognitive state",
+        version: "1.0.0",
+        endpoints: {
+            health: "http://localhost:4010/health",
+            status: "http://localhost:4010/status",
+            query: "http://localhost:4010/query?q=",
+            state: "http://localhost:4010/state",
+            feedback: "http://localhost:4010/feedback"
+        },
+        permissions: {
+            read: true,
+            write: false,
+            execute: false
+        },
+        capabilities: [
+            "query_adrs",
+            "read_cognitive_state",
+            "read_feedback_metrics",
+            "read_kernel_status"
+        ]
+    });
+});
+
+/**
  * Health check
  */
 app.get("/health", (req, res) => {
