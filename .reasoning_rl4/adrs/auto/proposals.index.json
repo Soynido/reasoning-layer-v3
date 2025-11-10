@@ -1,0 +1,37 @@
+{
+  "generated_at": "2025-11-10T13:07:06.113Z",
+  "total_proposals": 3,
+  "pending": [
+    "adr-proposed-1762780026113-ka1odq",
+    "adr-proposed-1762780026113-p5df8",
+    "adr-proposed-1762780026113-m94trg"
+  ],
+  "accepted": [],
+  "rejected": [],
+  "proposals": [
+    {
+      "id": "adr-proposed-1762780026113-ka1odq",
+      "title": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "confidence": 0.6,
+      "status": "pending",
+      "forecast_source": "fc-1762780026112-k8odftz9m",
+      "proposedAt": "2025-11-10T13:07:06.113Z"
+    },
+    {
+      "id": "adr-proposed-1762780026113-p5df8",
+      "title": "Review and document: High frequency of fix commits (27 fixes) suggests areas requiring stability improvements",
+      "confidence": 0.62,
+      "status": "pending",
+      "forecast_source": "fc-1762780026112-evrhdbfzf",
+      "proposedAt": "2025-11-10T13:07:06.113Z"
+    },
+    {
+      "id": "adr-proposed-1762780026113-m94trg",
+      "title": "Review and document: Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "confidence": 0.62,
+      "status": "pending",
+      "forecast_source": "fc-1762780026112-6mo9exvyw",
+      "proposedAt": "2025-11-10T13:07:06.113Z"
+    }
+  ]
+}

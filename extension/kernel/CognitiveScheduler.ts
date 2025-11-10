@@ -16,8 +16,10 @@ import { TimerRegistry } from './TimerRegistry';
 import { RBOMLedger, setGlobalLedger } from './RBOMLedger';
 import { PatternLearningEngine } from './cognitive/PatternLearningEngine';
 import { CorrelationEngine } from './cognitive/CorrelationEngine';
-import { ForecastEngine } from './cognitive/ForecastEngine';
+import { ForecastEngine, ForecastMetrics } from './cognitive/ForecastEngine';
 import { ADRGeneratorV2 } from './cognitive/ADRGeneratorV2';
+import { KernelBootstrap } from './KernelBootstrap';
+import { FeedbackEvaluator } from './cognitive/FeedbackEvaluator';
 import * as crypto from 'crypto';
 
 export interface CycleResult {
@@ -49,14 +51,26 @@ export class CognitiveScheduler {
     private logger: any = null; // OutputChannel for logging
     private workspaceRoot: string; // Workspace root for engines
     
+    // Phase E1: Persistent ForecastEngine with adaptive baseline
+    private forecastEngine: ForecastEngine;
+    // Phase E2.2: Real metrics evaluator
+    private feedbackEvaluator: FeedbackEvaluator;
+    
     constructor(
         workspaceRoot: string,
         private timerRegistry: TimerRegistry,
-        logger?: any
+        logger?: any,
+        bootstrapMetrics?: ForecastMetrics
     ) {
         this.workspaceRoot = workspaceRoot;
         this.ledger = new RBOMLedger(workspaceRoot);
         this.logger = logger;
+        
+        // Initialize persistent ForecastEngine with bootstrap metrics
+        this.forecastEngine = new ForecastEngine(workspaceRoot, bootstrapMetrics);
+        // Initialize FeedbackEvaluator for real metrics
+        this.feedbackEvaluator = new FeedbackEvaluator(workspaceRoot);
+        
         // Expose to globalThis for VS Code commands
         setGlobalLedger(this.ledger);
     }
@@ -205,16 +219,19 @@ export class CognitiveScheduler {
             
             // Phase 2: Correlation
             result.phases.push(await this.runPhase('correlation', async () => {
+                this.log(`[DEBUG] Starting CorrelationEngine.analyze()...`);
                 const engine = new CorrelationEngine(this.workspaceRoot);
                 const correlations = await engine.analyze();
                 this.log(`🔗 Correlation: ${correlations.length} correlations found`);
+                if (correlations.length === 0) {
+                    this.log(`⚠️ [DEBUG] No correlations generated - check traces/ directory`);
+                }
                 return { correlationsFound: correlations.length, correlations };
             }));
             
-            // Phase 3: Forecasting
+            // Phase 3: Forecasting (using persistent engine with adaptive baseline)
             result.phases.push(await this.runPhase('forecasting', async () => {
-                const engine = new ForecastEngine(this.workspaceRoot);
-                const forecasts = await engine.generate();
+                const forecasts = await this.forecastEngine.generate();
                 this.log(`🔮 Forecasting: ${forecasts.length} forecasts generated`);
                 return { forecastsGenerated: forecasts.length, forecasts };
             }));
@@ -244,6 +261,21 @@ export class CognitiveScheduler {
         // Aggregate cycle summary and append to cycles.jsonl (CycleAggregator)
         await this.aggregateAndPersistCycle(result);
         this.log(`✅ Cycle #${result.cycleId} completed in ${result.duration}ms`);
+        
+        // Phase E2.2: Real feedback loop every 100 cycles
+        if (result.cycleId % 100 === 0) {
+            await this.applyFeedbackLoop(result.cycleId);
+            
+            // Log checkpoint summary
+            this.log('');
+            this.log('═══════════════════════════════════════');
+            this.log(`🔍 Checkpoint: Cycle ${result.cycleId}`);
+            this.log(`📊 Baseline: ${this.forecastEngine.metrics.forecast_precision.toFixed(3)}`);
+            this.log(`📈 Improvement: ${this.forecastEngine.metrics.improvement_rate >= 0 ? '+' : ''}${this.forecastEngine.metrics.improvement_rate.toFixed(4)}`);
+            this.log(`📦 Total Evals: ${this.forecastEngine.metrics.total_forecasts}`);
+            this.log('═══════════════════════════════════════');
+            this.log('');
+        }
         
         return result;
     }
@@ -363,6 +395,65 @@ export class CognitiveScheduler {
                      0;
         
         return { hash, count };
+    }
+
+    /**
+     * Phase E2.2: Apply feedback loop with REAL metrics
+     * 
+     * Computes actual feedback from system performance:
+     * - Forecast accuracy (predictions vs. reality)
+     * - Pattern stability (variance over cycles)
+     * - ADR adoption rate (unique vs. duplicate decisions)
+     * - Cycle efficiency (latency)
+     * 
+     * @param cycleId - Current cycle ID
+     */
+    private async applyFeedbackLoop(cycleId: number): Promise<void> {
+        this.log(`🔁 [Phase E2.2] Applying real feedback loop at cycle ${cycleId}`);
+        
+        try {
+            // E2.2: Compute real metrics from FeedbackEvaluator
+            const metrics = await this.feedbackEvaluator.computeComprehensiveFeedback();
+            
+            // Log detailed breakdown
+            this.log(`📊 [E2.2] Real metrics computed:`);
+            this.log(`   • Forecast Accuracy:  ${(metrics.forecast_accuracy * 100).toFixed(1)}%`);
+            this.log(`   • Pattern Stability:  ${(metrics.pattern_stability * 100).toFixed(1)}%`);
+            this.log(`   • ADR Adoption Rate:  ${(metrics.adr_adoption_rate * 100).toFixed(1)}%`);
+            this.log(`   • Cycle Efficiency:   ${(metrics.cycle_efficiency * 100).toFixed(1)}%`);
+            
+            // Use forecast accuracy as primary feedback signal
+            const realFeedback = metrics.forecast_accuracy;
+            
+            // Update baseline with real feedback
+            const prevPrecision = this.forecastEngine.metrics.forecast_precision;
+            this.forecastEngine.updateBaseline(realFeedback);
+            const newPrecision = this.forecastEngine.metrics.forecast_precision;
+            
+            // Persist updated metrics + full evaluation
+            const updatedMetrics = this.forecastEngine.getMetrics();
+            await KernelBootstrap.saveState(
+                {
+                    version: '2.0.6',
+                    cycle: cycleId,
+                    updated_at: new Date().toISOString(),
+                    forecast_metrics: updatedMetrics,
+                    evaluation_metrics: metrics,
+                    feedback_history: {
+                        prev_precision: prevPrecision,
+                        new_precision: newPrecision,
+                        delta: newPrecision - prevPrecision,
+                        feedback_used: realFeedback
+                    }
+                },
+                this.workspaceRoot
+            );
+            
+            this.log(`💾 [E2.2] Real metrics persisted: precision ${newPrecision.toFixed(3)} (feedback: ${realFeedback.toFixed(3)})`);
+            
+        } catch (error) {
+            this.log(`❌ [E2.2] Feedback loop failed: ${error}`);
+        }
     }
 }
 

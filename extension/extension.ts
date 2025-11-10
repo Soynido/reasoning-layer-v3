@@ -13,6 +13,7 @@ import { loadKernelConfig } from './kernel/config';
 import { GitCommitListener } from './kernel/inputs/GitCommitListener';
 import { FileChangeWatcher } from './kernel/inputs/FileChangeWatcher';
 import { AppendOnlyWriter } from './kernel/AppendOnlyWriter';
+import { KernelBootstrap } from './kernel/KernelBootstrap';
 import * as path from 'path';
 
 // Output Channel
@@ -63,7 +64,12 @@ export async function activate(context: vscode.ExtensionContext) {
         const timerRegistry = new TimerRegistry();
         const stateRegistry = new StateRegistry(workspaceRoot);
         const healthMonitor = new HealthMonitor(workspaceRoot, timerRegistry);
-        const scheduler = new CognitiveScheduler(workspaceRoot, timerRegistry, outputChannel);
+        
+        // Load bootstrap artifacts first (for ForecastEngine metrics)
+        const bootstrap = KernelBootstrap.initialize(workspaceRoot);
+        const forecastMetrics = bootstrap.metrics;
+        
+        const scheduler = new CognitiveScheduler(workspaceRoot, timerRegistry, outputChannel, forecastMetrics);
         const execPool = new ExecPool(2, 2000, workspaceRoot);
         const api = new KernelAPI(
             timerRegistry,
@@ -84,6 +90,24 @@ export async function activate(context: vscode.ExtensionContext) {
         };
         
         logWithTime('✅ RL4 Kernel components created');
+        
+        // Bootstrap already loaded above (before scheduler creation)
+        if (bootstrap.initialized) {
+            logWithTime(`✅ Bootstrap complete: ${bootstrap.universals ? Object.keys(bootstrap.universals).length : 0} universals loaded`);
+            
+            // Load state into StateRegistry if available
+            if (bootstrap.state) {
+                // StateRegistry can be extended to accept loaded state
+                logWithTime('📦 Kernel state restored from artifacts');
+            }
+            
+            // Log forecast baseline (now integrated into ForecastEngine)
+            if (bootstrap.metrics?.forecast_precision) {
+                logWithTime(`📊 Forecast precision baseline: ${bootstrap.metrics.forecast_precision.toFixed(3)} (Phase E1 active)`);
+            }
+        } else {
+            logWithTime('⚠️  No kernel artifacts found, starting with default baseline (0.73)');
+        }
         
         // Start health monitoring
         if (kernelConfig.USE_HEALTH_MONITOR) {

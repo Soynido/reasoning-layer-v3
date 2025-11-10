@@ -1,7 +1,7 @@
 # TASKS — RL4 Kernel Only
 
-**Last Update** : 2025-11-03 19:46  
-**Version** : RL4 Kernel v2.0.3  
+**Last Update** : 2025-11-10 12:00  
+**Version** : RL4 Kernel v2.0.4 (Phase E1 Complete)  
 **Scope** : RL4 uniquement (séparé de RL3)
 
 ---
@@ -243,33 +243,119 @@
 
 ---
 
-## 🎯 Current Focus (2025-11-03 19:46)
+---
+
+## 🔄 Phase E1 : Feedback Loop & Adaptive Baseline ✅ **COMPLETE**
+
+**Duration** : 2025-11-10 (1 jour)  
+**Status** : ✅ **COMPLETE — v2.0.4**
+
+### Bootstrap System
+- [x] KernelBootstrap module (149 lines)
+- [x] Artifact compression (.json.gz, 55.5% ratio)
+- [x] 5 universal patterns pre-loaded
+- [x] Generator script (`generate-kernel-artifacts.ts`)
+- [x] Integration into extension.ts
+
+### Adaptive Baseline
+- [x] ForecastMetrics interface (9 fields)
+- [x] `updateBaseline()` method with EMA (α=0.1)
+- [x] Feedback loop every 100 cycles
+- [x] Persistent ForecastEngine across cycles
+- [x] Auto-save state after feedback
+
+### Fail-safes (Phase E2 prep)
+- [x] Lock-file mechanism for atomic writes
+- [x] Temp file + atomic rename (POSIX)
+- [x] Stale lock detection (5s timeout)
+- [x] Cleanup on error
+
+### Documentation
+- [x] CHANGELOG.md (v2.0.4)
+- [x] PHASE_E1_COMPLETE.md (486 lines)
+- [x] E1_IMPLEMENTATION_SUMMARY.md (348 lines)
+- [x] README_E1.md (quick start guide)
+- [x] SESSION_COMPLETE_2025-11-10.md (583 lines)
+
+**Métriques** :
+- Cycles analyzed : 4,312
+- Pattern Stability : 100%
+- Cycle Efficiency : 100%
+- Composite Feedback : 70% (baseline 73%)
+
+---
+
+## 🔄 Phase E2 : Real Metrics Integration 🔄 **IN PROGRESS**
+
+**Duration** : 2025-11-10 → TBD (estimated 1-2 weeks)  
+**Status** : 🔄 **IN PROGRESS**
+
+### FeedbackEvaluator Module ✅ **COMPLETE**
+- [x] `FeedbackEvaluator.ts` created (306 lines)
+- [x] `computeForecastAccuracy()` — Compare forecasts vs. ADRs
+- [x] `computePatternStability()` — Measure longevity
+- [x] `computeADRAdoptionRate()` — Detect duplicate decisions
+- [x] `computeCycleEfficiency()` — Latency tracking
+- [x] `computeComprehensiveFeedback()` — Weighted composite
+
+### Metrics Extraction ✅ **COMPLETE**
+- [x] `extract-feedback-metrics.ts` created (201 lines)
+- [x] Analyze cycles.jsonl (4,312 cycles)
+- [x] Analyze forecasts.json (0 forecasts currently)
+- [x] Analyze ADRs (0 ADRs currently)
+- [x] Generate feedback_report.json
+- [x] Validation: Script functional ✅
+
+### Next Steps (Phase E2)
+- [ ] Integrate FeedbackEvaluator into applyFeedbackLoop()
+- [ ] Replace simulated feedback with real metrics
+- [ ] Add forecast validation (predictions vs. reality)
+- [ ] Track ADR adoption manually (accepted/rejected tags)
+- [ ] Generate longitudinal charts (1,000+ cycles)
+- [ ] Calibrate α dynamically based on data variance
+
+### Expected Outputs
+- [ ] Real feedback_report.json updated every 100 cycles
+- [ ] Composite feedback > 75% (validation threshold)
+- [ ] Baseline drift < ±0.05 over 1,000 cycles
+- [ ] Precision trend > +0.05/1,000 cycles
+
+---
+
+## 🎯 Current Focus (2025-11-10 12:00)
 
 **Phases Completed** :
 - ✅ Phase 1 (Kernel) → **COMPLETE** (v2.0.2)
 - ✅ Phase 2 (Cognitive Engines) → **COMPLETE** (v2.0.3)
 - ✅ Phase 3 (Input Layer) → **COMPLETE + TESTED** (v2.0.3)
+- ✅ Phase E1 (Bootstrap + Feedback Loop) → **COMPLETE** (v2.0.4)
 
-**Next** : Phase 4 (Output Layer) — WebView Dashboard
+**Current** : Phase E2 (Real Metrics Integration) — 🔄 **IN PROGRESS**
 
 **Validation Complète** :
 ```bash
-✅ CognitiveScheduler : 922+ cycles générés
+✅ CognitiveScheduler : 4,312 cycles générés
 ✅ GitCommitListener : 5 commits capturés (metadata: 100%)
 ✅ FileChangeWatcher : 12 file changes capturés (pattern: 85%)
 ✅ Cognitive Engines : Pattern/Correlation/Forecast/ADR intégrés
 ✅ Merkle Chain : Intégrité cryptographique validée
 ✅ Zero-crash : Production-ready
+✅ Bootstrap System : 4 artifacts, 55.5% compression
+✅ Feedback Loop : EMA α=0.1, auto-persistence
+✅ FeedbackEvaluator : Real metrics computation functional
+✅ Fail-safes : Lock-file + atomic writes implemented
 ```
 
 **Immediate Action** :
 ```
-Phase 4: Créer WebView Dashboard (HTML/CSS/JS)
+Phase E2: Integrate FeedbackEvaluator into CognitiveScheduler
+Replace simulated feedback with real metrics
 ```
 
 **Files to Read** :
-- `CONTEXT_RL3_RL4.md` → Context navigation
-- `RL4_MIGRATION_PLAN.md` → Detailed migration steps
+- `README_E1.md` → Quick start guide for Phase E1
+- `PHASE_E1_COMPLETE.md` → Technical deep-dive
+- `E1_IMPLEMENTATION_SUMMARY.md` → Executive summary
 
 **Files to Ignore** :
 - `TASKS.md` → RL3 system (legacy, for reference only)

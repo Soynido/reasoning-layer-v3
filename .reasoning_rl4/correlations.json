@@ -1,0 +1,16 @@
+[
+  {
+    "id": "corr-1762780026094-x0sf7vh99",
+    "pattern_id": "pattern-kernel-evolution-1762780026092",
+    "event_id": "53c5867b-c889-4964-ab9f-094ea5391f02",
+    "correlation_score": 0.21,
+    "direction": "emerging",
+    "tags": [
+      "kernel",
+      "architecture",
+      "infrastructure"
+    ],
+    "impact": "Stability",
+    "timestamp": "2025-11-10T13:07:06.094Z"
+  }
+]
