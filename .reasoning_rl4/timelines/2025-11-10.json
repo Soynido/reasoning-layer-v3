@@ -1,0 +1,372 @@
+{
+  "date": "2025-11-10",
+  "generated_at": "2025-11-10T21:52:01.691Z",
+  "total_cycles": 2993,
+  "total_events": 20048,
+  "cognitive_load_avg": 0.583912037037037,
+  "hours": [
+    {
+      "hour": 0,
+      "timestamp": "2025-11-03T23:59:57.359Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 360,
+      "events_count": 0,
+      "cognitive_load": 1,
+      "files": []
+    },
+    {
+      "hour": 1,
+      "timestamp": "2025-11-04T00:59:58.573Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 360,
+      "events_count": 0,
+      "cognitive_load": 1,
+      "files": []
+    },
+    {
+      "hour": 2,
+      "timestamp": "2025-11-04T01:54:44.345Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 59,
+      "events_count": 0,
+      "cognitive_load": 0.1638888888888889,
+      "files": []
+    },
+    {
+      "hour": 3,
+      "timestamp": "2025-11-04T02:59:58.771Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 68,
+      "events_count": 0,
+      "cognitive_load": 0.18888888888888888,
+      "files": []
+    },
+    {
+      "hour": 4,
+      "timestamp": "2025-11-04T03:53:56.626Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 175,
+      "events_count": 0,
+      "cognitive_load": 0.4861111111111111,
+      "files": []
+    },
+    {
+      "hour": 5,
+      "timestamp": "2025-11-10T05:00:00Z",
+      "pattern": "",
+      "pattern_confidence": 0,
+      "forecast": "",
+      "forecast_confidence": 0,
+      "intent": "none",
+      "cycles_count": 0,
+      "events_count": 0,
+      "cognitive_load": 0,
+      "files": []
+    },
+    {
+      "hour": 6,
+      "timestamp": "2025-11-10T06:00:00Z",
+      "pattern": "",
+      "pattern_confidence": 0,
+      "forecast": "",
+      "forecast_confidence": 0,
+      "intent": "none",
+      "cycles_count": 0,
+      "events_count": 0,
+      "cognitive_load": 0,
+      "files": []
+    },
+    {
+      "hour": 7,
+      "timestamp": "2025-11-10T07:00:00Z",
+      "pattern": "",
+      "pattern_confidence": 0,
+      "forecast": "",
+      "forecast_confidence": 0,
+      "intent": "none",
+      "cycles_count": 0,
+      "events_count": 0,
+      "cognitive_load": 0,
+      "files": []
+    },
+    {
+      "hour": 8,
+      "timestamp": "2025-11-10T08:00:00Z",
+      "pattern": "",
+      "pattern_confidence": 0,
+      "forecast": "",
+      "forecast_confidence": 0,
+      "intent": "none",
+      "cycles_count": 0,
+      "events_count": 0,
+      "cognitive_load": 0,
+      "files": []
+    },
+    {
+      "hour": 9,
+      "timestamp": "2025-11-10T09:00:00Z",
+      "pattern": "",
+      "pattern_confidence": 0,
+      "forecast": "",
+      "forecast_confidence": 0,
+      "intent": "none",
+      "cycles_count": 0,
+      "events_count": 0,
+      "cognitive_load": 0,
+      "files": []
+    },
+    {
+      "hour": 10,
+      "timestamp": "2025-11-10T10:00:00Z",
+      "pattern": "",
+      "pattern_confidence": 0,
+      "forecast": "",
+      "forecast_confidence": 0,
+      "intent": "none",
+      "cycles_count": 0,
+      "events_count": 0,
+      "cognitive_load": 0,
+      "files": []
+    },
+    {
+      "hour": 11,
+      "timestamp": "2025-11-10T10:59:56.367Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 206,
+      "events_count": 0,
+      "cognitive_load": 0.5722222222222222,
+      "files": [
+        "extension/kernel/KernelBootstrap.ts",
+        "extension/kernel/index.ts",
+        "extension/extension.ts"
+      ]
+    },
+    {
+      "hour": 12,
+      "timestamp": "2025-11-10T11:23:36.573Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 350,
+      "events_count": 796,
+      "cognitive_load": 0.9722222222222222,
+      "files": [
+        "extension/kernel/KernelBootstrap.ts",
+        "extension/kernel/index.ts",
+        "extension/extension.ts"
+      ]
+    },
+    {
+      "hour": 13,
+      "timestamp": "2025-11-10T12:56:22.052Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "test",
+      "cycles_count": 296,
+      "events_count": 1184,
+      "cognitive_load": 0.8222222222222222,
+      "files": [
+        "extension/kernel/cognitive/CorrelationEngine.ts",
+        "reasoning-layer-rl4-2.0.6.vsix",
+        "rl4-backup-stable-v206-working-pipeline.tar.gz"
+      ]
+    },
+    {
+      "hour": 14,
+      "timestamp": "2025-11-10T13:59:54.517Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 356,
+      "events_count": 2828,
+      "cognitive_load": 0.9888888888888889,
+      "files": [
+        "extension/kernel/cognitive/CorrelationEngine.ts",
+        "reasoning-layer-rl4-2.0.6.vsix",
+        "rl4-backup-stable-v206-working-pipeline.tar.gz"
+      ]
+    },
+    {
+      "hour": 15,
+      "timestamp": "2025-11-10T14:51:35.816Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 163,
+      "events_count": 1304,
+      "cognitive_load": 0.4527777777777778,
+      "files": [
+        "reasoning-layer-rl4-2.0.6.vsix",
+        "INSTALL_v2.0.6_FIXES.md",
+        "RELOAD_CURSOR.txt"
+      ]
+    },
+    {
+      "hour": 16,
+      "timestamp": "2025-11-10T15:59:56.023Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 358,
+      "events_count": 2864,
+      "cognitive_load": 0.9944444444444445,
+      "files": [
+        "TASKS_RL4.md",
+        "E2_TOOLING_COMPLETE.md",
+        "extension/extension.ts"
+      ]
+    },
+    {
+      "hour": 17,
+      "timestamp": "2025-11-10T16:59:57.045Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 512,
+      "events_count": 2880,
+      "cognitive_load": 1,
+      "files": [
+        "PerplexityTest.md",
+        "WEBVIEW_DATA_READINESS.md",
+        "scripts/validate-webview-data.sh"
+      ]
+    },
+    {
+      "hour": 18,
+      "timestamp": "2025-11-10T17:59:55.023Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 494,
+      "events_count": 2720,
+      "cognitive_load": 1,
+      "files": [
+        "USER_JOURNEY_RL4.md",
+        "USER_JOURNEY_VISUAL.md"
+      ]
+    },
+    {
+      "hour": 19,
+      "timestamp": "2025-11-10T18:59:08.881Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 570,
+      "events_count": 1752,
+      "cognitive_load": 1,
+      "files": [
+        "WEBVIEW_SPEC_VALIDATION.md",
+        "extension/kernel/indexer/CacheIndex.ts",
+        "extension/kernel/CognitiveScheduler.ts"
+      ]
+    },
+    {
+      "hour": 20,
+      "timestamp": "2025-11-10T19:59:57.716Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 619,
+      "events_count": 2168,
+      "cognitive_load": 1,
+      "files": [
+        "WEBVIEW_SPEC_VALIDATION.md",
+        "extension/kernel/indexer/CacheIndex.ts",
+        "extension/kernel/CognitiveScheduler.ts"
+      ]
+    },
+    {
+      "hour": 21,
+      "timestamp": "2025-11-10T20:12:17.914Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 134,
+      "events_count": 592,
+      "cognitive_load": 0.37222222222222223,
+      "files": [
+        "WEBVIEW_SPEC_VALIDATION.md",
+        "extension/kernel/indexer/CacheIndex.ts",
+        "extension/kernel/CognitiveScheduler.ts"
+      ]
+    },
+    {
+      "hour": 22,
+      "timestamp": "2025-11-03T21:59:50.284Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 424,
+      "events_count": 960,
+      "cognitive_load": 1,
+      "files": [
+        "scripts/seed-git-history.ts",
+        "scripts/seed-git-history.sh",
+        "extension/kernel/cognitive/PatternLearningEngine.ts"
+      ]
+    },
+    {
+      "hour": 23,
+      "timestamp": "2025-11-03T22:59:51.334Z",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "pattern_confidence": 0.8625,
+      "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "forecast_confidence": 0.65,
+      "intent": "feature",
+      "cycles_count": 360,
+      "events_count": 0,
+      "cognitive_load": 1,
+      "files": []
+    }
+  ],
+  "top_pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+  "top_forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+  "dominant_intent": "feature",
+  "most_active_hour": 20
+}

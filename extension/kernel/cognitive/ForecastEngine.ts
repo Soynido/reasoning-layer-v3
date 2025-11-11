@@ -112,8 +112,9 @@ export class ForecastEngine {
         const sortedCorrelations = [...correlations].sort((a, b) => b.correlation_score - a.correlation_score);
 
         for (const correlation of sortedCorrelations) {
-            // OPTIMIZED: Lowered threshold from 0.75 to 0.65 for better diversity
-            if (correlation.correlation_score < 0.65) continue;
+            // Phase E2.5: Increased threshold from 0.65 to 0.70 to reduce false positives
+            // Previous ADR adoption rate: 7.7% → Target: 15%+
+            if (correlation.correlation_score < 0.70) continue;
 
             const pattern = patterns.find(p => p.id === correlation.pattern_id);
             if (!pattern) continue;
@@ -133,8 +134,8 @@ export class ForecastEngine {
             // Calculate confidence
             const confidence = this.calculateConfidence(pattern, correlation, signal);
 
-            // OPTIMIZED: Lowered threshold from 0.7 to 0.65 for better coverage
-            if (confidence >= 0.65) {
+            // Phase E2.5: Increased threshold from 0.65 to 0.70 for higher precision
+            if (confidence >= 0.70) {
                 const forecast = this.createForecast(pattern, correlation, signal, confidence);
                 forecasts.push(forecast);
                 categoryForecastCount.set(category, categoryCount + 1);
@@ -164,7 +165,8 @@ export class ForecastEngine {
                 }
                 
                 const signal = this.matchMarketSignal(pattern, marketSignals);
-                const confidence = Math.max(0.60, this.calculateConfidence(pattern, bestCorrelation, signal) * 0.9);
+                // Phase E2.5: Increased minimum confidence from 0.60 to 0.65 for fallback forecasts
+                const confidence = Math.max(0.65, this.calculateConfidence(pattern, bestCorrelation, signal) * 0.9);
                 
                 const forecast = this.createForecast(pattern, bestCorrelation, signal, confidence);
                 forecasts.push(forecast);

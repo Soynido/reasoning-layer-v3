@@ -1,0 +1,63 @@
+{
+  "goals": [
+    {
+      "id": "goal-webview-sync-2025-11-11",
+      "title": "Synchronize WebView with RL4 Kernel data",
+      "description": "Ensure WebView React app receives real-time cognitive snapshots from the kernel every 10 seconds via postMessage",
+      "status": "completed",
+      "priority": "high",
+      "created_at": "2025-11-11T09:00:00.000Z",
+      "completed_at": "2025-11-11T10:30:00.000Z",
+      "evidence": [
+        "SYNC_COMPLETE.md created",
+        "CognitiveSnapshot interface cleaned",
+        "Backend sends type: updateStore",
+        "Frontend listens and updates state"
+      ]
+    },
+    {
+      "id": "goal-data-stabilization-2025-11-11",
+      "title": "Stabilize backend data sources",
+      "description": "Ensure all RL4 data sources (patterns, forecasts, goals, ADRs, mental state) are reliable and complete",
+      "status": "in_progress",
+      "priority": "high",
+      "created_at": "2025-11-11T10:30:00.000Z",
+      "evidence": [
+        "patterns.json: 4 patterns (quality verified)",
+        "forecasts.json: 4 forecasts (format corrected)",
+        "correlations.json: 1 correlation",
+        "goals.json: created",
+        "mental_state.json: to be created"
+      ]
+    },
+    {
+      "id": "goal-ui-integration-2025-11-11",
+      "title": "Integrate RL4-WV React UI",
+      "description": "Replace minimal WebView app with full-featured React UI from RL4-WV workspace",
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-11-11T10:30:00.000Z",
+      "dependencies": [
+        "goal-data-stabilization-2025-11-11"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "goal-cognitive-pipeline-2025-11-10",
+      "title": "Complete cognitive reasoning pipeline (Layers 1-9)",
+      "description": "Run full pipeline from capture to synthesis to generate ADRs, patterns, and forecasts",
+      "status": "active",
+      "priority": "high",
+      "created_at": "2025-11-10T08:00:00.000Z",
+      "evidence": [
+        "Cycles: 8311 entries",
+        "Patterns: 4 detected",
+        "Forecasts: 4 generated",
+        "Layer 7 running automatically"
+      ]
+    }
+  ],
+  "generated_at": "2025-11-11T10:30:00.000Z",
+  "version": "1.0"
+}
+

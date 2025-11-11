@@ -1,0 +1,23 @@
+╔════════════════════════════════════════════════════════════════╗
+║            RL4 v2.0.6 Installé - Reload Required             ║
+╚════════════════════════════════════════════════════════════════╝
+
+✅ Extension installée avec succès !
+
+🔄 ACTION REQUISE : Recharger Cursor
+
+Appuie sur :  Cmd + Shift + P
+Tape :        "Reload Window"
+Ou :          Cmd + R
+
+Après le reload, l'extension RL4 v2.0.6 sera active avec :
+  ✅ ADR Deduplication (SHA256)
+  ✅ Confidence Thresholds (0.70)
+  ✅ Real Metrics Integration
+  ✅ Adaptive α Calibration
+
+📊 Pour vérifier que tout fonctionne :
+   bash scripts/monitor-validation.sh
+
+🎯 Prochain checkpoint : Cycle 300 (~15 minutes)
+

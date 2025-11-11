@@ -175,20 +175,29 @@ export class ADRGeneratorV2 {
     }
 
     /**
-     * Generate normalized hash for ADR deduplication
+     * Generate stable hash for ADR deduplication
+     * Uses only the title (predicted_decision) to avoid false duplicates from varying correlation scores
      */
-    private generateADRHash(title: string, decision: string): string {
-        const normalized = (title + decision).toLowerCase().replace(/[^a-z0-9]/g, '');
-        return normalized.substring(0, 100); // First 100 chars as hash
+    private generateADRHash(title: string): string {
+        // Normalize: lowercase, remove special chars, collapse whitespace
+        const normalized = title
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        // Use crypto hash for better collision resistance
+        const crypto = require('crypto');
+        return crypto.createHash('sha256').update(normalized).digest('hex').substring(0, 16);
     }
 
     /**
-     * Check if similar ADR already exists
+     * Check if similar ADR already exists (improved deduplication)
      */
     private async isDuplicate(proposal: ProposedADR): Promise<boolean> {
         if (!fs.existsSync(this.autoAdrDir)) return false;
         
-        const proposalHash = this.generateADRHash(proposal.title, proposal.decision);
+        const proposalHash = this.generateADRHash(proposal.title);
         
         // Load existing ADRs
         const files = fs.readdirSync(this.autoAdrDir).filter(f => f.endsWith('.json') && f !== 'proposals.index.json');
@@ -196,11 +205,11 @@ export class ADRGeneratorV2 {
         for (const file of files) {
             try {
                 const existing = JSON.parse(fs.readFileSync(path.join(this.autoAdrDir, file), 'utf-8'));
-                const existingHash = this.generateADRHash(existing.title || '', existing.decision || '');
+                const existingHash = this.generateADRHash(existing.title || '');
                 
                 // If hashes match, it's a duplicate
                 if (proposalHash === existingHash) {
-                    console.log(`⚠️ Duplicate ADR detected: "${proposal.title.substring(0, 60)}..."`);
+                    console.log(`🔒 [Dedup] Skipping duplicate ADR: "${proposal.title.substring(0, 60)}..."`);
                     return true;
                 }
             } catch {}

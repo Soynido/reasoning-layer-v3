@@ -1,0 +1,33 @@
+{
+  "generated_at": "2025-11-11T10:35:17.053Z",
+  "total": 3,
+  "accepted": [
+    {
+      "id": "adr-proposed-1762779666019-qoetob",
+      "title": "Review and document: High frequency of fix commits (27 fixes) suggests areas requiring stability improvements",
+      "status": "accepted",
+      "confidence": 0.62,
+      "createdAt": "2025-11-10T13:01:06.019Z",
+      "modifiedAt": "2025-11-10T15:05:03.890Z"
+    },
+    {
+      "id": "adr-proposed-1762779666019-5tenoe",
+      "title": "Review and document: Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "status": "accepted",
+      "confidence": 0.66,
+      "createdAt": "2025-11-10T13:01:06.019Z",
+      "modifiedAt": "2025-11-10T15:03:27.231Z"
+    }
+  ],
+  "pending": [
+    {
+      "id": "adr-proposed-1762779666019-crynol",
+      "title": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "status": "proposed",
+      "confidence": 0.6,
+      "createdAt": "2025-11-10T13:01:06.019Z",
+      "modifiedAt": "2025-11-10T13:01:06.019Z"
+    }
+  ],
+  "rejected": []
+}

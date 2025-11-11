@@ -16,30 +16,24 @@ const App: React.FC<AppProps> = ({ vscode }) => {
   const [cognitiveState, setCognitiveState] = useState<any>(null);
 
   useEffect(() => {
-    // Request cognitive state from extension
-    vscode.postMessage({
-      command: 'requestCognitiveState'
-    });
-
     // Listen for messages from extension
-    window.addEventListener('message', (event) => {
+    const messageHandler = (event: MessageEvent) => {
       const message = event.data;
       
-      switch (message.command) {
-        case 'cognitiveStateUpdate':
-          setCognitiveState(message.data);
+      switch (message.type) {
+        case 'updateStore':
+          // Snapshot pushed from kernel every 10 seconds
+          setCognitiveState(message.payload);
+          console.log('[RL4 WebView] Snapshot received:', message.payload.cycleId);
           break;
       }
-    });
+    };
+    
+    window.addEventListener('message', messageHandler);
 
-    // Poll for updates every 2 seconds
-    const interval = setInterval(() => {
-      vscode.postMessage({
-        command: 'requestCognitiveState'
-      });
-    }, 2000);
-
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener('message', messageHandler);
+    };
   }, [vscode]);
 
   const renderCurrentView = () => {

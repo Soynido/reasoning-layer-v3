@@ -1,7 +1,7 @@
 [
   {
-    "id": "corr-1762780026094-x0sf7vh99",
-    "pattern_id": "pattern-kernel-evolution-1762780026092",
+    "id": "corr-1762857937017-67gx4nt58",
+    "pattern_id": "pattern-kernel-evolution-1762857937008",
     "event_id": "53c5867b-c889-4964-ab9f-094ea5391f02",
     "correlation_score": 0.21,
     "direction": "emerging",
@@ -11,6 +11,6 @@
       "infrastructure"
     ],
     "impact": "Stability",
-    "timestamp": "2025-11-10T13:07:06.094Z"
+    "timestamp": "2025-11-11T10:45:37.017Z"
   }
 ]

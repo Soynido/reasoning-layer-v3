@@ -1,0 +1,114 @@
+[
+  {
+    "cycle": 10,
+    "timestamp": "2025-11-11T10:20:16.801Z",
+    "file": "snapshot-10.json",
+    "compressed": false,
+    "size_bytes": 9594
+  },
+  {
+    "cycle": 20,
+    "timestamp": "2025-11-11T10:21:56.794Z",
+    "file": "snapshot-20.json",
+    "compressed": false,
+    "size_bytes": 9628
+  },
+  {
+    "cycle": 30,
+    "timestamp": "2025-11-11T10:23:36.836Z",
+    "file": "snapshot-30.json",
+    "compressed": false,
+    "size_bytes": 9626
+  },
+  {
+    "cycle": 40,
+    "timestamp": "2025-11-11T10:25:16.861Z",
+    "file": "snapshot-40.json",
+    "compressed": false,
+    "size_bytes": 9625
+  },
+  {
+    "cycle": 50,
+    "timestamp": "2025-11-11T10:26:56.879Z",
+    "file": "snapshot-50.json",
+    "compressed": false,
+    "size_bytes": 9626
+  },
+  {
+    "cycle": 60,
+    "timestamp": "2025-11-11T10:28:36.919Z",
+    "file": "snapshot-60.json",
+    "compressed": false,
+    "size_bytes": 9626
+  },
+  {
+    "cycle": 70,
+    "timestamp": "2025-11-11T10:30:16.932Z",
+    "file": "snapshot-70.json",
+    "compressed": false,
+    "size_bytes": 9626
+  },
+  {
+    "cycle": 80,
+    "timestamp": "2025-11-11T10:31:57.037Z",
+    "file": "snapshot-80.json",
+    "compressed": false,
+    "size_bytes": 9626
+  },
+  {
+    "cycle": 90,
+    "timestamp": "2025-11-11T10:33:36.996Z",
+    "file": "snapshot-90.json",
+    "compressed": false,
+    "size_bytes": 9626
+  },
+  {
+    "cycle": 100,
+    "timestamp": "2025-11-11T10:35:17.053Z",
+    "file": "snapshot-100.json",
+    "compressed": false,
+    "size_bytes": 9880
+  },
+  {
+    "cycle": 110,
+    "timestamp": "2025-11-11T10:36:57.051Z",
+    "file": "snapshot-110.json",
+    "compressed": false,
+    "size_bytes": 9629
+  },
+  {
+    "cycle": 120,
+    "timestamp": "2025-11-11T10:38:37.076Z",
+    "file": "snapshot-120.json",
+    "compressed": false,
+    "size_bytes": 9629
+  },
+  {
+    "cycle": 130,
+    "timestamp": "2025-11-11T10:40:17.117Z",
+    "file": "snapshot-130.json",
+    "compressed": false,
+    "size_bytes": 9628
+  },
+  {
+    "cycle": 140,
+    "timestamp": "2025-11-11T10:41:57.115Z",
+    "file": "snapshot-140.json",
+    "compressed": false,
+    "size_bytes": 9629
+  },
+  {
+    "cycle": 150,
+    "timestamp": "2025-11-11T10:43:37.136Z",
+    "file": "snapshot-150.json",
+    "compressed": false,
+    "size_bytes": 9629
+  },
+  {
+    "cycle": 160,
+    "timestamp": "2025-11-11T10:45:17.188Z",
+    "file": "snapshot-160.json",
+    "compressed": false,
+    "size_bytes": 9628
+  }
+]

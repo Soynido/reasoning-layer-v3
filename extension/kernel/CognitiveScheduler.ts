@@ -20,7 +20,17 @@ import { ForecastEngine, ForecastMetrics } from './cognitive/ForecastEngine';
 import { ADRGeneratorV2 } from './cognitive/ADRGeneratorV2';
 import { KernelBootstrap } from './KernelBootstrap';
 import { FeedbackEvaluator } from './cognitive/FeedbackEvaluator';
+import { RL4CacheIndexer } from './indexer/CacheIndex';
+import { ContextSnapshotGenerator } from './indexer/ContextSnapshot';
+import { TimelineAggregator } from './indexer/TimelineAggregator';
+import { DataNormalizer } from './indexer/DataNormalizer';
+import { IDEActivityListener } from './inputs/IDEActivityListener';
+import { BuildMetricsListener } from './inputs/BuildMetricsListener';
+import { PatternEvolutionTracker } from './cognitive/PatternEvolutionTracker';
+import { SnapshotRotation } from './indexer/SnapshotRotation';
+import { AppendOnlyWriter } from './AppendOnlyWriter';
 import * as crypto from 'crypto';
+import * as path from 'path';
 
 export interface CycleResult {
     cycleId: number;
@@ -55,6 +65,22 @@ export class CognitiveScheduler {
     private forecastEngine: ForecastEngine;
     // Phase E2.2: Real metrics evaluator
     private feedbackEvaluator: FeedbackEvaluator;
+    // Phase E2.3: Cache indexer for fast queries
+    private cacheIndexer: RL4CacheIndexer;
+    // Phase E2.3: Context snapshot generator
+    private contextSnapshot: ContextSnapshotGenerator;
+    // Phase E2.4: Timeline aggregator
+    private timelineAggregator: TimelineAggregator;
+    // Phase E2.4: Data normalizer
+    private dataNormalizer: DataNormalizer;
+    // Phase E2.6: IDE activity listener (Quick Wins)
+    private ideActivityListener: IDEActivityListener;
+    // Phase E2.6: Build metrics listener (Quick Wins)
+    private buildMetricsListener: BuildMetricsListener;
+    // Phase E2.7: Pattern evolution tracker (History Enrichment)
+    private patternEvolutionTracker: PatternEvolutionTracker;
+    // Phase E2.7: Snapshot rotation (History Enrichment)
+    private snapshotRotation: SnapshotRotation;
     
     constructor(
         workspaceRoot: string,
@@ -70,6 +96,24 @@ export class CognitiveScheduler {
         this.forecastEngine = new ForecastEngine(workspaceRoot, bootstrapMetrics);
         // Initialize FeedbackEvaluator for real metrics
         this.feedbackEvaluator = new FeedbackEvaluator(workspaceRoot);
+        // Initialize cache indexer
+        this.cacheIndexer = new RL4CacheIndexer(workspaceRoot);
+        // Initialize context snapshot generator
+        this.contextSnapshot = new ContextSnapshotGenerator(workspaceRoot);
+        // Initialize timeline aggregator
+        this.timelineAggregator = new TimelineAggregator(workspaceRoot);
+        // Initialize data normalizer
+        this.dataNormalizer = new DataNormalizer(workspaceRoot);
+        // Initialize IDE activity listener (Phase E2.6 Quick Wins)
+        const ideActivityWriter = new AppendOnlyWriter(path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'ide_activity.jsonl'));
+        this.ideActivityListener = new IDEActivityListener(workspaceRoot, ideActivityWriter, logger);
+        // Initialize build metrics listener (Phase E2.6 Quick Wins)
+        const buildMetricsWriter = new AppendOnlyWriter(path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'build_metrics.jsonl'));
+        this.buildMetricsListener = new BuildMetricsListener(workspaceRoot, buildMetricsWriter, logger);
+        // Initialize pattern evolution tracker (Phase E2.7 History Enrichment)
+        this.patternEvolutionTracker = new PatternEvolutionTracker(workspaceRoot);
+        // Initialize snapshot rotation (Phase E2.7 History Enrichment)
+        this.snapshotRotation = new SnapshotRotation(workspaceRoot);
         
         // Expose to globalThis for VS Code commands
         setGlobalLedger(this.ledger);
@@ -90,6 +134,63 @@ export class CognitiveScheduler {
         this.log(`⏳ Waiting 2s for Extension Host to stabilize...`);
         await new Promise(resolve => setTimeout(resolve, 2000));
         this.log(`✅ Extension Host ready`);
+        
+        // Phase E2.3: Initialize cache index on first start
+        this.log(`📇 Initializing cache index...`);
+        try {
+            const stats = this.cacheIndexer.getStats();
+            if (!stats) {
+                // No index exists, rebuild from scratch
+                this.log(`📇 No index found, rebuilding...`);
+                await this.cacheIndexer.rebuild();
+                this.log(`✅ Cache index rebuilt successfully`);
+            } else {
+                this.log(`✅ Cache index loaded: ${stats.total_cycles} cycles indexed`);
+            }
+        } catch (indexError) {
+            this.log(`⚠️  Cache index initialization failed (non-critical): ${indexError}`);
+        }
+        
+        // Phase E2.4: Run data normalization at startup
+        this.log(`🔧 Running data normalization...`);
+        try {
+            const normReport = await this.dataNormalizer.normalize();
+            if (normReport.actions_performed.length > 0) {
+                this.log(`✅ Normalization complete: ${normReport.actions_performed.length} actions performed`);
+                for (const action of normReport.actions_performed) {
+                    this.log(`   • ${action}`);
+                }
+            } else {
+                this.log(`✅ Data already normalized`);
+            }
+            
+            if (normReport.warnings.length > 0) {
+                this.log(`⚠️  ${normReport.warnings.length} warnings during normalization:`);
+                for (const warning of normReport.warnings) {
+                    this.log(`   • ${warning}`);
+                }
+            }
+        } catch (normError) {
+            this.log(`⚠️  Data normalization failed (non-critical): ${normError}`);
+        }
+        
+        // Phase E2.6: Start IDE activity listener (Quick Wins)
+        this.log(`👁️  Starting IDE activity listener...`);
+        try {
+            await this.ideActivityListener.start();
+            this.log(`✅ IDE activity listener started`);
+        } catch (ideError) {
+            this.log(`⚠️  IDE activity listener failed (non-critical): ${ideError}`);
+        }
+        
+        // Phase E2.6: Start build metrics listener (Quick Wins)
+        this.log(`🔨 Starting build metrics listener...`);
+        try {
+            await this.buildMetricsListener.start();
+            this.log(`✅ Build metrics listener started`);
+        } catch (buildError) {
+            this.log(`⚠️  Build metrics listener failed (non-critical): ${buildError}`);
+        }
         
         // Register main cycle timer
         this.log(`🧪 Registering cycle timer (${periodMs}ms)...`);
@@ -151,6 +252,14 @@ export class CognitiveScheduler {
     stop(): void {
         this.timerRegistry.clear('kernel:cognitive-cycle');
         this.timerRegistry.clear('kernel:cognitive-watchdog');
+        
+        // Phase E2.6: Stop IDE & Build listeners (Quick Wins)
+        try {
+            this.ideActivityListener.stop();
+            this.buildMetricsListener.stop();
+        } catch (e) {
+            // Ignore cleanup errors
+        }
     }
     
     /**
@@ -214,6 +323,15 @@ export class CognitiveScheduler {
                 const engine = new PatternLearningEngine(this.workspaceRoot);
                 const patterns = await engine.analyzePatterns();
                 this.log(`🔍 Pattern Learning: ${patterns.length} patterns detected`);
+                
+                // Phase E2.7: Track pattern evolution (History Enrichment)
+                try {
+                    await this.patternEvolutionTracker.trackChanges(patterns, result.cycleId);
+                    this.log(`🧠 History enrichment: Pattern evolution tracked (cycle ${result.cycleId})`);
+                } catch (evolutionError) {
+                    this.log(`⚠️  Pattern evolution tracking failed (non-critical): ${evolutionError}`);
+                }
+                
                 return { patternsDetected: patterns.length, patterns };
             }));
             
@@ -370,6 +488,75 @@ export class CognitiveScheduler {
             await this.ledger.flush();
             
             this.log(`💾 Cycle ${result.cycleId} persisted to cycles.jsonl`);
+            
+            // Phase E2.3: Update cache index incrementally
+            try {
+                const cycleData = {
+                    cycleId: result.cycleId,
+                    timestamp: result.completedAt,
+                    phases,
+                    merkleRoot: '' // Will be filled by ledger
+                };
+                
+                // Extract files from recent file changes (optional, can be empty)
+                const files: string[] = []; // TODO: extract from file_changes if needed
+                
+                await this.cacheIndexer.updateIncremental(cycleData, files);
+                this.log(`📇 Cache index updated for cycle ${result.cycleId}`);
+            } catch (indexError) {
+                this.log(`⚠️  Cache index update failed (non-critical): ${indexError}`);
+            }
+            
+            // Phase E2.3: Generate context snapshot
+            try {
+                await this.contextSnapshot.generate(result.cycleId);
+                this.log(`📸 Context snapshot generated for cycle ${result.cycleId}`);
+            } catch (snapshotError) {
+                this.log(`⚠️  Context snapshot generation failed (non-critical): ${snapshotError}`);
+            }
+            
+            // Phase E2.4: Generate timeline (every 10 cycles)
+            if (result.cycleId % 10 === 0) {
+                try {
+                    await this.timelineAggregator.generateToday();
+                    this.log(`📅 Timeline generated for today (cycle ${result.cycleId})`);
+                } catch (timelineError) {
+                    this.log(`⚠️  Timeline generation failed (non-critical): ${timelineError}`);
+                }
+            }
+            
+            // Phase E2.6: Capture IDE activity (every 10 cycles - Quick Wins)
+            if (result.cycleId % 10 === 0) {
+                try {
+                    await this.ideActivityListener.captureSnapshot();
+                    // Log already done by listener
+                } catch (ideError) {
+                    this.log(`⚠️  IDE snapshot capture failed (non-critical): ${ideError}`);
+                }
+            }
+            
+            // Phase E2.4: Run normalization (every 100 cycles)
+            if (result.cycleId % 100 === 0) {
+                try {
+                    const normReport = await this.dataNormalizer.normalize();
+                    if (normReport.issues_fixed > 0) {
+                        this.log(`🔧 Normalization: ${normReport.issues_fixed} issues fixed`);
+                    }
+                } catch (normError) {
+                    this.log(`⚠️  Normalization failed (non-critical): ${normError}`);
+                }
+            }
+            
+            // Phase E2.7: Save cognitive snapshot (TEST MODE: every 10 cycles, will be 100 in production)
+            if (result.cycleId % 10 === 0) {
+                try {
+                    await this.snapshotRotation.saveSnapshot(result.cycleId);
+                    await this.snapshotRotation.updateIndex();
+                    this.log(`🕰️  History enrichment: Cognitive snapshot saved (cycle ${result.cycleId})`);
+                } catch (snapshotError) {
+                    this.log(`⚠️  Snapshot save failed (non-critical): ${snapshotError}`);
+                }
+            }
             
         } catch (error) {
             this.log(`❌ Failed to aggregate cycle ${result.cycleId}: ${error}`);

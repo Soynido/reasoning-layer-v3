@@ -14,6 +14,8 @@ import { GitCommitListener } from './kernel/inputs/GitCommitListener';
 import { FileChangeWatcher } from './kernel/inputs/FileChangeWatcher';
 import { AppendOnlyWriter } from './kernel/AppendOnlyWriter';
 import { KernelBootstrap } from './kernel/KernelBootstrap';
+import { ADRValidationCommands } from './commands/adr-validation';
+import { generateWhereAmI, generateSnapshotJSON } from './kernel/api/WhereAmISnapshot';
 import * as path from 'path';
 
 // Output Channel
@@ -28,6 +30,15 @@ let kernel: {
     execPool: ExecPool;
     api: KernelAPI;
 } | null = null;
+
+// WebView Panel
+let webviewPanel: vscode.WebviewPanel | null = null;
+
+// Status Bar Item
+let statusBarItem: vscode.StatusBarItem | null = null;
+
+// Snapshot Push Interval
+let snapshotInterval: NodeJS.Timeout | null = null;
 
 export async function activate(context: vscode.ExtensionContext) {
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
@@ -176,19 +187,242 @@ export async function activate(context: vscode.ExtensionContext) {
                     await kernel!.api.flush();
                 vscode.window.showInformationMessage('✅ Flushed');
                 logWithTime('💾 All queues flushed');
+            }),
+            
+                vscode.commands.registerCommand('reasoning.kernel.whereami', async () => {
+                logWithTime('🧠 Generating cognitive snapshot...');
+                try {
+                    const snapshot = await generateWhereAmI(path.join(workspaceRoot, '.reasoning_rl4'));
+                    
+                    // Display in new editor
+                    const doc = await vscode.workspace.openTextDocument({
+                        content: snapshot,
+                        language: 'markdown'
+                    });
+                    await vscode.window.showTextDocument(doc);
+                    
+                    logWithTime('✅ Cognitive snapshot generated');
+                    vscode.window.showInformationMessage('🧠 Where Am I? — Snapshot ready');
+                } catch (error) {
+                    const errorMsg = error instanceof Error ? error.message : String(error);
+                    logWithTime(`❌ Snapshot error: ${errorMsg}`);
+                    vscode.window.showErrorMessage(`Failed to generate snapshot: ${errorMsg}`);
+                }
+            })
+        );
+        
+        // Phase E2 Final: Register ADR Validation Commands
+        ADRValidationCommands.registerCommands(context, workspaceRoot);
+        
+        // Phase E2.7: Create Status Bar Item for WebView
+        statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+        statusBarItem.text = '$(brain) RL4 Dashboard';
+        statusBarItem.tooltip = 'Click to open/close RL4 Cognitive Dashboard';
+        statusBarItem.command = 'rl4.toggleWebview';
+        statusBarItem.show();
+        context.subscriptions.push(statusBarItem);
+        logWithTime('✅ Status Bar item created');
+        
+        // Phase E2.7: Create WebView Dashboard with auto-push snapshots
+        logWithTime('🖥️ Creating RL4 Dashboard WebView...');
+        
+        webviewPanel = vscode.window.createWebviewPanel(
+            'rl4Webview',
+            '🧠 RL4 Dashboard',
+            { viewColumn: vscode.ViewColumn.Two, preserveFocus: true },
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true,
+                localResourceRoots: [
+                    vscode.Uri.joinPath(context.extensionUri, 'extension', 'webview', 'ui', 'dist')
+                ]
+            }
+        );
+        
+        // Load WebView HTML
+        webviewPanel.webview.html = getWebviewHtml(context, webviewPanel);
+        logWithTime('✅ WebView HTML loaded');
+        
+        // Setup snapshot push interval (every 10 seconds)
+        snapshotInterval = setInterval(async () => {
+            if (webviewPanel) {
+                try {
+                    const snapshot = await generateSnapshotJSON(path.join(workspaceRoot, '.reasoning_rl4'));
+                    webviewPanel.webview.postMessage({ 
+                        type: 'updateStore', 
+                        payload: snapshot
+                    });
+                    logWithTime(`📤 JSON snapshot pushed (cycle ${snapshot.cycleId})`);
+                } catch (error) {
+                    const errorMsg = error instanceof Error ? error.message : String(error);
+                    logWithTime(`⚠️ Snapshot push error: ${errorMsg}`);
+                }
+            }
+        }, 10_000);
+        
+        // Clean up on panel dispose
+        webviewPanel.onDidDispose(() => {
+            if (snapshotInterval) {
+                clearInterval(snapshotInterval);
+                snapshotInterval = null;
+            }
+            webviewPanel = null;
+            if (statusBarItem) {
+                statusBarItem.text = '$(brain) RL4 Dashboard';
+                statusBarItem.tooltip = 'Click to open RL4 Cognitive Dashboard';
+            }
+            logWithTime('🖥️ WebView disposed');
+        }, null, context.subscriptions);
+        
+        context.subscriptions.push({ 
+            dispose: () => {
+                if (snapshotInterval) {
+                    clearInterval(snapshotInterval);
+                    snapshotInterval = null;
+                }
+            }
+        });
+        
+        // Add command to toggle WebView
+        context.subscriptions.push(
+            vscode.commands.registerCommand('rl4.toggleWebview', () => {
+                if (webviewPanel) {
+                    webviewPanel.reveal(vscode.ViewColumn.Two);
+                    if (statusBarItem) {
+                        statusBarItem.text = '$(brain) RL4 Dashboard $(check)';
+                        statusBarItem.tooltip = 'RL4 Dashboard is open';
+                    }
+                    logWithTime('🖥️ WebView revealed');
+                } else {
+                    // Recreate WebView if disposed
+                    webviewPanel = vscode.window.createWebviewPanel(
+                        'rl4Webview',
+                        '🧠 RL4 Dashboard',
+                        { viewColumn: vscode.ViewColumn.Two, preserveFocus: true },
+                        {
+                            enableScripts: true,
+                            retainContextWhenHidden: true,
+                            localResourceRoots: [
+                                vscode.Uri.joinPath(context.extensionUri, 'extension', 'webview', 'ui', 'dist')
+                            ]
+                        }
+                    );
+                    
+                    webviewPanel.webview.html = getWebviewHtml(context, webviewPanel);
+                    
+                    // Recreate snapshot interval
+                    const newInterval = setInterval(async () => {
+                        if (webviewPanel) {
+                            try {
+                                const snapshot = await generateSnapshotJSON(path.join(workspaceRoot, '.reasoning_rl4'));
+                                webviewPanel.webview.postMessage({ 
+                                    type: 'updateStore', 
+                                    payload: snapshot
+                                });
+                                logWithTime(`📤 JSON snapshot pushed (cycle ${snapshot.cycleId})`);
+                            } catch (error) {
+                                const errorMsg = error instanceof Error ? error.message : String(error);
+                                logWithTime(`⚠️ Snapshot push error: ${errorMsg}`);
+                            }
+                        }
+                    }, 10_000);
+                    
+                    webviewPanel.onDidDispose(() => {
+                        clearInterval(newInterval);
+                        webviewPanel = null;
+                        if (statusBarItem) {
+                            statusBarItem.text = '$(brain) RL4 Dashboard';
+                            statusBarItem.tooltip = 'Click to open RL4 Cognitive Dashboard';
+                        }
+                        logWithTime('🖥️ WebView disposed');
+                    }, null, context.subscriptions);
+                    
+                    if (statusBarItem) {
+                        statusBarItem.text = '$(brain) RL4 Dashboard $(check)';
+                        statusBarItem.tooltip = 'RL4 Dashboard is open';
+                    }
+                    
+                    logWithTime('🖥️ WebView recreated');
+                }
             })
         );
         
         logWithTime('✅ RL4 Kernel activated');
-        logWithTime('🎯 3 commands registered');
+        logWithTime('🎯 8 commands registered (4 kernel + 3 ADR validation + 1 webview)');
+        logWithTime('🖥️ Dashboard auto-opened in column 2');
             
         } else {
         logWithTime('⚠️ TimerRegistry disabled');
     }
 }
 
+/**
+ * Generate WebView HTML with Vite build assets
+ */
+function getWebviewHtml(context: vscode.ExtensionContext, panel: vscode.WebviewPanel): string {
+    // Read index.html to extract actual Vite asset filenames (they change on each build)
+    const indexHtmlPath = vscode.Uri.joinPath(context.extensionUri, 'extension', 'webview', 'ui', 'dist', 'index.html');
+    const indexHtml = require('fs').readFileSync(indexHtmlPath.fsPath, 'utf-8');
+    
+    // Extract script and style paths from index.html
+    const scriptMatch = indexHtml.match(/src="\/assets\/(index-[^"]+\.js)"/);
+    const styleMatch = indexHtml.match(/href="\/assets\/(index-[^"]+\.css)"/);
+    
+    if (!scriptMatch || !styleMatch) {
+        throw new Error('Failed to parse Vite build assets from index.html');
+    }
+    
+    // Resolve webview-safe URIs for Vite assets
+    const distPath = vscode.Uri.joinPath(context.extensionUri, 'extension', 'webview', 'ui', 'dist', 'assets');
+    const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(distPath, scriptMatch[1]));
+    const styleUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(distPath, styleMatch[1]));
+    
+    return /* html */ `
+        <!doctype html>
+        <html>
+            <head>
+                <meta charset="utf-8" />
+                <meta
+                    http-equiv="Content-Security-Policy"
+                    content="default-src 'none'; img-src ${panel.webview.cspSource} blob: data:;
+                             script-src ${panel.webview.cspSource} 'unsafe-inline'; style-src ${panel.webview.cspSource} 'unsafe-inline';
+                             font-src ${panel.webview.cspSource}; connect-src ${panel.webview.cspSource};"
+                />
+                <meta name="viewport" content="width=device-width,initial-scale=1" />
+                <link rel="stylesheet" href="${styleUri}">
+                <title>RL4 Dashboard</title>
+            </head>
+            <body>
+                <div id="root"></div>
+                <script type="module" src="${scriptUri}"></script>
+            </body>
+        </html>
+    `;
+}
+
 export async function deactivate() {
     outputChannel?.appendLine('🛑 RL4 Kernel deactivating...');
+    
+    // Clear snapshot interval
+    if (snapshotInterval) {
+        clearInterval(snapshotInterval);
+        snapshotInterval = null;
+        outputChannel?.appendLine('✅ Snapshot interval cleared');
+    }
+    
+    // Dispose Status Bar Item
+    if (statusBarItem) {
+        statusBarItem.dispose();
+        statusBarItem = null;
+        outputChannel?.appendLine('✅ Status Bar disposed');
+    }
+    
+    // Dispose WebView
+    if (webviewPanel) {
+        webviewPanel.dispose();
+        webviewPanel = null;
+        outputChannel?.appendLine('✅ WebView disposed');
+    }
     
     // Flush ledger
     try {
