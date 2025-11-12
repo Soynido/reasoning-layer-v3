@@ -1,36 +1,56 @@
 ---
-version: 1.2
-updated: 2025-11-12T13:00:00.000Z
-bias: 0.0
+version: 1.5
+updated: 2025-11-12T15:45:00.000Z
+bias: 0.20
 ---
 
 # RL4 Task List
 
-## Active (Priority Order) — MODE STRICT (0% deviation)
-1. [x] **[P0]** Create ADRSignalEnricher.ts (auto-detect ADRs via commit signals) ✅
-   - Read ONLY existing RL4 assets (git_commits.jsonl, file_changes.jsonl, cycles.jsonl)
-   - Calculate ADR score (type, files, lines, cognitive pattern)
-   - Output: EnrichedCommit[] with adrScore field
-2. [x] **[P0]** Integrate ADRSignalEnricher into UnifiedPromptBuilder ✅
-   - Add import ADRSignalEnricher
-   - Call enrichCommits(24h)
-   - Add "ADR Detection Signals" section to prompt
-3. [ ] **[P1]** Implement Smart UI Components (Phase E4):
+## Active (Priority Order) — MODE FLEXIBLE (25% deviation)
+
+**Phase E3.3 Complete ✅ → Phase E4 Started 🚀**
+
+1. [x] **[P1]** UI-Driven Deviation Mode (ADR-009) ✅ COMPLETE
+   - [x] Add mode selector to WebView UI (🔴 Strict / 🟡 Flexible / 🟢 Exploratory / ⚪ Free)
+   - [x] Update `generateSnapshot` message to accept `deviationMode` param
+   - [x] Modify `UnifiedPromptBuilder.ts` to use dynamic mode (not config)
+   - [x] Display chosen mode in prompt header with behavioral rules
+   - **Why:** User controls perception angle per-snapshot (not global config)
+   - **Bias Impact:** +5% (total: 20% < 25% threshold) ✅ Approved
+   - **Completed:** 15:45 (all sub-tasks done)
+
+2. [ ] **[P1]** Smart UI Components (Phase E4):
    - [ ] NextStepsCard (reads Tasks.RL4 → P0 tasks)
-   - [ ] ConfidenceGauge (reads Plan.RL4 → confidence)
+   - [ ] ConfidenceGauge (reads Plan.RL4 → confidence 95%)
    - [ ] BlockersAlert (reads Tasks.RL4 → blockers)
    - [ ] CognitiveLoadMeter (reads Context.RL4 → observations)
    - [ ] TimelineChart (reads HistorySummary → activity trends)
    - [ ] DecisionHistory (reads ADRs.RL4 → ADR timeline)
-4. [ ] **[P2]** Test ADR auto-detection with last 10 commits
-5. [ ] **[P2]** Add real-time UI refresh on .RL4 file changes
+   - [ ] DeviationModeIndicator (color-coded visual based on chosen mode)
+
+3. [ ] **[P2]** Test ADR auto-detection with last 10 commits
+4. [ ] **[P2]** Add real-time UI refresh on .RL4 file changes
 
 ## Completed (Last Session)
-- [x] BiasCalculator.ts created (deviation accepted: +15%)
-- [x] Deviation Guard integrated into UnifiedPromptBuilder
-- [x] ADR-007 documented
-- [x] Baseline Plan.RL4.v1.0 saved
-- [x] Mode STRICT activated (0% tolerance)
+- [x] ADRSignalEnricher.ts created (14:30)
+- [x] Integration into UnifiedPromptBuilder complete (14:35)
+- [x] TypeScript compilation successful (14:40)
+- [x] VSIX packaged: reasoning-layer-rl4-2.7.0-adr-detection.vsix (14:42)
+- [x] Git commit: 140406e (14:45)
+- [x] Extension installed successfully (14:47)
+- [x] Snapshot generation validated (15:17) ✅ ALL SYSTEMS GO
+- [x] ADR-008 documented (Phase E3.3→E4 foundation complete)
+- [x] ADR-009 proposed (UI-driven deviation mode)
+- [x] Confidence increased: 80% → 95%
+- [x] Phase E3.3 declared COMPLETE
+- [x] Transition to Phase E4 (Smart UI) initiated
+- [x] **UI-Driven Deviation Mode IMPLEMENTED (15:45)** ✅
+  - App.tsx: Added mode selector (dropdown with 4 modes)
+  - App.css: Styled selector with VS Code theme
+  - extension.ts: Parse deviationMode from message
+  - UnifiedPromptBuilder.ts: Dynamic threshold based on user choice
+  - Compiled, packaged, installed successfully
+  - **Status:** Ready for testing (reload Cursor required)
 
 ## Completed (Last 24h)
 - [x] Fix ADR parser regex (ADR-XXX: format support) (completed: 13:00)
@@ -47,8 +67,10 @@ bias: 0.0
 ~~- ADR-005 not detected in snapshot (parser issue with ADRs.RL4)~~ ✅ **RESOLVED** (13:00)
 
 ## Metrics
-- Total tasks: 16 (9 completed, 7 active)
-- Completion rate: 56%
-- Current sprint: E3.3 (Day 1/3)
-- Velocity: High (9 tasks in 2h)
+- Total tasks: 18 (12 completed, 6 active)
+- Completion rate: 67%
+- Current sprint: E4 (Day 1/4) — Smart UI
+- Velocity: Excellent (12 tasks in 5h)
 - Blockers resolved: 1/1 (100%)
+- Bias: 20% (within flexible threshold 25%)
+- **P1 milestone**: UI-Driven Deviation Mode ✅

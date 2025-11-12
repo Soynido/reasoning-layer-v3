@@ -1,31 +1,45 @@
 ---
-version: 1.4
+version: 1.7
 original_version: 1.0
-updated: 2025-11-12T14:30:00.000Z
-confidence: 0.75
+updated: 2025-11-12T15:45:00.000Z
+confidence: 0.97
 baseline_saved: true
-deviation_mode: strict
+deviation_mode: ui_driven
+commit: pending
+vsix: reasoning-layer-rl4-2.7.0-adr-detection.vsix
+snapshot_validated: true
+milestone: UI-Driven Deviation Mode Complete
 ---
 
 # RL4 Strategic Plan
 
 ## Phase
-E3.3 - Single Context Snapshot System
+E4 - Smart UI with LLM-Validated KPIs
 
 ## Goal
-Transform RL4 from cognitive experiment into production-ready Dev Continuity System.
+Transform RL4 UI from "data display" to "actionable insights" via LLM-validated Smart Components.
 
 ## Timeline
-- Start: 2025-11-12
-- Target: 2025-11-15 (3 days)
-- Current: Day 1/3 (71% confidence)
-- Status: 🟢 On track
+- Phase E3.3: ✅ COMPLETE (2025-11-12)
+- Phase E4 Start: 2025-11-12 (15:30)
+- Target: 2025-11-16 (4 days)
+- Current: Day 1/4 (95% confidence)
+- Status: 🟢 Excellent momentum
 
-**Core Objectives:**
+**Phase E3.3 Objectives (COMPLETE):**
 1. ✅ Simplify UI to 1 button ("Generate Context Snapshot")
 2. ✅ Eliminate fake/static data (patterns, forecasts, goals)
 3. ✅ Establish agent feedback loop (prompt → agent → .RL4 files → RL4 parses)
 4. ✅ Create persistent state files (Plan/Tasks/Context/ADRs.RL4)
+5. ✅ Historical compression (30 days → 2KB JSON)
+6. ✅ ADR auto-detection (commit scoring)
+7. ✅ Deviation Guard (baseline tracking)
+
+**Phase E4 Objectives (ACTIVE):**
+1. [x] UI-Driven Deviation Mode (ADR-009) ✅ DONE — User chooses perception angle
+2. [ ] Smart UI Components (ADR-006) — LLM-validated insights, not raw data
+3. [ ] Real-time .RL4 file refresh (FileWatchers → UI update)
+4. [ ] Interactive ADR timeline visualization
 
 **Milestones Achieved (Day 1):**
 - ✅ UnifiedPromptBuilder.ts created (generates single prompt)
@@ -34,6 +48,13 @@ Transform RL4 from cognitive experiment into production-ready Dev Continuity Sys
 - ✅ PlanTasksContextParser.ts (reads/validates .RL4 files)
 - ✅ FileWatchers integrated (monitors .RL4 changes)
 - ✅ ADR-005 parser regex fixed (ADR-XXX: format)
+- ✅ HistorySummarizer.ts (30 days → 2KB JSON compression)
+- ✅ BiasCalculator.ts (deviation detection from baseline)
+- ✅ ADRSignalEnricher.ts (auto-detect ADRs from commits)
+- ✅ Deviation Guard integrated (STRICT mode active)
+- ✅ ADR-005, ADR-006, ADR-007 documented
+- ✅ Stable commit: 140406e
+- ✅ Extension installed: v2.7.0-adr-detection
 
 **Success Criteria:**
 - [x] UI reduced to single action

@@ -99,17 +99,17 @@
   },
   {
     "cycle": 300,
-    "timestamp": "2025-11-12T10:47:50.384Z",
+    "timestamp": "2025-11-12T14:21:58.574Z",
     "file": "snapshot-300.json",
     "compressed": false,
-    "size_bytes": 9828
+    "size_bytes": 9881
   },
   {
     "cycle": 310,
-    "timestamp": "2025-11-12T10:49:30.353Z",
+    "timestamp": "2025-11-12T14:23:38.544Z",
     "file": "snapshot-310.json",
     "compressed": false,
-    "size_bytes": 9577
+    "size_bytes": 9630
   },
   {
     "cycle": 320,

@@ -18,10 +18,13 @@ declare global {
   }
 }
 
+type DeviationMode = 'strict' | 'flexible' | 'exploratory' | 'free';
+
 export default function App() {
   const [prompt, setPrompt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [deviationMode, setDeviationMode] = useState<DeviationMode>('flexible');
 
   // Listen for messages from extension
   useEffect(() => {
@@ -66,10 +69,13 @@ export default function App() {
     setLoading(true);
     setFeedback(null);
     
-    console.log('[RL4 WebView] Requesting snapshot...');
+    console.log('[RL4 WebView] Requesting snapshot with mode:', deviationMode);
     
     if (window.vscode) {
-      window.vscode.postMessage({ type: 'generateSnapshot' });
+      window.vscode.postMessage({ 
+        type: 'generateSnapshot',
+        deviationMode 
+      });
     } else {
       console.error('[RL4] vscode API not available');
       setLoading(false);
@@ -93,6 +99,22 @@ export default function App() {
       {/* Main Content */}
       <main className="rl4-main">
         <div className="rl4-hero">
+          {/* Deviation Mode Selector */}
+          <div className="deviation-mode-selector">
+            <label htmlFor="deviation-mode">🎯 Angle de perception :</label>
+            <select 
+              id="deviation-mode"
+              value={deviationMode}
+              onChange={(e) => setDeviationMode(e.target.value as DeviationMode)}
+              disabled={loading}
+            >
+              <option value="strict">🔴 Strict (0%) — P0 uniquement</option>
+              <option value="flexible">🟡 Flexible (25%) — P0+P1 OK</option>
+              <option value="exploratory">🟢 Exploratoire (50%) — Nouvelles idées bienvenues</option>
+              <option value="free">⚪ Libre (100%) — Mode créatif</option>
+            </select>
+          </div>
+
           <button 
             onClick={handleGenerateSnapshot}
             disabled={loading}

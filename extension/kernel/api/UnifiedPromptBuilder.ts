@@ -45,9 +45,10 @@ export class UnifiedPromptBuilder {
   }
 
   /**
-   * Generate unified context snapshot
+   * Generate unified context snapshot with user-selected deviation mode
+   * @param deviationMode - User's perception angle (strict/flexible/exploratory/free)
    */
-  async generate(): Promise<string> {
+  async generate(deviationMode: 'strict' | 'flexible' | 'exploratory' | 'free' = 'flexible'): Promise<string> {
     const now = new Date();
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
     const period: TimelinePeriod = { from: twoHoursAgo, to: now };
@@ -88,7 +89,7 @@ export class UnifiedPromptBuilder {
     const confidence = plan ? this.planParser.calculateConfidence(plan, workspaceReality) : 0.5;
     const bias = biasReport.total;
 
-    // Build prompt
+    // Build prompt with user-selected deviation mode
     return this.formatPrompt({
       plan,
       tasks,
@@ -103,7 +104,8 @@ export class UnifiedPromptBuilder {
       healthTrends,
       confidence,
       bias,
-      generated: now.toISOString()
+      generated: now.toISOString(),
+      deviationMode  // User choice from UI
     });
   }
 
@@ -125,14 +127,24 @@ export class UnifiedPromptBuilder {
     confidence: number;
     bias: number;
     generated: string;
+    deviationMode: 'strict' | 'flexible' | 'exploratory' | 'free';
   }): string {
+    // Map deviation mode to threshold
+    const thresholdMap: Record<string, number> = {
+      'strict': 0.0,
+      'flexible': 0.25,
+      'exploratory': 0.50,
+      'free': 1.0
+    };
+    const threshold = thresholdMap[data.deviationMode];
     let prompt = `# 🧠 RL4 Context Snapshot\n`;
     prompt += `Generated: ${data.generated}\n`;
     prompt += `Confidence: ${(data.confidence * 100).toFixed(0)}% | Bias: ${(data.bias * 100).toFixed(0)}%\n\n`;
     
-    // Bias alert if exceeds threshold
-    if (data.biasReport.exceeds_threshold) {
-      prompt += `⚠️ **DEVIATION ALERT**: Bias (${(data.bias * 100).toFixed(0)}%) exceeds ${data.biasReport.deviation_mode} threshold (${(data.biasReport.threshold * 100).toFixed(0)}%)\n\n`;
+    // Bias alert if exceeds threshold (use user-selected mode, not config)
+    const exceedsThreshold = data.bias > threshold;
+    if (exceedsThreshold) {
+      prompt += `⚠️ **DEVIATION ALERT**: Bias (${(data.bias * 100).toFixed(0)}%) exceeds ${data.deviationMode} threshold (${(threshold * 100).toFixed(0)}%)\n\n`;
     }
     
     prompt += `---\n\n`;
@@ -203,7 +215,7 @@ export class UnifiedPromptBuilder {
     // Section 2.5: Deviation Guard (CRITICAL FOR AGENT LLM)
     prompt += `## 🛡️ Deviation Guard (Active Constraints)\n\n`;
     prompt += `**Current Phase:** ${data.plan?.phase || 'Unknown'}\n`;
-    prompt += `**Deviation Mode:** ${data.biasReport.deviation_mode} (${(data.biasReport.threshold * 100).toFixed(0)}% threshold)\n`;
+    prompt += `**Deviation Mode:** ${data.deviationMode} (${(threshold * 100).toFixed(0)}% threshold) — User-selected\n`;
     prompt += `**Current Bias:** ${(data.bias * 100).toFixed(0)}%\n\n`;
     
     if (data.tasks) {
@@ -246,8 +258,8 @@ export class UnifiedPromptBuilder {
     prompt += `     b) Add to Phase E4/E5 backlog\n`;
     prompt += `     c) Reject (stay on track)\n\n`;
     
-    if (data.biasReport.exceeds_threshold) {
-      prompt += `⚠️ **DEVIATION ALERT**: You are currently exceeding the ${data.biasReport.deviation_mode} threshold.\n\n`;
+    if (exceedsThreshold) {
+      prompt += `⚠️ **DEVIATION ALERT**: You are currently exceeding the ${data.deviationMode} threshold.\n\n`;
       prompt += `**Recommendations:**\n`;
       data.biasReport.recommendations.forEach(rec => {
         prompt += `- ${rec}\n`;
@@ -261,11 +273,11 @@ export class UnifiedPromptBuilder {
     prompt += `  - Is "deviation system" in Active Tasks? NO\n`;
     prompt += `  - Bias impact: New module = +15%\n`;
     prompt += `  - Current bias: ${(data.bias * 100).toFixed(0)}%\n`;
-    prompt += `  - Total if implemented: ${((data.bias + 0.15) * 100).toFixed(0)}% ${(data.bias + 0.15) > data.biasReport.threshold ? '>' : '<'} ${(data.biasReport.threshold * 100).toFixed(0)}% threshold\n\n`;
+    prompt += `  - Total if implemented: ${((data.bias + 0.15) * 100).toFixed(0)}% ${(data.bias + 0.15) > threshold ? '>' : '<'} ${(threshold * 100).toFixed(0)}% threshold\n\n`;
     
     prompt += `Agent response:\n`;
-    if ((data.bias + 0.15) > data.biasReport.threshold) {
-      prompt += `  "⚠️ This idea adds +15% bias (total: ${((data.bias + 0.15) * 100).toFixed(0)}% > ${(data.biasReport.threshold * 100).toFixed(0)}% threshold).\n`;
+    if ((data.bias + 0.15) > threshold) {
+      prompt += `  "⚠️ This idea adds +15% bias (total: ${((data.bias + 0.15) * 100).toFixed(0)}% > ${(threshold * 100).toFixed(0)}% threshold).\n`;
       prompt += `  \n`;
       prompt += `  Options:\n`;
       prompt += `  a) Implement now (Phase E4, accept ${((data.bias + 0.15) * 100).toFixed(0)}% deviation)\n`;
@@ -274,7 +286,7 @@ export class UnifiedPromptBuilder {
       prompt += `  \n`;
       prompt += `  What do you prefer?"\n\n`;
     } else {
-      prompt += `  "✅ This idea adds +15% bias (total: ${((data.bias + 0.15) * 100).toFixed(0)}% < ${(data.biasReport.threshold * 100).toFixed(0)}% threshold).\n`;
+      prompt += `  "✅ This idea adds +15% bias (total: ${((data.bias + 0.15) * 100).toFixed(0)}% < ${(threshold * 100).toFixed(0)}% threshold).\n`;
       prompt += `  Proceeding with implementation."\n\n`;
     }
 

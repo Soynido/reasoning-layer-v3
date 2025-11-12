@@ -230,8 +230,9 @@ export async function activate(context: vscode.ExtensionContext) {
                 switch (message.type) {
                     case 'generateSnapshot':
                         try {
-                            logger!.system('📋 Generating unified context snapshot...', '📋');
-                            const snapshot = await promptBuilder.generate();
+                            const deviationMode = message.deviationMode || 'flexible';
+                            logger!.system(`📋 Generating snapshot (mode: ${deviationMode})...`, '📋');
+                            const snapshot = await promptBuilder.generate(deviationMode);
                             
                             webviewPanel!.webview.postMessage({
                                 type: 'snapshotGenerated',
