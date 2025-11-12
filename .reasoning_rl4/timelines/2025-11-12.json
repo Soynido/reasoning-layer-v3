@@ -1,8 +1,8 @@
 {
   "date": "2025-11-12",
-  "generated_at": "2025-11-12T19:13:21.366Z",
+  "generated_at": "2025-11-12T19:25:01.445Z",
   "total_cycles": 452,
-  "total_events": 54216,
+  "total_events": 54776,
   "cognitive_load_avg": 0.5665509259259259,
   "hours": [
     {
@@ -321,10 +321,14 @@
       "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
       "forecast_confidence": 0.65,
       "intent": "feature",
-      "cycles_count": 581,
-      "events_count": 1864,
+      "cycles_count": 651,
+      "events_count": 2424,
       "cognitive_load": 1,
-      "files": []
+      "files": [
+        "extension/kernel/onboarding/OnboardingDetector.ts",
+        "extension/kernel/onboarding/ExistingWorkspaceOnboarding.ts",
+        "extension/kernel/onboarding/NewWorkspaceOnboarding.ts"
+      ]
     },
     {
       "hour": 21,

@@ -289,6 +289,27 @@ export class CognitiveLogger {
     }
     
     /**
+     * Log narrative message (storytelling, user-facing)
+     * 
+     * Used for onboarding, insights, and emotional intelligence reactions.
+     * Designed to be engaging and human-readable.
+     */
+    narrative(message: string): void {
+        // Detect special formatting
+        if (message.startsWith('═══')) {
+            // Full-width separator
+            this.channel.appendLine(message);
+        } else if (message === '') {
+            // Empty line
+            this.channel.appendLine('');
+        } else {
+            // Standard narrative with timestamp
+            const timestamp = this.formatTimestamp();
+            this.channel.appendLine(`[${timestamp}] ${message}`);
+        }
+    }
+    
+    /**
      * Log warning
      */
     warning(message: string): void {

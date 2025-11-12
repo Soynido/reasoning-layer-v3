@@ -1,6 +1,6 @@
 {
-  "last_updated": "2025-11-12T19:14:11.216Z",
-  "current_cycle": 55,
+  "last_updated": "2025-11-12T19:26:11.385Z",
+  "current_cycle": 127,
   "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
   "pattern_confidence": 0.8625,
   "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
@@ -9,10 +9,13 @@
   "adr": "Review and document: High frequency of fix commits (27 fixes) suggests areas requiring stability improvements",
   "files": [
     "extension/webview/ui/src/utils/contextParser.ts",
-    "reasoning-layer-rl4-2.7.0-adr-detection.vsix"
+    "extension/kernel/onboarding/OnboardingDetector.ts",
+    "extension/kernel/onboarding/ExistingWorkspaceOnboarding.ts",
+    "extension/kernel/onboarding/NewWorkspaceOnboarding.ts",
+    "extension/kernel/onboarding/OnboardingOrchestrator.ts"
   ],
   "stats": {
-    "total_cycles": 55,
+    "total_cycles": 127,
     "total_patterns": 4,
     "total_forecasts": 4,
     "total_adrs": 3
