@@ -71,9 +71,13 @@ export function parseContextRL4(content: string): {
   try {
     // Extract KPIs section
     const kpiMatch = content.match(/## KPIs \(LLM-Calculated\)([\s\S]*?)(?=##|$)/);
-    if (!kpiMatch) return result;
+    if (!kpiMatch) {
+      console.error('[RL4 Parser] ❌ KPI section not found');
+      return result;
+    }
 
     const kpiSection = kpiMatch[1];
+    console.log('[RL4 Parser] ✅ KPI section extracted:', kpiSection.substring(0, 200) + '...');
 
     // 1. Parse Cognitive Load
     const cognitiveLoadMatch = kpiSection.match(
@@ -81,6 +85,7 @@ export function parseContextRL4(content: string): {
     );
     
     if (cognitiveLoadMatch) {
+      console.log('[RL4 Parser] ✅ Cognitive Load parsed');
       result.cognitiveLoad = {
         percentage: parseInt(cognitiveLoadMatch[1]),
         level: cognitiveLoadMatch[2].toLowerCase() as 'normal' | 'high' | 'critical',
@@ -91,6 +96,8 @@ export function parseContextRL4(content: string): {
           uncommittedFiles: parseInt(cognitiveLoadMatch[6]),
         },
       };
+    } else {
+      console.error('[RL4 Parser] ❌ Cognitive Load NOT parsed');
     }
 
     // 2. Parse Next Tasks (allow extra text after "Mode")
@@ -99,6 +106,7 @@ export function parseContextRL4(content: string): {
     );
     
     if (nextTasksMatch) {
+      console.log('[RL4 Parser] ✅ Next Tasks section found');
       const mode = nextTasksMatch[1].toLowerCase() as 'strict' | 'flexible' | 'exploratory' | 'free';
       const stepsText = nextTasksMatch[2];
       
@@ -113,7 +121,10 @@ export function parseContextRL4(content: string): {
         });
       }
       
+      console.log(`[RL4 Parser] ✅ Next Tasks parsed: ${steps.length} steps`);
       result.nextSteps = { mode, steps };
+    } else {
+      console.error('[RL4 Parser] ❌ Next Tasks NOT parsed');
     }
 
     // 3. Parse Plan Drift (flexible: handles both drift and no-drift formats)
@@ -122,6 +133,7 @@ export function parseContextRL4(content: string): {
     );
     
     if (planDriftMatch) {
+      console.log('[RL4 Parser] ✅ Plan Drift section found');
       const percentage = parseInt(planDriftMatch[1]);
       const driftText = planDriftMatch[2];
       
@@ -158,17 +170,21 @@ export function parseContextRL4(content: string): {
       const thresholdMatch = driftText.match(/\((?:Strict|Flexible|Exploratory|Free): (\d+)% threshold\)/i);
       const threshold = thresholdMatch ? parseInt(thresholdMatch[1]) : 25;
       
+      console.log(`[RL4 Parser] ✅ Plan Drift parsed: ${percentage}%`);
       result.planDrift = {
         percentage,
         threshold,
         changes: { phase, goal, tasks },
       };
+    } else {
+      console.error('[RL4 Parser] ❌ Plan Drift NOT parsed');
     }
 
     // 4. Parse Risks (accept any emoji)
     const risksMatch = kpiSection.match(/### Risks([\s\S]*?)(?=###|$)/);
     
     if (risksMatch) {
+      console.log('[RL4 Parser] ✅ Risks section found');
       const risksText = risksMatch[1];
       // Match any emoji (Unicode range for emojis) followed by text
       const riskMatches = risksText.matchAll(/- ([\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}✅]+)\s*(.+?)(?=\n-|$)/gsu);
@@ -192,7 +208,10 @@ export function parseContextRL4(content: string): {
         });
       }
       
+      console.log(`[RL4 Parser] ✅ Risks parsed: ${risks.length} items`);
       result.risks = { risks };
+    } else {
+      console.error('[RL4 Parser] ❌ Risks NOT parsed');
     }
 
   } catch (error) {
