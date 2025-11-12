@@ -74,8 +74,8 @@ export function parseContextRL4(content: string): {
     console.log('[RL4 Parser] Does content include "KPIs (LLM-Calculated)"?', content.includes('KPIs (LLM-Calculated)'));
     console.log('[RL4 Parser] Content preview (500 chars):', content.substring(0, 500));
     
-    // Extract KPIs section
-    const kpiMatch = content.match(/## KPIs \(LLM-Calculated\)([\s\S]*?)(?=##|$)/);
+    // Extract KPIs section (stop at next ## heading, but NOT ### subheadings)
+    const kpiMatch = content.match(/## KPIs \(LLM-Calculated\)([\s\S]*?)(?=\n## (?!#)|$)/);
     if (!kpiMatch) {
       console.error('[RL4 Parser] ❌ KPI section not found');
       return result;
