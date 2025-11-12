@@ -1,47 +1,72 @@
 ---
-version: 1.6
-updated: 2025-11-12T16:05:00.000Z
-bias: 0.30
+version: 1.7
+updated: 2025-11-12T15:43:27.534Z
+bias: 0.58
 ---
 
 # RL4 Task List
 
-## Active (Priority Order) — MODE FLEXIBLE (25% deviation) ⚠️ Bias: 30%
+## Active (Priority Order) — MODE FLEXIBLE (25% deviation) 🚨 Bias: 58%
 
-**Phase E3.3 Complete ✅ → Phase E4 Started 🚀**
+**Phase E3.3 Complete ✅ → Phase E4 Active 🚀 → ⚠️ DEVIATION ALERT**
 
-**⚠️ DEVIATION ACCEPTED:** +10% bias pour amélioration documentation LLM (total: 30% > 25% threshold)
-**Justification:** Investissement infrastructure pour meilleure compréhension contexte
+**🚨 CRITICAL:** Bias (58%) significantly exceeds flexible threshold (25%)
+**Cause:** Incremental feature additions (+10% docs, +28% Smart UI features)
+**Decision Required:** Accept drift (update baseline) OR Recalibrate (remove features)
 
-1. [x] **[P1]** UI-Driven Deviation Mode (ADR-009) ✅ COMPLETE
+1. [ ] **[P0] URGENT:** Commit 21 uncommitted files
+   - **Risk:** Data loss if crash or accidental reset
+   - **Files:** .reasoning_rl4/*.json, .reasoning_rl4/**/*.jsonl (git status)
+   - **Action:** `git add .reasoning_rl4/` + `git commit -m "feat(rl4): KPI update + deviation recalibration"`
+   - **Added:** 2025-11-12T15:43 (LLM Agent)
+   - **Bias Impact:** 0% (operational task, no scope change)
+
+2. [ ] **[P1] PRIORITY:** Document 6 potential ADRs
+   - **Commits:** b21ac31, e41ff8c, 97e4843, f9d61c4, 7e358cb, 140406e (all scored 100%)
+   - **Action:** Review each commit, create ADR-011 to ADR-016 in ADRs.RL4
+   - **Why:** High architectural impact (266 files, 445K lines, core changes)
+   - **Added:** 2025-11-12T15:43 (LLM Agent)
+   - **Bias Impact:** 0% (documentation task, no new features)
+
+3. [ ] **[P1] RECALIBRATE:** Decide on 58% bias
+   - **Options:**
+     a) Accept drift → Save current Plan.RL4 as new baseline v2.0 (reset bias to 0%)
+     b) Recalibrate → Review E4 objectives, remove non-essential features
+     c) Continue → Acknowledge 58% bias, proceed with remaining P1 tasks
+   - **Action:** User decision required
+   - **Added:** 2025-11-12T15:43 (LLM Agent)
+
+4. [ ] **[P1]** Smart UI Components (Phase E4):
+   - [ ] CognitiveLoadCard (reads Context.RL4 KPIs section)
+   - [ ] NextStepsCard (reads Tasks.RL4 P0/P1 tasks)
+   - [ ] PlanDriftCard (reads Plan.RL4 baseline comparison)
+   - [ ] RisksCard (reads Context.RL4 risks section)
+   - [ ] TimelineChart (reads HistorySummary)
+   - [ ] DecisionHistory (reads ADRs.RL4)
+   - [ ] DeviationModeIndicator (color-coded: 🔴🟡🟢⚪)
+   - **Status:** 0/7 components implemented
+   - **Bias Impact:** Already counted in E4 (+28%)
+
+5. [ ] **[P2]** Test Context.RL4 parser (KPI section)
+6. [ ] **[P2]** Real-time .RL4 file refresh in UI
+
+## Completed (This Session)
+
+7. [x] **[P1]** UI-Driven Deviation Mode (ADR-009) ✅ COMPLETE
    - [x] Add mode selector to WebView UI (🔴 Strict / 🟡 Flexible / 🟢 Exploratory / ⚪ Free)
    - [x] Update `generateSnapshot` message to accept `deviationMode` param
    - [x] Modify `UnifiedPromptBuilder.ts` to use dynamic mode (not config)
    - [x] Display chosen mode in prompt header with behavioral rules
-   - **Why:** User controls perception angle per-snapshot (not global config)
-   - **Bias Impact:** +5% (total: 20% < 25% threshold) ✅ Approved
    - **Completed:** 15:45 (all sub-tasks done)
+   - **Bias Impact:** +5% (total: 20% → 25%)
 
-2. [x] **[P1]** Mermaid Diagrams + Plan Diff Tracking ✅ COMPLETE
+8. [x] **[P1]** Mermaid Diagrams + Plan Diff Tracking ✅ COMPLETE
    - [x] Add Mermaid to existing ADRs (ADR-005 to ADR-009)
    - [x] Create ADR Mermaid template for future
    - [x] Add ADDED/MODIFIED/REMOVED to Plan.RL4
    - [x] PlanTasksContextParser reads diffs (no changes needed)
-   - **Why:** Améliore drastiquement compréhension LLM du contexte
-   - **Bias Impact:** +10% (total: 30% > 25%) — Déviation acceptée
    - **Completed:** 16:05 (all sub-tasks done)
-
-3. [ ] **[P1]** Smart UI Components (Phase E4):
-   - [ ] NextStepsCard (reads Tasks.RL4 → P0 tasks)
-   - [ ] ConfidenceGauge (reads Plan.RL4 → confidence 95%)
-   - [ ] BlockersAlert (reads Tasks.RL4 → blockers)
-   - [ ] CognitiveLoadMeter (reads Context.RL4 → observations)
-   - [ ] TimelineChart (reads HistorySummary → activity trends)
-   - [ ] DecisionHistory (reads ADRs.RL4 → ADR timeline)
-   - [ ] DeviationModeIndicator (color-coded visual based on chosen mode)
-
-3. [ ] **[P2]** Test ADR auto-detection with last 10 commits
-4. [ ] **[P2]** Add real-time UI refresh on .RL4 file changes
+   - **Bias Impact:** +10% (total: 25% → 35%)
 
 ## Completed (Last Session)
 - [x] ADRSignalEnricher.ts created (14:30)
@@ -79,12 +104,17 @@ bias: 0.30
 ~~- ADR-005 not detected in snapshot (parser issue with ADRs.RL4)~~ ✅ **RESOLVED** (13:00)
 
 ## Metrics
-- Total tasks: 18 (13 completed, 5 active)
-- Completion rate: 72%
+- Total tasks: 20 (15 completed, 6 active)
+- Active breakdown: 1 P0 (URGENT), 3 P1 (PRIORITY), 2 P2 (SECONDARY)
+- Completion rate: 75%
 - Current sprint: E4 (Day 1/4) — Smart UI
-- Velocity: Excellent (13 tasks in 5.5h)
-- Blockers resolved: 1/1 (100%)
-- Bias: 30% (deviation accepted: +10% for LLM context improvement)
-- **P1 milestones**: 
-  - ✅ UI-Driven Deviation Mode
-  - ✅ Mermaid Diagrams + Plan Evolution Tracking
+- Velocity: Excellent (15 tasks completed)
+- Blockers: 0 technical, 1 decision required (bias recalibration)
+- Bias: 58% 🚨 (exceeds flexible threshold 25% by 33 points)
+- **Critical Actions:**
+  - 🔴 P0: Commit 21 files (data loss risk)
+  - 🟡 P1: User decision on bias recalibration
+  - 🟡 P1: Document 6 ADRs (traceability gap)
+- **P1 Milestones Complete:** 
+  - ✅ UI-Driven Deviation Mode (ADR-009)
+  - ✅ Mermaid Diagrams + Plan Evolution Tracking (ADR-010)

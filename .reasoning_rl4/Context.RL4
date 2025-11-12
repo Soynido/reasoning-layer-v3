@@ -1,33 +1,39 @@
 ---
-version: 1.8
-updated: 2025-11-12T17:30:00.000Z
-confidence: 0.98
+version: 1.9
+updated: 2025-11-12T15:43:27.534Z
+confidence: 0.92
 ---
 
 # RL4 Operational Context
 
 ## KPIs (LLM-Calculated)
 
-### Cognitive Load: 68% (High)
-- Bursts: 3
-- Switches: 28
-- Parallel Tasks: 2
-- Uncommitted Files: 5
+### Cognitive Load: 34% (Normal)
+- Bursts: 1 (UnifiedPromptBuilder.ts: 24 edits in <1min)
+- Switches: 25 (estimated from timeline activity)
+- Parallel Tasks: 0 (no active "in_progress" tasks)
+- Uncommitted Files: 21 ⚠️ HIGH (>15 threshold)
 
-### Next Steps (Flexible Mode)
-1. [P1] Implement Smart UI Components (CognitiveLoadCard, NextStepsCard, PlanDriftCard, RisksCard)
-2. [P1] Update Context.RL4 parser to read KPIs section
-3. [P2] Compile, package, and test Smart UI
+**Calculation:** `(1/10 * 0.3) + (25/50 * 0.2) + (0/3 * 0.3) + (21/20 * 0.2) = 0.34`
 
-### Plan Drift: 30%
+### Next Steps (Flexible Mode — ⚠️ BIAS ALERT: 58% > 25%)
+1. **[P0] URGENT:** Commit 21 uncommitted files (data loss risk)
+2. **[P1] PRIORITY:** Document 6 potential ADRs (commits b21ac31, e41ff8c, 97e4843, f9d61c4, 7e358cb, 140406e)
+3. **[P1] CONTINUE:** Complete Smart UI Components (CognitiveLoadCard, NextStepsCard, PlanDriftCard, RisksCard)
+4. **[P1] RECALIBRATE:** Decide on 58% bias (accept deviation or revert to baseline)
+
+### Plan Drift: 58% ⚠️ EXCEEDS FLEXIBLE THRESHOLD (25%)
 - Phase: E3.3 → E4 (changed)
 - Goal: 70% different from baseline
+- Timeline: +1 day (3→4 days, 33% drift)
 - Tasks: +3 added (not in original plan)
+- **Impact:** Strategic direction drifted significantly
 
 ### Risks
-- 🟡 Burst activity detected (UnifiedPromptBuilder.ts: 38 edits in 1min)
-- 🟡 Multiple P1 tasks in parallel (2 tasks)
-- 🟢 System health: Normal (279MB memory, 0.08ms event loop)
+- 🔴 **21 uncommitted files** (>15 threshold, high data loss risk)
+- 🟡 **Burst activity** (UnifiedPromptBuilder.ts: 24 edits in <1min, possible debugging session)
+- 🟡 **Long gap** (34min break: 16:04→16:38, potential blocker?)
+- 🟢 **System health:** Excellent (284MB memory stable, 0.09ms event loop p50)
 
 ## Recent Activity
 - Cycles: 710
@@ -76,35 +82,55 @@ confidence: 0.98
 - System health trends (memory/event loop/uptime)
 
 ## Agent Observations
-- **Phase E4 P1 Milestones Complete**:
-  - ✅ UI-Driven Deviation Mode (ADR-009) — 15:45
-  - ✅ Mermaid Diagrams + Plan Evolution Tracking — 16:05
-- **Documentation Enhancement**:
-  - All ADRs (005-009) now have Mermaid architecture diagrams
-  - ADR_TEMPLATE.md created for future ADRs with diagram guidelines
-  - Plan.RL4 now tracks ADD/MODIFY/REMOVE between phases
-  - "Phase Evolution Tracking" section provides historical context
-- **LLM Context Improvement**:
-  - Visual diagrams = instant comprehension of decisions
-  - Evolution tracking = precise understanding of changes
-  - WHY sections now linked to user insights
-  - Baseline vs Current comparison visible in prompt
-- **Confidence**: 98% (was 97%) — Documentation infrastructure solid
-- **Bias**: 30% (was 20%) — Deviation accepted for infrastructure investment
-- **ROI**: High (1-2h investment → better context for all future prompts)
-- **Next**: Reload Cursor → Generate snapshot → Validate Mermaid rendering
 
-## Recommendations — MODE FLEXIBLE (25% threshold)
-1. **P1 PRIORITY**: Implement UI-Driven Deviation Mode (ADR-009)
-   - Add mode selector to WebView (🔴 Strict / 🟡 Flexible / 🟢 Exploratory / ⚪ Free)
-   - User chooses perception angle per-snapshot (not global config)
-   - Agent behavior adapts dynamically
-   - Smart UI displays mode-specific insights
-2. **P1 CONTINUE**: Smart UI Components (Phase E4)
-   - NextStepsCard, ConfidenceGauge, BlockersAlert, etc.
-   - Display LLM-validated insights (not raw data)
-3. **P2 TESTING**: Validate ADR auto-detection with last 10 commits
-   - Confirm score accuracy (140406e = 100% ✅)
-4. **NEW IDEAS (Flexible Mode)**: 
-   - P0+P1 tasks → Proceed immediately
-   - New ideas → Calculate bias impact, ask user if >25%
+**🚨 DEVIATION ALERT (58% > 25% threshold):**
+The system has significantly drifted from original plan baseline. Phase changed (E3.3→E4), goal 70% different, timeline extended. This drift was accepted incrementally (+10% for documentation, +28% for additional features), but now exceeds flexible threshold.
+
+**Options:**
+1. **Accept drift:** Update baseline to E4 as new reference (reset bias to 0%)
+2. **Recalibrate:** Review E4 objectives, remove non-essential features
+3. **Continue:** Acknowledge 58% bias, proceed with P1 tasks
+
+**Positive Developments:**
+- ✅ Phase E3.3 objectives 100% complete
+- ✅ ADR-008, ADR-009, ADR-010 documented with full traceability
+- ✅ UI-Driven Deviation Mode implemented (15:45)
+- ✅ Mermaid diagrams added to all ADRs (16:05)
+- ✅ System health excellent (no memory leaks, event loop responsive)
+
+**Concerns:**
+- ⚠️ 21 uncommitted files (risk of losing work)
+- ⚠️ 6 commits (100% ADR score) not yet documented
+- ⚠️ Bias continues to grow without explicit user decision
+
+**Timeline Patterns (Last 2h):**
+- 537 cycles (4.5/min sustained rate)
+- 1 burst session (UnifiedPromptBuilder.ts debugging)
+- 1 long gap (34min) suggests possible blocker or meeting
+- Activity distribution: steady afternoon work session
+
+**Git Activity:**
+- Last 10 commits: 7 features, 3 fixes (healthy mix)
+- Recent: b21ac31 (Smart UI Phase 1), e41ff8c (i18n fix)
+- All commits scored 100% for ADR detection (high architectural impact)
+
+## Recommendations — MODE FLEXIBLE (⚠️ 58% > 25%)
+
+**IMMEDIATE (P0):**
+1. **Commit 21 files** — Data loss risk mitigation
+2. **User decision on 58% bias** — Accept/Recalibrate/Continue?
+
+**PRIORITY (P1):**
+1. **Document 6 ADRs** — Commits b21ac31, e41ff8c, 97e4843, f9d61c4, 7e358cb, 140406e all scored 100%
+2. **Complete Smart UI Components** — CognitiveLoadCard, NextStepsCard, PlanDriftCard, RisksCard (3/7 remaining)
+3. **Test Context.RL4 parser** — Validate KPI section reading
+
+**SECONDARY (P2):**
+1. **Real-time .RL4 file refresh** — FileWatchers → UI update
+2. **Interactive ADR timeline** — Visualize decision history
+
+**GUARD RAILS (Flexible Mode):**
+- New ideas → Calculate bias impact first
+- If new_bias + 58% > 80% → STOP, ask user
+- P0+P1 tasks → Proceed immediately
+- P2+ tasks → Add to backlog unless user approves

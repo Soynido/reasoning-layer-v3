@@ -913,4 +913,223 @@ Each KPI has an info icon with factual explanation:
 - ADR-006: Smart UI Architecture (LLM as middleware)
 - ADR-009: UI-Driven Deviation Mode (mode selection)
 
+---
+
+## ADR-011: Bias Recalibration Decision Framework
+
+**Status**: proposed  
+**Date**: 2025-11-12  
+**Author**: Agent LLM (based on snapshot analysis)  
+**Current Bias**: 58% (exceeds flexible threshold 25% by 33 points)  
+**Trigger**: 6 commits with 100% ADR score (b21ac31, e41ff8c, 97e4843, f9d61c4, 7e358cb, 140406e)
+
+### Context
+
+**Problem Detected:**
+During Phase E4 implementation, system bias drifted incrementally:
+- Baseline (v1.0): E3.3 objectives (Single Context Snapshot)
+- Current (v2.0): E4 objectives (Smart UI with LLM-validated KPIs)
+- Drift calculation: 58% (Phase changed, Goal 70% different, Timeline +33%)
+
+**Incremental Drift History:**
+1. +5% → UI-Driven Deviation Mode (ADR-009) — User feature request
+2. +10% → Mermaid Diagrams (ADR-010) — Documentation improvement
+3. +28% → Smart UI Components — Feature expansion
+4. **Total: 58% > 25% threshold**
+
+**Root Cause:**
+Incremental feature additions were individually approved (+5%, +10%) but cumulative impact (58%) was not re-evaluated against threshold.
+
+**Current State:**
+- 21 uncommitted files (.reasoning_rl4/*.json, *.jsonl)
+- 6 commits (100% ADR score) not yet documented
+- Phase E4 objectives 33% complete (2/7 Smart UI components)
+- System health: Excellent (no technical blockers)
+
+### Decision Options
+
+**Option A: Accept Drift (Update Baseline)**
+- **Action:** Save current Plan.RL4 v2.0 as new baseline
+- **Effect:** Reset bias to 0%, E4 becomes new reference
+- **Pros:**
+  - ✅ Clean slate for future tracking
+  - ✅ E4 objectives validated as strategic direction
+  - ✅ No feature rollback required
+- **Cons:**
+  - ❌ Original E3.3 goal abandoned
+  - ❌ Baseline becomes moving target
+  - ❌ Risk of continuous drift without accountability
+
+**Option B: Recalibrate (Remove Non-Essential Features)**
+- **Action:** Review E4 features, remove non-critical components
+- **Candidates for removal:**
+  - Mermaid diagrams (docs improvement, not core functionality)
+  - DeviationModeIndicator UI (nice-to-have, not essential)
+  - TimelineChart (visualization, can be Phase E5)
+- **Target:** Reduce bias to <25% (remove ~33 points worth)
+- **Pros:**
+  - ✅ Return to flexible threshold
+  - ✅ Preserve original E3.3 baseline
+  - ✅ Discipline maintained
+- **Cons:**
+  - ❌ Rollback work already done
+  - ❌ Documentation improvements lost
+  - ❌ User may feel restricted
+
+**Option C: Continue (Acknowledge Deviation)**
+- **Action:** Document 58% bias, proceed with P1 tasks only
+- **Constraint:** No new features until E4 P1 complete
+- **Pros:**
+  - ✅ No rollback, no baseline change
+  - ✅ Complete current commitments
+  - ✅ Re-evaluate at E4 completion
+- **Cons:**
+  - ❌ Bias remains high (58%)
+  - ❌ Risk of further drift
+  - ❌ Threshold becomes meaningless if ignored
+
+### Recommendation
+
+**Agent Recommendation: Option A (Accept Drift)**
+
+**Rationale:**
+1. **Incremental drift was intentional:** Each +5%, +10% decision was user-approved
+2. **E4 objectives are valuable:** Smart UI with LLM-validated KPIs solves real UX problem ("Et alors ? C'est grave ?")
+3. **No technical debt:** All features implemented cleanly (ADR-008, ADR-009, ADR-010 documented)
+4. **Historical value:** Mermaid diagrams improve LLM context significantly
+5. **Baseline stability:** v1.0 preserved in `.baseline/` for reference
+
+**Implementation:**
+```bash
+# Save current state as new baseline
+cp .reasoning_rl4/Plan.RL4 .reasoning_rl4/.baseline/Plan.RL4.v2.0
+
+# Update Plan.RL4 metadata
+version: 2.0
+baseline_version: 2.0
+bias: 0.0 (reset)
+baseline_updated: 2025-11-12T15:43:27.534Z
+```
+
+**Consequences:**
+- ✅ Bias reset to 0%
+- ✅ E4 becomes new strategic direction
+- ✅ Future drift measured against E4 baseline
+- ⚠️ Original E3.3 baseline archived (still readable in `.baseline/Plan.RL4.v1.0`)
+
+### Alternatives Considered
+
+**Why not Option B (Recalibrate)?**
+- Rollback Mermaid diagrams → Loses documentation value
+- Remove UI features → Incomplete E4 (user frustration)
+- Cost/benefit: High effort, low gain
+
+**Why not Option C (Continue)?**
+- Ignoring threshold → System becomes "flexible" in name only
+- 58% bias indefinitely → No accountability
+- Risk: Drift to 80%+ without re-evaluation
+
+### Architecture Diagram
+
+```mermaid
+graph TD
+    A["Baseline v1 0<br/>E3 3 Objectives"] --> B["Incremental Drift"]
+    B --> C["+5% ADR-009<br/>UI Mode Selector"]
+    B --> D["+10% ADR-010<br/>Mermaid Diagrams"]
+    B --> E["+28% Smart UI<br/>Components"]
+    C --> F["Current: 58% Bias"]
+    D --> F
+    E --> F
+    
+    F --> G{"Decision?"}
+    G -->|Option A| H["Accept Drift<br/>New Baseline v2 0"]
+    G -->|Option B| I["Recalibrate<br/>Remove Features"]
+    G -->|Option C| J["Continue<br/>Acknowledge 58%"]
+    
+    H --> K["Bias Reset to 0%<br/>E4 = New Reference"]
+    I --> L["Bias < 25%<br/>E3 3 = Reference"]
+    J --> M["Bias = 58%<br/>No Change"]
+    
+    style F fill:#ff4d4d
+    style H fill:#00c864
+    style I fill:#ff9500
+    style J fill:#667eea
+```
+
+**Key Decision Points:**
+- **Problem:** 58% bias exceeds 25% threshold (flexible mode)
+- **Root Cause:** Incremental approvals without cumulative re-evaluation
+- **Solution:** Accept drift (update baseline) OR Recalibrate (remove features)
+- **Recommendation:** Option A (accept drift, E4 valuable)
+
+### Success Metrics
+
+**If Option A chosen:**
+- [ ] New baseline saved (`.baseline/Plan.RL4.v2.0`)
+- [ ] Plan.RL4 metadata updated (bias: 0.0, baseline_version: 2.0)
+- [ ] Context.RL4 recalculated with new baseline
+- [ ] User satisfaction: "E4 objectives are my new strategic direction"
+
+**If Option B chosen:**
+- [ ] Features removed (document which ones)
+- [ ] Bias recalculated (<25%)
+- [ ] Plan.RL4 reverted to E3.3 scope
+- [ ] User satisfaction: "I'm back on track with original plan"
+
+**If Option C chosen:**
+- [ ] Bias documented in all .RL4 files (58%)
+- [ ] P1 tasks completed (no new features)
+- [ ] Re-evaluation scheduled at E4 completion
+- [ ] User satisfaction: "I understand the tradeoff"
+
+### Implementation Status
+
+**Pending User Decision:**
+This ADR is **proposed** and requires user approval. The system will:
+1. Wait for user response in next snapshot
+2. Execute chosen option (A/B/C)
+3. Update all .RL4 files accordingly
+4. Mark this ADR as **accepted** once decision made
+
+### Related ADRs
+- ADR-007: Agent Self-Deviation Detection (original Deviation Guard)
+- ADR-009: UI-Driven Deviation Mode (flexible threshold 25%)
+- ADR-010: Smart UI with LLM-Validated KPIs (major feature addition)
+
+### Uncommitted Commits (Potential ADRs)
+
+**6 commits scored 100% for ADR detection:**
+
+1. **b21ac31** - feat(rl4): Smart UI Phase 1 - ADR-010 + KPI Instructions (No Hallucinations)
+   - Files: 33, Lines: 7,093 (+6,784/-309)
+   - Core: Yes, Type: feature
+   - **Needs ADR?** Already documented as ADR-010 ✅
+
+2. **e41ff8c** - fix(rl4): UI i18n (French→English) + Adaptive Deviation Modes
+   - Files: 31, Lines: 3,903 (+3,667/-236)
+   - Core: Yes, Type: fix
+   - **Needs ADR?** Internationalization decision + mode adaptation logic
+
+3. **97e4843** - fix(mermaid): Remove dots from labels - Syntax error fix
+   - Files: 18, Lines: 773 (+634/-139)
+   - Core: No, Type: fix
+   - **Needs ADR?** Low priority (syntax fix)
+
+4. **f9d61c4** - feat(rl4): Mermaid Diagrams + Phase Evolution Tracking - Documentation Enhancement
+   - Files: 25, Lines: 1,925 (+1,801/-124)
+   - Core: No, Type: feature
+   - **Needs ADR?** Already documented as ADR-010 context ✅
+
+5. **7e358cb** - feat(rl4): ADR-009 UI-Driven Deviation Mode - Complete Implementation
+   - Files: 30, Lines: 3,020 (+2,849/-171)
+   - Core: Yes, Type: feature
+   - **Needs ADR?** Already documented as ADR-009 ✅
+
+6. **140406e** - feat(rl4): Phase E3.3→E4 - Vision Finale + Deviation Guard + ADR Auto-Detection
+   - Files: 266, Lines: 445,554 (+386,487/-59,067)
+   - Core: Yes, Type: feature
+   - **Needs ADR?** Already documented as ADR-008 ✅
+
+**Action Required:** Only commit **e41ff8c** (i18n + adaptive modes) needs dedicated ADR documentation.
+
 

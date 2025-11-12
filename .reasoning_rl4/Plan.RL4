@@ -1,14 +1,15 @@
 ---
-version: 1.9
+version: 2.0
 original_version: 1.0
-updated: 2025-11-12T16:15:00.000Z
-confidence: 0.98
+updated: 2025-11-12T15:43:27.534Z
+confidence: 0.92
+bias: 0.58
 baseline_saved: true
 deviation_mode: ui_driven
-commit: 97e4843
-vsix: reasoning-layer-rl4-2.7.0-adr-detection.vsix
+commit: b21ac31
+vsix: reasoning-layer-rl4-2.8.0-smart-ui-phase1.vsix
 snapshot_validated: true
-milestone: Mermaid Syntax Fixed
+milestone: Smart UI Phase 1 + Deviation Alert
 ---
 
 # RL4 Strategic Plan
@@ -23,8 +24,8 @@ Transform RL4 UI from "data display" to "actionable insights" via LLM-validated 
 - Phase E3.3: ✅ COMPLETE (2025-11-12)
 - Phase E4 Start: 2025-11-12 (15:30)
 - Target: 2025-11-16 (4 days)
-- Current: Day 1/4 (95% confidence)
-- Status: 🟢 Excellent momentum
+- Current: Day 1/4 (92% confidence)
+- Status: 🟡 Momentum good, deviation alert active (58% > 25%)
 
 **Phase E3.3 Objectives (COMPLETE):**
 1. ✅ Simplify UI to 1 button ("Generate Context Snapshot")
@@ -62,7 +63,16 @@ Transform RL4 UI from "data display" to "actionable insights" via LLM-validated 
 - [x] Real-time data only (cycles, commits, health)
 - [x] Agent can update Plan/Tasks/Context.RL4
 - [x] RL4 detects changes and re-parses (FileWatchers active)
-- [x] Confidence/Bias metrics calculated (71% / 0%)
+- [x] Confidence/Bias metrics calculated (92% / 58%)
+
+**⚠️ Deviation Status:**
+- **Baseline:** Plan.RL4 v1.0 (saved in .baseline/)
+- **Current:** Plan.RL4 v2.0 (58% drift from baseline)
+- **Threshold:** Flexible mode = 25% (EXCEEDED by 33 points)
+- **Decision Required:** User must choose:
+  - Accept drift → Update baseline to v2.0 (reset bias to 0%)
+  - Recalibrate → Remove non-essential E4 features
+  - Continue → Acknowledge 58%, proceed with P1 only
 
 ## Phase Evolution Tracking
 
