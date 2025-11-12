@@ -63,7 +63,7 @@ Implement **Single Context Snapshot System** with:
 ```mermaid
 graph TD
     A[User Clicks Generate] --> B[UnifiedPromptBuilder]
-    B --> C[Load Plan/Tasks/Context.RL4]
+    B --> C["Load Plan/Tasks/Context RL4"]
     B --> D[Load BlindSpot Data]
     B --> E[Load ADRs]
     C --> F[Format Unified Prompt]
@@ -72,10 +72,10 @@ graph TD
     F --> G[Copy to Clipboard]
     G --> H[User Pastes in Agent]
     H --> I[Agent Analyzes]
-    I --> J[Agent Updates .RL4 Files]
+    I --> J["Agent Updates RL4 Files"]
     J --> K[FileWatchers Detect Changes]
     K --> L[RL4 Re-parses]
-    L --> M[Confidence/Bias Recalculated]
+    L --> M["Confidence/Bias Recalculated"]
     M --> A
     
     style F fill:#667eea
@@ -201,17 +201,17 @@ Implement **Smart UI Architecture** where:
 
 ```mermaid
 graph LR
-    A[Kernel<br/>Dumb Logger] -->|Raw Data<br/>25MB| B[Prompt<br/>Middleware]
-    B -->|Compressed<br/>2KB| C[LLM Agent<br/>Cognitive Validator]
-    C -->|Validated<br/>Insights| D[.RL4 Files<br/>Source of Truth]
-    D -->|Structured<br/>Data| E[Smart UI<br/>Read-Only Display]
+    A["Kernel<br/>Dumb Logger"] -->|"Raw Data<br/>25MB"| B["Prompt<br/>Middleware"]
+    B -->|"Compressed<br/>2KB"| C["LLM Agent<br/>Cognitive Validator"]
+    C -->|"Validated<br/>Insights"| D["RL4 Files<br/>Source of Truth"]
+    D -->|"Structured<br/>Data"| E["Smart UI<br/>Read-Only Display"]
     
-    A1[cycles.jsonl<br/>health.jsonl<br/>git_commits.jsonl] --> A
-    D1[Plan.RL4<br/>Tasks.RL4<br/>Context.RL4<br/>ADRs.RL4] --> D
-    E1[NextStepsCard<br/>ConfidenceGauge<br/>BlockersAlert<br/>CognitiveLoadMeter] --> E
+    A1["cycles jsonl<br/>health jsonl<br/>git commits jsonl"] --> A
+    D1["Plan RL4<br/>Tasks RL4<br/>Context RL4<br/>ADRs RL4"] --> D
+    E1["NextStepsCard<br/>ConfidenceGauge<br/>BlockersAlert<br/>CognitiveLoadMeter"] --> E
     
-    E --> F[User Sees<br/>WHAT TO DO]
-    F -.->|Updates via<br/>LLM| C
+    E --> F["User Sees<br/>WHAT TO DO"]
+    F -.->|"Updates via<br/>LLM"| C
     
     style A fill:#666
     style C fill:#667eea
@@ -361,19 +361,19 @@ Implement **Deviation Guard** system that:
 
 ```mermaid
 graph TD
-    A[User Suggests Idea] --> B{In P0/P1 Tasks?}
+    A[User Suggests Idea] --> B{"In P0/P1 Tasks?"}
     B -->|YES| C[Proceed Immediately]
     B -->|NO| D[Calculate Bias Impact]
-    D --> E{current + new > threshold?}
+    D --> E{"current + new > threshold?"}
     E -->|NO| F[Proceed with Implementation]
     E -->|YES| G[STOP - Ask User]
-    G --> H{User Decision?}
+    G --> H{"User Decision?"}
     H -->|Accept| I[Implement + Update Bias]
-    H -->|Backlog| J[Add to P2/P3]
+    H -->|Backlog| J["Add to P2/P3"]
     H -->|Reject| K[Stay on Track]
     
-    L[Baseline Plan.RL4 v1.0] -.->|Compare| D
-    M[kernel_config.json] -.->|deviation_mode| E
+    L["Baseline Plan RL4 v1 0"] -.->|Compare| D
+    M["kernel config json"] -.->|deviation_mode| E
     
     style G fill:#ff4d4d
     style F fill:#00c864
@@ -510,22 +510,22 @@ Implement 3 core modules to close the feedback loop:
 
 ```mermaid
 graph TD
-    A[30 Days Raw Data] -->|cycles.jsonl| B[HistorySummarizer]
-    A -->|timelines/| B
-    A -->|git_commits.jsonl| C[ADRSignalEnricher]
+    A[30 Days Raw Data] -->|cycles jsonl| B[HistorySummarizer]
+    A -->|timelines| B
+    A -->|git commits jsonl| C[ADRSignalEnricher]
     
     B -->|2KB JSON| D[UnifiedPromptBuilder]
     C -->|ADR Scores| D
     
-    E[Plan.RL4 v1.0] -->|Baseline| F[BiasCalculator]
-    G[Plan.RL4 Current] -->|Compare| F
+    E["Plan RL4 v1 0"] -->|Baseline| F[BiasCalculator]
+    G["Plan RL4 Current"] -->|Compare| F
     F -->|Bias %| D
     
     D --> H[Single Prompt]
     H --> I[LLM Agent]
-    I --> J[Updates .RL4 Files]
+    I --> J["Updates RL4 Files"]
     J --> K[ADRParser]
-    K -->|Validate| L[adrs.jsonl]
+    K -->|Validate| L["adrs jsonl"]
     J --> M[FileWatchers]
     M --> D
     
@@ -665,24 +665,24 @@ graph TD
     A[User Opens RL4] --> B[WebView UI]
     B --> C[Select Deviation Mode]
     C --> D{Mode Choice}
-    D -->|🔴 Strict 0%| E[P0 Only Rules]
-    D -->|🟡 Flexible 25%| F[P0+P1 OK Rules]
-    D -->|🟢 Exploratory 50%| G[New Ideas OK Rules]
-    D -->|⚪ Free 100%| H[No Limits Rules]
+    D -->|"🔴 Strict 0%"| E["P0 Only Rules"]
+    D -->|"🟡 Flexible 25%"| F["P0+P1 OK Rules"]
+    D -->|"🟢 Exploratory 50%"| G["New Ideas OK Rules"]
+    D -->|"⚪ Free 100%"| H["No Limits Rules"]
     
     E --> I[Click Generate]
     F --> I
     G --> I
     H --> I
     
-    I --> J[App.tsx sends mode]
-    J --> K[extension.ts receives]
-    K --> L[UnifiedPromptBuilder.generate mode]
+    I --> J["App tsx sends mode"]
+    J --> K["extension ts receives"]
+    K --> L["UnifiedPromptBuilder generate mode"]
     L --> M{thresholdMap}
-    M -->|strict| N[threshold = 0.0]
-    M -->|flexible| O[threshold = 0.25]
-    M -->|exploratory| P[threshold = 0.50]
-    M -->|free| Q[threshold = 1.0]
+    M -->|strict| N["threshold = 0 0"]
+    M -->|flexible| O["threshold = 0 25"]
+    M -->|exploratory| P["threshold = 0 50"]
+    M -->|free| Q["threshold = 1 0"]
     
     N --> R[Prompt with Mode Rules]
     O --> R
