@@ -1,10 +1,10 @@
 {
   "version": "1.0.0",
-  "generated_at": "2025-11-12T17:09:05.981Z",
-  "total_cycles": 12373,
+  "generated_at": "2025-11-12T17:11:17.747Z",
+  "total_cycles": 12385,
   "date_range": {
     "first": "2025-11-03T16:33:56.387Z",
-    "last": "2025-11-12T17:09:05.914Z"
+    "last": "2025-11-12T17:11:17.691Z"
   },
   "by_day": {
     "2025-11-03": [
@@ -130615,6 +130615,114 @@
     {
       "cycleId": 11,
       "timestamp": "2025-11-12T17:09:05.914Z",
+      "day": "2025-11-12",
+      "hour": 18,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 12,
+      "timestamp": "2025-11-12T17:09:15.940Z",
+      "day": "2025-11-12",
+      "hour": 18,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 13,
+      "timestamp": "2025-11-12T17:09:25.939Z",
+      "day": "2025-11-12",
+      "hour": 18,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 1,
+      "timestamp": "2025-11-12T17:09:47.694Z",
+      "day": "2025-11-12",
+      "hour": 18,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 2,
+      "timestamp": "2025-11-12T17:09:57.647Z",
+      "day": "2025-11-12",
+      "hour": 18,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 3,
+      "timestamp": "2025-11-12T17:10:07.701Z",
+      "day": "2025-11-12",
+      "hour": 18,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 4,
+      "timestamp": "2025-11-12T17:10:17.675Z",
+      "day": "2025-11-12",
+      "hour": 18,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 5,
+      "timestamp": "2025-11-12T17:10:27.682Z",
+      "day": "2025-11-12",
+      "hour": 18,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 6,
+      "timestamp": "2025-11-12T17:10:37.685Z",
+      "day": "2025-11-12",
+      "hour": 18,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 7,
+      "timestamp": "2025-11-12T17:10:47.674Z",
+      "day": "2025-11-12",
+      "hour": 18,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 8,
+      "timestamp": "2025-11-12T17:10:57.682Z",
+      "day": "2025-11-12",
+      "hour": 18,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 9,
+      "timestamp": "2025-11-12T17:11:07.687Z",
+      "day": "2025-11-12",
+      "hour": 18,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 10,
+      "timestamp": "2025-11-12T17:11:17.691Z",
       "day": "2025-11-12",
       "hour": 18,
       "patterns_count": 4,
