@@ -38,11 +38,18 @@ Deliver a marketplace-ready VS Code extension that provides developers with acti
 6. ✅ ADR auto-detection (commit scoring)
 7. ✅ Deviation Guard (baseline tracking)
 
-**Phase E4 Objectives (ACTIVE):**
+**Phase E4 Objectives (COMPLETE ✅):**
 1. [x] UI-Driven Deviation Mode (ADR-009) ✅ DONE — User chooses perception angle
-2. [ ] Smart UI Components (ADR-006) — LLM-validated insights, not raw data
-3. [ ] Real-time .RL4 file refresh (FileWatchers → UI update)
-4. [ ] Interactive ADR timeline visualization
+2. [x] Smart UI Components (ADR-006) ✅ DONE — 4 KPI cards functional
+3. [x] Real-time .RL4 file refresh (FileWatchers → UI update) ✅ DONE — Context.RL4 watched
+
+**Phase E5 Objectives (ACTIVE — Marketplace Ready):**
+1. [ ] Create new GitHub repo "RL4 Official" (clean slate)
+2. [ ] Clean codebase (UI + backend only, remove dev artifacts)
+3. [ ] Marketplace README (How/Why/Who/What — universal clarity)
+4. [ ] Screenshots and demo assets
+5. [ ] Optimize for public understanding (code comments, docs)
+6. [ ] VS Code Marketplace submission
 
 **Milestones Achieved (Day 1):**
 - ✅ UnifiedPromptBuilder.ts created (generates single prompt)
