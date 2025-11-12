@@ -408,9 +408,20 @@ body {
 }
 
 .tooltip-icon {
-  font-size: 14px;
-  color: #888888;
+  font-size: 16px;
+  color: #007acc;
   cursor: help;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tooltip-icon:hover {
+  background: rgba(0, 122, 204, 0.15);
+  transform: scale(1.1);
 }
 
 .tooltip-content {
@@ -419,28 +430,33 @@ body {
   position: absolute;
   z-index: 1000;
   background: #1e1e1e;
-  border: 1px solid #007acc;
-  border-radius: 6px;
-  padding: 12px;
-  width: 320px;
-  top: 25px;
+  border: 2px solid #007acc;
+  border-radius: 8px;
+  padding: 16px;
+  width: 360px;
+  top: 30px;
   right: 0;
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.6;
   color: #cccccc;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  transition: opacity 0.2s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  transition: all 0.3s ease;
+  transform: translateY(-5px);
 }
 
 .tooltip:hover .tooltip-content {
   visibility: visible;
   opacity: 1;
+  transform: translateY(0);
 }
 
 .tooltip-content strong {
   color: #ffffff;
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  border-bottom: 1px solid #3d3d40;
+  padding-bottom: 6px;
 }
 
 /* ========================================

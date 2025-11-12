@@ -15,7 +15,7 @@ import {
   parseContextRL4, 
   getMockKPIData,
   type CognitiveLoadData,
-  type NextStepsData,
+  type NextTasksData,
   type PlanDriftData,
   type RisksData
 } from './utils/contextParser';
@@ -42,7 +42,7 @@ export default function App() {
   
   // KPI States
   const [cognitiveLoad, setCognitiveLoad] = useState<CognitiveLoadData | null>(null);
-  const [nextSteps, setNextSteps] = useState<NextStepsData | null>(null);
+  const [nextTasks, setNextTasks] = useState<NextTasksData | null>(null);
   const [planDrift, setPlanDrift] = useState<PlanDriftData | null>(null);
   const [risks, setRisks] = useState<RisksData | null>(null);
   const [showKPIs, setShowKPIs] = useState(false);
@@ -84,7 +84,7 @@ export default function App() {
           if (message.payload) {
             const parsed = parseContextRL4(message.payload);
             setCognitiveLoad(parsed.cognitiveLoad);
-            setNextSteps(parsed.nextSteps);
+            setNextTasks(parsed.nextSteps);
             setPlanDrift(parsed.planDrift);
             setRisks(parsed.risks);
             setShowKPIs(true);
@@ -103,7 +103,7 @@ export default function App() {
   useEffect(() => {
     const mockData = getMockKPIData();
     setCognitiveLoad(mockData.cognitiveLoad);
-    setNextSteps(mockData.nextSteps);
+    setNextTasks(mockData.nextTasks);
     setPlanDrift(mockData.planDrift);
     setRisks(mockData.risks);
     setShowKPIs(true);
@@ -190,9 +190,9 @@ export default function App() {
         {showKPIs && (
           <div className="kpi-dashboard">
             <div className="kpi-dashboard-header">
-              <h2>📊 Smart UI — LLM-Validated KPIs</h2>
+              <h2>📊 Workspace Insights</h2>
               <p className="kpi-disclaimer">
-                ✅ Factual data only. NO predictions, NO hallucinations.
+                ✅ Real-time metrics from your workspace activity
               </p>
             </div>
             
@@ -205,10 +205,10 @@ export default function App() {
                 />
               )}
               
-              {nextSteps && (
+              {nextTasks && (
                 <NextStepsCard 
-                  mode={nextSteps.mode}
-                  steps={nextSteps.steps}
+                  mode={nextTasks.mode}
+                  steps={nextTasks.steps}
                 />
               )}
               

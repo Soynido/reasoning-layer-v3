@@ -44,16 +44,17 @@ export const CognitiveLoadCard: React.FC<CognitiveLoadProps> = ({
       <div className="kpi-header">
         <h3>🧠 Cognitive Load</h3>
         <div className="tooltip">
-          <span className="tooltip-icon">ℹ️</span>
+          <span className="tooltip-icon">❓</span>
           <div className="tooltip-content">
-            <strong>Factual Calculation:</strong><br/>
-            Based on observable data only:<br/>
-            • Bursts: Rapid edit sessions (&gt;30 edits in &lt;2min)<br/>
-            • Switches: File jumps in timeline<br/>
-            • Parallel Tasks: Tasks with status "in_progress"<br/>
-            • Uncommitted Files: Files changed but not committed<br/><br/>
-            <strong>Formula:</strong><br/>
-            (bursts/10 × 0.3) + (switches/50 × 0.2) + (parallel/3 × 0.3) + (uncommitted/20 × 0.2)
+            <strong>What is this?</strong><br/>
+            Measures how much mental effort your current work requires based on workspace activity patterns.<br/><br/>
+            <strong>Calculated from:</strong><br/>
+            • <strong>Bursts:</strong> Rapid edit sessions (&gt;30 edits in &lt;2min)<br/>
+            • <strong>Switches:</strong> File jumps in your timeline<br/>
+            • <strong>Parallel Tasks:</strong> Tasks currently in progress<br/>
+            • <strong>Uncommitted Files:</strong> Changed files not yet committed<br/><br/>
+            <strong>Why it matters:</strong><br/>
+            High cognitive load can lead to bugs, context switching fatigue, or forgetting to commit work.
           </div>
         </div>
       </div>

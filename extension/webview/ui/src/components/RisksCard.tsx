@@ -44,16 +44,17 @@ export const RisksCard: React.FC<RisksProps> = ({ risks }) => {
       <div className="kpi-header">
         <h3>⚠️ Risks</h3>
         <div className="tooltip">
-          <span className="tooltip-icon">ℹ️</span>
+          <span className="tooltip-icon">❓</span>
           <div className="tooltip-content">
-            <strong>Observable Risks Only:</strong><br/>
-            NO speculation, NO predictions. Just facts.<br/><br/>
-            <strong>Detected From:</strong><br/>
-            • 🔴 Uncommitted files: Count from timeline (if &gt;15 files)<br/>
-            • 🟡 Burst activity: Files with &gt;30 edits in &lt;2min<br/>
-            • 🟡 Long gaps: Breaks &gt;30min (potential blocker?)<br/>
-            • 🟢 System health: Memory &gt;400MB or event loop &gt;1ms p95<br/><br/>
-            All thresholds are configurable and based on observable data.
+            <strong>What is this?</strong><br/>
+            Observable risks detected from your workspace activity. Based on measurable patterns, not predictions.<br/><br/>
+            <strong>Risk Types:</strong><br/>
+            • <strong>🔴 Critical:</strong> Uncommitted files (&gt;15), data loss risk<br/>
+            • <strong>🟡 Warning:</strong> Burst activity (&gt;30 edits in &lt;2min), possible debugging session<br/>
+            • <strong>🟡 Warning:</strong> Long gaps (&gt;30min), potential blocker or break<br/>
+            • <strong>🟢 OK:</strong> System health (memory, event loop) within normal range<br/><br/>
+            <strong>Why it matters:</strong><br/>
+            Helps you catch potential issues early (like forgetting to commit work) and understand your work patterns.
           </div>
         </div>
       </div>

@@ -51,17 +51,18 @@ export const PlanDriftCard: React.FC<PlanDriftProps> = ({
       <div className="kpi-header">
         <h3>📊 Plan Drift</h3>
         <div className="tooltip">
-          <span className="tooltip-icon">ℹ️</span>
+          <span className="tooltip-icon">❓</span>
           <div className="tooltip-content">
-            <strong>Factual Calculation:</strong><br/>
-            Measures drift from original baseline Plan.RL4 v1.0.<br/><br/>
-            <strong>What Changed:</strong><br/>
-            • Phase transitions<br/>
-            • Goal text similarity<br/>
-            • Timeline adjustments<br/>
-            • Tasks added/removed<br/><br/>
-            <strong>Threshold:</strong> {threshold}% (based on selected mode)<br/>
-            Calculated by BiasCalculator using text similarity algorithms.
+            <strong>What is this?</strong><br/>
+            Measures how much your current work has drifted from your original plan baseline.<br/><br/>
+            <strong>Tracks changes in:</strong><br/>
+            • <strong>Phase:</strong> Current project phase vs. original<br/>
+            • <strong>Goal:</strong> Similarity between current and original objectives<br/>
+            • <strong>Timeline:</strong> Schedule adjustments over time<br/>
+            • <strong>Tasks:</strong> Added or removed work items<br/><br/>
+            <strong>Threshold:</strong> {threshold}% (based on selected mode)<br/><br/>
+            <strong>Why it matters:</strong><br/>
+            Helps you catch scope creep early and decide whether to accept changes, recalibrate, or refocus on the original plan.
           </div>
         </div>
       </div>

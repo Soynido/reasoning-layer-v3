@@ -14,14 +14,14 @@ export interface CognitiveLoadData {
   };
 }
 
-export interface NextStepData {
+export interface NextTaskData {
   priority: 'P0' | 'P1' | 'P2';
   action: string;
 }
 
-export interface NextStepsData {
+export interface NextTasksData {
   mode: 'strict' | 'flexible' | 'exploratory' | 'free';
-  steps: NextStepData[];
+  steps: NextTaskData[];
 }
 
 export interface PlanDriftData {
@@ -57,13 +57,13 @@ export interface RisksData {
  */
 export function parseContextRL4(content: string): {
   cognitiveLoad: CognitiveLoadData | null;
-  nextSteps: NextStepsData | null;
+  nextSteps: NextTasksData | null;
   planDrift: PlanDriftData | null;
   risks: RisksData | null;
 } {
   const result = {
     cognitiveLoad: null as CognitiveLoadData | null,
-    nextSteps: null as NextStepsData | null,
+    nextSteps: null as NextTasksData | null,
     planDrift: null as PlanDriftData | null,
     risks: null as RisksData | null,
   };
@@ -93,18 +93,18 @@ export function parseContextRL4(content: string): {
       };
     }
 
-    // 2. Parse Next Steps
-    const nextStepsMatch = kpiSection.match(
-      /### Next Steps \((Strict|Flexible|Exploratory|Free) Mode\)([\s\S]*?)(?=###|$)/i
+    // 2. Parse Next Tasks
+    const nextTasksMatch = kpiSection.match(
+      /### Next (?:Steps|Tasks) \((Strict|Flexible|Exploratory|Free) Mode\)([\s\S]*?)(?=###|$)/i
     );
     
-    if (nextStepsMatch) {
-      const mode = nextStepsMatch[1].toLowerCase() as 'strict' | 'flexible' | 'exploratory' | 'free';
-      const stepsText = nextStepsMatch[2];
+    if (nextTasksMatch) {
+      const mode = nextTasksMatch[1].toLowerCase() as 'strict' | 'flexible' | 'exploratory' | 'free';
+      const stepsText = nextTasksMatch[2];
       
       // Extract numbered steps with priorities
       const stepMatches = stepsText.matchAll(/\d+\.\s*\[(P[012])\]\s*(.+?)(?=\n|$)/g);
-      const steps: NextStepData[] = [];
+      const steps: NextTaskData[] = [];
       
       for (const match of stepMatches) {
         steps.push({
@@ -211,13 +211,13 @@ export function getMockKPIData() {
         uncommittedFiles: 21,
       },
     },
-    nextSteps: {
+    nextTasks: {
       mode: 'flexible' as const,
       steps: [
         { priority: 'P0' as const, action: 'URGENT: Commit 21 uncommitted files' },
-        { priority: 'P1' as const, action: 'PRIORITY: Document 6 ADRs potentials' },
-        { priority: 'P1' as const, action: 'CONTINUE: Complete Smart UI Components' },
-        { priority: 'P1' as const, action: 'RECALIBRATE: Decision on 58% bias' },
+        { priority: 'P1' as const, action: 'PRIORITY: Document potential architectural decisions' },
+        { priority: 'P1' as const, action: 'CONTINUE: Complete workspace insight components' },
+        { priority: 'P1' as const, action: 'REVIEW: Evaluate plan drift and decide next actions' },
       ],
     },
     planDrift: {
@@ -225,8 +225,8 @@ export function getMockKPIData() {
       threshold: 25,
       changes: {
         phase: {
-          original: 'E3.3 - Single Context Snapshot',
-          current: 'E4 - Smart UI with KPIs',
+          original: 'Phase 1 - Core Features',
+          current: 'Phase 2 - UI Enhancement',
           changed: true,
         },
         goal: {
@@ -242,17 +242,17 @@ export function getMockKPIData() {
         {
           emoji: '🔴',
           severity: 'critical' as const,
-          description: '21 uncommitted files (risk of data loss)',
+          description: '21 uncommitted files — Risk of data loss if system crashes',
         },
         {
           emoji: '🟡',
           severity: 'warning' as const,
-          description: 'Burst activity detected (UnifiedPromptBuilder.ts)',
+          description: 'Burst activity detected (24 edits in <1min) — Possible debugging session',
         },
         {
           emoji: '🟡',
           severity: 'warning' as const,
-          description: '34min gap detected (16:04→16:38) — Potential blocker',
+          description: '34min gap detected — Potential blocker or break',
         },
         {
           emoji: '🟢',
