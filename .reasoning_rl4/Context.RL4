@@ -1,7 +1,7 @@
 ---
-version: 1.6
-updated: 2025-11-12T15:45:00.000Z
-confidence: 0.97
+version: 1.7
+updated: 2025-11-12T16:05:00.000Z
+confidence: 0.98
 ---
 
 # RL4 Operational Context
@@ -53,16 +53,23 @@ confidence: 0.97
 - System health trends (memory/event loop/uptime)
 
 ## Agent Observations
-- **Phase E4 P1 Complete**: ✅ UI-Driven Deviation Mode (ADR-009) IMPLEMENTED
-- **Implementation Details**:
-  - App.tsx: 4-mode selector (🔴/🟡/🟢/⚪) before Generate button
-  - extension.ts: Reads `deviationMode` from message
-  - UnifiedPromptBuilder.ts: Dynamic threshold (0%/25%/50%/100%)
-  - All files compiled, packaged, installed (15:45)
-- **Confidence**: 97% (was 95%) — Milestone achieved
-- **Bias**: 20% (within flexible threshold 25%)
-- **UX Improvement**: User now controls agent perception per-snapshot
-- **Next**: Reload Cursor → Test selector → Generate snapshot with different modes
+- **Phase E4 P1 Milestones Complete**:
+  - ✅ UI-Driven Deviation Mode (ADR-009) — 15:45
+  - ✅ Mermaid Diagrams + Plan Evolution Tracking — 16:05
+- **Documentation Enhancement**:
+  - All ADRs (005-009) now have Mermaid architecture diagrams
+  - ADR_TEMPLATE.md created for future ADRs with diagram guidelines
+  - Plan.RL4 now tracks ADD/MODIFY/REMOVE between phases
+  - "Phase Evolution Tracking" section provides historical context
+- **LLM Context Improvement**:
+  - Visual diagrams = instant comprehension of decisions
+  - Evolution tracking = precise understanding of changes
+  - WHY sections now linked to user insights
+  - Baseline vs Current comparison visible in prompt
+- **Confidence**: 98% (was 97%) — Documentation infrastructure solid
+- **Bias**: 30% (was 20%) — Deviation accepted for infrastructure investment
+- **ROI**: High (1-2h investment → better context for all future prompts)
+- **Next**: Reload Cursor → Generate snapshot → Validate Mermaid rendering
 
 ## Recommendations — MODE FLEXIBLE (25% threshold)
 1. **P1 PRIORITY**: Implement UI-Driven Deviation Mode (ADR-009)

@@ -1,14 +1,14 @@
 ---
-version: 1.7
+version: 1.8
 original_version: 1.0
-updated: 2025-11-12T15:45:00.000Z
+updated: 2025-11-12T16:00:00.000Z
 confidence: 0.97
 baseline_saved: true
 deviation_mode: ui_driven
 commit: pending
 vsix: reasoning-layer-rl4-2.7.0-adr-detection.vsix
 snapshot_validated: true
-milestone: UI-Driven Deviation Mode Complete
+milestone: Mermaid Diagrams + Plan Evolution Tracking
 ---
 
 # RL4 Strategic Plan
@@ -63,6 +63,64 @@ Transform RL4 UI from "data display" to "actionable insights" via LLM-validated 
 - [x] Agent can update Plan/Tasks/Context.RL4
 - [x] RL4 detects changes and re-parses (FileWatchers active)
 - [x] Confidence/Bias metrics calculated (71% / 0%)
+
+## Phase Evolution Tracking
+
+### Phase E3.3 → E4.1 Transition (2025-11-12)
+
+**ADDED:**
+- `UnifiedPromptBuilder.ts` (Single context snapshot generator)
+- `HistorySummarizer.ts` (30 days → 2KB JSON compression)
+- `BiasCalculator.ts` (Deviation tracking from baseline)
+- `ADRSignalEnricher.ts` (Auto-detect ADRs from commits)
+- `ADRParser.ts` (Parse ADRs.RL4 → adrs.jsonl)
+- `PlanTasksContextParser.ts` (Parse Plan/Tasks/Context.RL4)
+- `BlindSpotDataLoader.ts` (Load timeline/git/health)
+- `.reasoning_rl4/Plan.RL4` (Strategic intent persistence)
+- `.reasoning_rl4/Tasks.RL4` (Tactical TODOs persistence)
+- `.reasoning_rl4/Context.RL4` (Operational state persistence)
+- `.reasoning_rl4/ADRs.RL4` (Agent-proposed ADRs)
+- `.reasoning_rl4/.baseline/Plan.RL4.v1.0` (Immutable baseline for bias calc)
+- FileWatchers for Plan/Tasks/Context/ADRs.RL4
+- UI-Driven Deviation Mode selector (🔴/🟡/🟢/⚪)
+- Dynamic threshold system (0%/25%/50%/100%)
+- Mode-specific agent instructions in prompt
+
+**MODIFIED:**
+- WebView UI: 4 tabs (Now/Before/Next/Restore) → 1 button + mode selector
+- `extension.ts`: Message handler now accepts `deviationMode` param
+- `UnifiedPromptBuilder.generate()`: Signature changed (+deviationMode param)
+- Prompt header: Now displays user-selected deviation mode
+- Bias calculation: Now uses dynamic threshold (not static config)
+- Deviation Guard section: Adapts rules based on chosen mode
+- Confidence metric: 71% → 97% (increased trust in system)
+
+**REMOVED:**
+- Static patterns.json, forecasts.json, goals.json (fake data)
+- 4-tab UI system (Now/Before/Next/Restore)
+- Legacy `snapshotInterval` (auto-push every 10s)
+- Legacy message types (updateNow, updateBefore, etc.)
+- Static `deviation_mode` in kernel_config.json (now UI-driven)
+- Global threshold config (now per-snapshot)
+- PromptBridge separate prompts (unified into single snapshot)
+
+**WHY:**
+- User insight 1: "Patterns never change, seems fake" → Removed fake data
+- User insight 2: "Too many buttons, unclear workflow" → 1 button UI
+- User insight 3: "How do I update RL4 state?" → .RL4 feedback loop
+- User insight 4: "Le threshold est une préférence USER" → UI-driven mode
+
+### Phase E4.1 → E4.2 Transition (In Progress)
+
+**ADDED:**
+- Mermaid diagrams to all ADRs (ADR-005 to ADR-009)
+- `.reasoning_rl4/ADR_TEMPLATE.md` (Template for future ADRs)
+- Phase Evolution Tracking section in Plan.RL4 (this section)
+
+**PLANNED (E4.2):**
+- Smart UI Components (NextStepsCard, ConfidenceGauge, etc.)
+- Real-time .RL4 file refresh in UI
+- Interactive ADR timeline visualization
 
 **Next Phase (E4): Smart UI with LLM-Validated KPIs**
 - Rationale: See ADR-006 (2025-11-12)

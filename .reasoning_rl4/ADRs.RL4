@@ -58,6 +58,36 @@ Implement **Single Context Snapshot System** with:
 2. Use JSON instead of Markdown → Rejected (less human-readable)
 3. No feedback loop, read-only → Rejected (not useful for agents)
 
+### Architecture Diagram
+
+```mermaid
+graph TD
+    A[User Clicks Generate] --> B[UnifiedPromptBuilder]
+    B --> C[Load Plan/Tasks/Context.RL4]
+    B --> D[Load BlindSpot Data]
+    B --> E[Load ADRs]
+    C --> F[Format Unified Prompt]
+    D --> F
+    E --> F
+    F --> G[Copy to Clipboard]
+    G --> H[User Pastes in Agent]
+    H --> I[Agent Analyzes]
+    I --> J[Agent Updates .RL4 Files]
+    J --> K[FileWatchers Detect Changes]
+    K --> L[RL4 Re-parses]
+    L --> M[Confidence/Bias Recalculated]
+    M --> A
+    
+    style F fill:#667eea
+    style J fill:#00c864
+    style L fill:#ff4d4d
+```
+
+**Key Decision Points:**
+- **Before:** 4 separate prompts (Now/Before/Next/Restore) → Confusing
+- **After:** 1 unified prompt → Clear workflow
+- **Trade-off:** Lose granular views, gain feedback loop
+
 ### Implementation Status
 - [x] UnifiedPromptBuilder.ts created
 - [x] BlindSpotDataLoader.ts created
@@ -166,6 +196,34 @@ Implement **Smart UI Architecture** where:
 - [ ] Predictive insights (Next Hotspot, Optimal Work Hours)
 - [ ] Milestone auto-detection (M1.0 → M1.1 transitions)
 - [ ] Cognitive load score visualization
+
+### Architecture Diagram
+
+```mermaid
+graph LR
+    A[Kernel<br/>Dumb Logger] -->|Raw Data<br/>25MB| B[Prompt<br/>Middleware]
+    B -->|Compressed<br/>2KB| C[LLM Agent<br/>Cognitive Validator]
+    C -->|Validated<br/>Insights| D[.RL4 Files<br/>Source of Truth]
+    D -->|Structured<br/>Data| E[Smart UI<br/>Read-Only Display]
+    
+    A1[cycles.jsonl<br/>health.jsonl<br/>git_commits.jsonl] --> A
+    D1[Plan.RL4<br/>Tasks.RL4<br/>Context.RL4<br/>ADRs.RL4] --> D
+    E1[NextStepsCard<br/>ConfidenceGauge<br/>BlockersAlert<br/>CognitiveLoadMeter] --> E
+    
+    E --> F[User Sees<br/>WHAT TO DO]
+    F -.->|Updates via<br/>LLM| C
+    
+    style A fill:#666
+    style C fill:#667eea
+    style D fill:#00c864
+    style E fill:#ff9500
+    style F fill:#ff4d4d
+```
+
+**Key Decision Points:**
+- **Problem:** "Et alors ? C'est grave ?" (Raw stats meaningless)
+- **Solution:** Kernel → Prompt → LLM → .RL4 → Smart UI
+- **Trade-off:** Latency (LLM required) vs. Actionable insights
 
 ### Success Metrics
 - User opens RL4 UI → Immediately knows WHAT TO DO (not "what happened")
@@ -299,6 +357,34 @@ Implement **Deviation Guard** system that:
 - Created once at project start
 - Never modified (source of truth for bias calculation)
 
+### Architecture Diagram
+
+```mermaid
+graph TD
+    A[User Suggests Idea] --> B{In P0/P1 Tasks?}
+    B -->|YES| C[Proceed Immediately]
+    B -->|NO| D[Calculate Bias Impact]
+    D --> E{current + new > threshold?}
+    E -->|NO| F[Proceed with Implementation]
+    E -->|YES| G[STOP - Ask User]
+    G --> H{User Decision?}
+    H -->|Accept| I[Implement + Update Bias]
+    H -->|Backlog| J[Add to P2/P3]
+    H -->|Reject| K[Stay on Track]
+    
+    L[Baseline Plan.RL4 v1.0] -.->|Compare| D
+    M[kernel_config.json] -.->|deviation_mode| E
+    
+    style G fill:#ff4d4d
+    style F fill:#00c864
+    style L fill:#667eea
+```
+
+**Key Decision Points:**
+- **Problem:** Agent (and human) deviate from plan without noticing
+- **Solution:** Quantify bias, set thresholds, force explicit approval
+- **Trade-off:** Discipline vs. creative freedom (configurable modes)
+
 ### Success Metrics
 - Agent asks user before implementing ideas NOT in P0/P1 tasks
 - Bias calculation accuracy >90% (user validates)
@@ -420,6 +506,40 @@ Implement 3 core modules to close the feedback loop:
 - **Deviation tracking**: Baseline saved, bias calculated (15%) ✅
 - **Prompt size**: ~3KB total (within limits) ✅
 
+### Architecture Diagram
+
+```mermaid
+graph TD
+    A[30 Days Raw Data] -->|cycles.jsonl| B[HistorySummarizer]
+    A -->|timelines/| B
+    A -->|git_commits.jsonl| C[ADRSignalEnricher]
+    
+    B -->|2KB JSON| D[UnifiedPromptBuilder]
+    C -->|ADR Scores| D
+    
+    E[Plan.RL4 v1.0] -->|Baseline| F[BiasCalculator]
+    G[Plan.RL4 Current] -->|Compare| F
+    F -->|Bias %| D
+    
+    D --> H[Single Prompt]
+    H --> I[LLM Agent]
+    I --> J[Updates .RL4 Files]
+    J --> K[ADRParser]
+    K -->|Validate| L[adrs.jsonl]
+    J --> M[FileWatchers]
+    M --> D
+    
+    style B fill:#667eea
+    style C fill:#ff9500
+    style F fill:#ff4d4d
+    style D fill:#00c864
+```
+
+**Key Decision Points:**
+- **Problem:** 30 days = 500KB+ raw data (exceeds LLM limits)
+- **Solution:** Compress → Enrich → Validate → Persist → Loop
+- **Trade-off:** Complexity (3 new modules) vs. Complete feedback loop
+
 ### Next Phase (E4)
 With the feedback loop closed, Phase E4 will focus on:
 - Smart UI Components (read .RL4 files, display LLM insights)
@@ -537,6 +657,49 @@ Move deviation mode selection from config to UI:
 **Phase E4.3: Persistence (P3)**
 - [ ] Optional: Save last-used mode in localStorage
 - [ ] Optional: Mode history in Context.RL4 (for analysis)
+
+### Architecture Diagram
+
+```mermaid
+graph TD
+    A[User Opens RL4] --> B[WebView UI]
+    B --> C[Select Deviation Mode]
+    C --> D{Mode Choice}
+    D -->|🔴 Strict 0%| E[P0 Only Rules]
+    D -->|🟡 Flexible 25%| F[P0+P1 OK Rules]
+    D -->|🟢 Exploratory 50%| G[New Ideas OK Rules]
+    D -->|⚪ Free 100%| H[No Limits Rules]
+    
+    E --> I[Click Generate]
+    F --> I
+    G --> I
+    H --> I
+    
+    I --> J[App.tsx sends mode]
+    J --> K[extension.ts receives]
+    K --> L[UnifiedPromptBuilder.generate mode]
+    L --> M{thresholdMap}
+    M -->|strict| N[threshold = 0.0]
+    M -->|flexible| O[threshold = 0.25]
+    M -->|exploratory| P[threshold = 0.50]
+    M -->|free| Q[threshold = 1.0]
+    
+    N --> R[Prompt with Mode Rules]
+    O --> R
+    P --> R
+    Q --> R
+    
+    R --> S[Agent Adapts Behavior]
+    
+    style C fill:#667eea
+    style L fill:#00c864
+    style S fill:#ff9500
+```
+
+**Key Decision Points:**
+- **Before:** deviation_mode in kernel_config.json (static, global)
+- **After:** User selects mode per-snapshot (dynamic, contextual)
+- **Trade-off:** User must choose every time vs. Adaptive per-session
 
 ### Success Metrics
 - User can switch modes without editing config ✅

@@ -1,14 +1,17 @@
 ---
-version: 1.5
-updated: 2025-11-12T15:45:00.000Z
-bias: 0.20
+version: 1.6
+updated: 2025-11-12T16:05:00.000Z
+bias: 0.30
 ---
 
 # RL4 Task List
 
-## Active (Priority Order) — MODE FLEXIBLE (25% deviation)
+## Active (Priority Order) — MODE FLEXIBLE (25% deviation) ⚠️ Bias: 30%
 
 **Phase E3.3 Complete ✅ → Phase E4 Started 🚀**
+
+**⚠️ DEVIATION ACCEPTED:** +10% bias pour amélioration documentation LLM (total: 30% > 25% threshold)
+**Justification:** Investissement infrastructure pour meilleure compréhension contexte
 
 1. [x] **[P1]** UI-Driven Deviation Mode (ADR-009) ✅ COMPLETE
    - [x] Add mode selector to WebView UI (🔴 Strict / 🟡 Flexible / 🟢 Exploratory / ⚪ Free)
@@ -19,7 +22,16 @@ bias: 0.20
    - **Bias Impact:** +5% (total: 20% < 25% threshold) ✅ Approved
    - **Completed:** 15:45 (all sub-tasks done)
 
-2. [ ] **[P1]** Smart UI Components (Phase E4):
+2. [x] **[P1]** Mermaid Diagrams + Plan Diff Tracking ✅ COMPLETE
+   - [x] Add Mermaid to existing ADRs (ADR-005 to ADR-009)
+   - [x] Create ADR Mermaid template for future
+   - [x] Add ADDED/MODIFIED/REMOVED to Plan.RL4
+   - [x] PlanTasksContextParser reads diffs (no changes needed)
+   - **Why:** Améliore drastiquement compréhension LLM du contexte
+   - **Bias Impact:** +10% (total: 30% > 25%) — Déviation acceptée
+   - **Completed:** 16:05 (all sub-tasks done)
+
+3. [ ] **[P1]** Smart UI Components (Phase E4):
    - [ ] NextStepsCard (reads Tasks.RL4 → P0 tasks)
    - [ ] ConfidenceGauge (reads Plan.RL4 → confidence 95%)
    - [ ] BlockersAlert (reads Tasks.RL4 → blockers)
@@ -67,10 +79,12 @@ bias: 0.20
 ~~- ADR-005 not detected in snapshot (parser issue with ADRs.RL4)~~ ✅ **RESOLVED** (13:00)
 
 ## Metrics
-- Total tasks: 18 (12 completed, 6 active)
-- Completion rate: 67%
+- Total tasks: 18 (13 completed, 5 active)
+- Completion rate: 72%
 - Current sprint: E4 (Day 1/4) — Smart UI
-- Velocity: Excellent (12 tasks in 5h)
+- Velocity: Excellent (13 tasks in 5.5h)
 - Blockers resolved: 1/1 (100%)
-- Bias: 20% (within flexible threshold 25%)
-- **P1 milestone**: UI-Driven Deviation Mode ✅
+- Bias: 30% (deviation accepted: +10% for LLM context improvement)
+- **P1 milestones**: 
+  - ✅ UI-Driven Deviation Mode
+  - ✅ Mermaid Diagrams + Plan Evolution Tracking
