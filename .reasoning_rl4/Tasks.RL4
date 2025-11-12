@@ -1,18 +1,19 @@
 ---
-version: 1.7
-updated: 2025-11-12T15:43:27.534Z
-bias: 0.58
+version: 1.8
+updated: 2025-11-12T16:35:00.000Z
+bias: 0.00
+baseline_version: 2.0
 ---
 
-# RL4 Task List
+# RL4 Task List — BASELINE v2.0
 
-## Active (Priority Order) — MODE FLEXIBLE (25% deviation) 🚨 Bias: 58%
+## Active (Priority Order) — MODE STRICT (0% deviation) ✅ Bias: 0%
 
-**Phase E3.3 Complete ✅ → Phase E4 Active 🚀 → ⚠️ DEVIATION ALERT**
+**Phase E4 Active 🚀 — Baseline Reset Complete ✅**
 
-**🚨 CRITICAL:** Bias (58%) significantly exceeds flexible threshold (25%)
-**Cause:** Incremental feature additions (+10% docs, +28% Smart UI features)
-**Decision Required:** Accept drift (update baseline) OR Recalibrate (remove features)
+**✅ BASELINE RESET:** Bias reset from 63% → 0% (ADR-012 accepted)
+**Reason:** E4 accepted as fulfillment of E3.3 vision (production-ready extension)
+**Next:** Continue E4 development from fresh baseline v2.0
 
 1. [ ] **[P0] URGENT:** Commit 21 uncommitted files
    - **Risk:** Data loss if crash or accidental reset

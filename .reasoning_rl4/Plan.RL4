@@ -1,24 +1,26 @@
 ---
 version: 2.0
 original_version: 1.0
-updated: 2025-11-12T15:43:27.534Z
-confidence: 0.92
-bias: 0.58
+baseline_date: 2025-11-12T16:35:00.000Z
+baseline_archived: .reasoning_rl4/baselines/Plan.RL4.v1.0.archived
+updated: 2025-11-12T16:35:00.000Z
+confidence: 0.95
+bias: 0.00
 baseline_saved: true
 deviation_mode: ui_driven
-commit: b21ac31
-vsix: reasoning-layer-rl4-2.8.0-smart-ui-phase1.vsix
+commit: cd44268
+vsix: reasoning-layer-rl4-3.0.0-production-ready.vsix
 snapshot_validated: true
-milestone: Smart UI Phase 1 + Deviation Alert
+milestone: E4 Baseline Reset — Production-Ready Extension Accepted
 ---
 
-# RL4 Strategic Plan
+# RL4 Strategic Plan — BASELINE v2.0
 
 ## Phase
-E4 - Smart UI with LLM-Validated KPIs
+E4 - Workspace Insights UI (Production-Ready)
 
 ## Goal
-Transform RL4 UI from "data display" to "actionable insights" via LLM-validated Smart Components.
+Deliver a marketplace-ready VS Code extension that provides developers with actionable workspace insights through LLM-validated KPI cards, eliminating the "Et alors ? C'est grave ?" problem.
 
 ## Timeline
 - Phase E3.3: ✅ COMPLETE (2025-11-12)
