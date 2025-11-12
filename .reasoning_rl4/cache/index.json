@@ -1,10 +1,10 @@
 {
   "version": "1.0.0",
-  "generated_at": "2025-11-12T16:39:41.030Z",
-  "total_cycles": 12206,
+  "generated_at": "2025-11-12T16:46:04.711Z",
+  "total_cycles": 12243,
   "date_range": {
     "first": "2025-11-03T16:33:56.387Z",
-    "last": "2025-11-12T16:39:40.962Z"
+    "last": "2025-11-12T16:46:04.635Z"
   },
   "by_day": {
     "2025-11-03": [
@@ -129082,6 +129082,339 @@
     {
       "cycleId": 11,
       "timestamp": "2025-11-12T16:39:40.962Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 12,
+      "timestamp": "2025-11-12T16:39:50.976Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 13,
+      "timestamp": "2025-11-12T16:40:00.943Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 14,
+      "timestamp": "2025-11-12T16:40:10.955Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 15,
+      "timestamp": "2025-11-12T16:40:20.939Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 16,
+      "timestamp": "2025-11-12T16:40:30.922Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 17,
+      "timestamp": "2025-11-12T16:40:40.961Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 18,
+      "timestamp": "2025-11-12T16:40:50.944Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 19,
+      "timestamp": "2025-11-12T16:41:00.938Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 20,
+      "timestamp": "2025-11-12T16:41:10.946Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 21,
+      "timestamp": "2025-11-12T16:41:21.012Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 22,
+      "timestamp": "2025-11-12T16:41:30.986Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 23,
+      "timestamp": "2025-11-12T16:41:40.949Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 24,
+      "timestamp": "2025-11-12T16:41:50.965Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 25,
+      "timestamp": "2025-11-12T16:42:00.965Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 26,
+      "timestamp": "2025-11-12T16:42:10.961Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 27,
+      "timestamp": "2025-11-12T16:42:20.968Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 28,
+      "timestamp": "2025-11-12T16:42:30.981Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 1,
+      "timestamp": "2025-11-12T16:42:54.623Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 2,
+      "timestamp": "2025-11-12T16:43:04.605Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 3,
+      "timestamp": "2025-11-12T16:43:14.606Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 4,
+      "timestamp": "2025-11-12T16:43:24.628Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 5,
+      "timestamp": "2025-11-12T16:43:34.626Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 6,
+      "timestamp": "2025-11-12T16:43:44.618Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 7,
+      "timestamp": "2025-11-12T16:43:54.620Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 8,
+      "timestamp": "2025-11-12T16:44:04.647Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 9,
+      "timestamp": "2025-11-12T16:44:14.628Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 10,
+      "timestamp": "2025-11-12T16:44:24.620Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 11,
+      "timestamp": "2025-11-12T16:44:34.638Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 12,
+      "timestamp": "2025-11-12T16:44:44.629Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 13,
+      "timestamp": "2025-11-12T16:44:54.637Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 14,
+      "timestamp": "2025-11-12T16:45:04.624Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 15,
+      "timestamp": "2025-11-12T16:45:14.624Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 16,
+      "timestamp": "2025-11-12T16:45:24.628Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 17,
+      "timestamp": "2025-11-12T16:45:34.622Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 18,
+      "timestamp": "2025-11-12T16:45:44.636Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 19,
+      "timestamp": "2025-11-12T16:45:54.627Z",
+      "day": "2025-11-12",
+      "hour": 17,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 20,
+      "timestamp": "2025-11-12T16:46:04.635Z",
       "day": "2025-11-12",
       "hour": 17,
       "patterns_count": 4,

@@ -77,7 +77,7 @@ export function parseContextRL4(content: string): {
 
     // 1. Parse Cognitive Load
     const cognitiveLoadMatch = kpiSection.match(
-      /### Cognitive Load: (\d+)% \((Normal|High|Critical)\)\s*- Bursts: (\d+)\s*- Switches: (\d+)\s*- Parallel Tasks: (\d+)\s*- Uncommitted Files: (\d+)/i
+      /### Cognitive Load: (\d+)% \((Normal|High|Critical)\)\s*- Bursts: (\d+).*?\n\s*- Switches: (\d+).*?\n\s*- Parallel Tasks: (\d+).*?\n\s*- Uncommitted Files: (\d+)/is
     );
     
     if (cognitiveLoadMatch) {
@@ -103,7 +103,7 @@ export function parseContextRL4(content: string): {
       const stepsText = nextTasksMatch[2];
       
       // Extract numbered steps with priorities
-      const stepMatches = stepsText.matchAll(/\d+\.\s*\[(P[012])\]\s*(.+?)(?=\n|$)/g);
+      const stepMatches = stepsText.matchAll(/\d+\.\s*\*?\*?\[(P[012])\]\*?\*?\s*(.+?)(?=\n|$)/g);
       const steps: NextTaskData[] = [];
       
       for (const match of stepMatches) {
