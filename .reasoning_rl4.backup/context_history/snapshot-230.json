@@ -1,0 +1,273 @@
+{
+  "snapshot_id": 230,
+  "range": [
+    131,
+    230
+  ],
+  "duration_sec": 1000,
+  "source": "auto",
+  "timestamp": "2025-11-12T10:36:10.118Z",
+  "patterns": [
+    {
+      "id": "pattern-kernel-evolution-1762943769901",
+      "pattern": "Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "frequency": 21,
+      "confidence": 0.8312499999999999,
+      "impact": "Stability",
+      "category": "structural",
+      "tags": [
+        "kernel",
+        "architecture",
+        "infrastructure"
+      ],
+      "firstSeen": "2025-11-03T19:03:59+01:00",
+      "lastSeen": "2025-10-27T15:45:17+01:00",
+      "evidenceIds": [
+        "git-b2321a64-1762204440N",
+        "git-0a2b4282-1762204440N",
+        "git-0d99ba27-1762204440N",
+        "git-f3085d85-1762204440N",
+        "git-e179307c-1762204441N",
+        "git-9f1c377f-1762204441N",
+        "git-f8e6d388-1762204441N",
+        "git-ccf29f32-1762204441N",
+        "git-9a4ee4a7-1762204442N",
+        "git-602248f8-1762204442N",
+        "git-2b3c062c-1762204442N",
+        "git-08004c4e-1762204442N",
+        "git-6d167517-1762204442N",
+        "git-c4580922-1762204442N",
+        "git-6a00497a-1762204442N",
+        "git-1da979cd-1762204442N",
+        "git-b833ebc2-1762204442N",
+        "git-2168484c-1762204443N",
+        "git-b4b9fc04-1762204443N",
+        "git-67541e90-1762204446N",
+        "git-e2c4b9e9-1762204449N"
+      ],
+      "recommendation": "Continue kernel stabilization efforts. Consider documenting architectural decisions and creating stability metrics."
+    },
+    {
+      "id": "pattern-fix-cycle-1762943769902",
+      "pattern": "High frequency of fix commits (27 fixes) suggests areas requiring stability improvements",
+      "frequency": 27,
+      "confidence": 0.7875,
+      "impact": "Stability",
+      "category": "structural",
+      "tags": [
+        "fixes",
+        "stability",
+        "quality"
+      ],
+      "firstSeen": "2025-11-03T20:44:57+01:00",
+      "lastSeen": "2025-10-26T18:50:54+01:00",
+      "evidenceIds": [
+        "git-0d4465dc-1762204440N",
+        "git-b2321a64-1762204440N",
+        "git-64ae0a60-1762204441N",
+        "git-9f964a08-1762204448N",
+        "git-348a43b5-1762204448N",
+        "git-cfdc597d-1762204449N",
+        "git-e2c4b9e9-1762204449N",
+        "git-dc25b733-1762204449N",
+        "git-16bc9b2e-1762204450N",
+        "git-d2328f02-1762204451N",
+        "git-64291e1b-1762204451N",
+        "git-2613ed75-1762204451N",
+        "git-5b98dc89-1762204451N",
+        "git-aba05f35-1762204452N",
+        "git-c4e91dfb-1762204452N",
+        "git-910831dd-1762204453N",
+        "git-64a4310a-1762204453N",
+        "git-1ec54409-1762204453N",
+        "git-6320a915-1762204454N",
+        "git-95b3a79a-1762204454N",
+        "git-13ad65bd-1762204454N",
+        "git-d4ed02ad-1762204456N",
+        "git-65cdfe0f-1762204456N",
+        "git-b28cc5bd-1762204457N",
+        "git-36a0afdb-1762204457N",
+        "git-52823574-1762204457N",
+        "git-5fc1cb2d-1762204458N"
+      ],
+      "recommendation": "Investigate root causes of frequent fixes. Consider adding integration tests and improving error handling."
+    },
+    {
+      "id": "pattern-feature-velocity-1762943769902",
+      "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "frequency": 53,
+      "confidence": 0.8625,
+      "impact": "User_Experience",
+      "category": "cognitive",
+      "tags": [
+        "features",
+        "development",
+        "velocity"
+      ],
+      "firstSeen": "2025-11-03T20:49:06+01:00",
+      "lastSeen": "2025-10-26T17:04:50+01:00",
+      "evidenceIds": [
+        "git-359c9aef-1762204440N",
+        "git-fc152f53-1762204440N",
+        "git-0a2b4282-1762204440N",
+        "git-0d99ba27-1762204440N",
+        "git-e179307c-1762204441N",
+        "git-9f1c377f-1762204441N",
+        "git-d4fe429f-1762204443N",
+        "git-c805873f-1762204443N",
+        "git-d7a31f72-1762204444N",
+        "git-15cd0953-1762204446N",
+        "git-3aace1e6-1762204448N",
+        "git-2626d427-1762204448N",
+        "git-aeca1ab2-1762204448N",
+        "git-fa1604bd-1762204449N",
+        "git-75301422-1762204449N",
+        "git-85522d92-1762204449N",
+        "git-7e5eaef5-1762204450N",
+        "git-b843a4c9-1762204450N",
+        "git-a1b13f93-1762204450N",
+        "git-e20bc2df-1762204450N",
+        "git-bbbd325b-1762204450N",
+        "git-fe0a9d8e-1762204450N",
+        "git-a11ac735-1762204451N",
+        "git-79309e99-1762204451N",
+        "git-37a7209f-1762204451N",
+        "git-341ca2eb-1762204451N",
+        "git-7ea921a8-1762204451N",
+        "git-240eaa45-1762204452N",
+        "git-5b7ecf18-1762204452N",
+        "git-63e0aefe-1762204452N",
+        "git-28e314ba-1762204452N",
+        "git-ab53d35f-1762204453N",
+        "git-e16919bd-1762204453N",
+        "git-e76ef1f8-1762204454N",
+        "git-64b9ef76-1762204454N",
+        "git-7c91cc1d-1762204454N",
+        "git-0b47f4e2-1762204454N",
+        "git-452a8369-1762204454N",
+        "git-98dd299a-1762204454N",
+        "git-228de9bc-1762204454N",
+        "git-42755653-1762204455N",
+        "git-1c15f367-1762204456N",
+        "git-fc3454de-1762204456N",
+        "git-1f4132cd-1762204456N",
+        "git-f11230e0-1762204456N",
+        "git-82e0e0ae-1762204457N",
+        "git-132e42cd-1762204457N",
+        "git-93415ca2-1762204457N",
+        "git-887e56cc-1762204457N",
+        "git-d6a7a70e-1762204458N",
+        "git-b42bcba8-1762204458N",
+        "git-2537f8cc-1762204458N",
+        "git-88858e0e-1762204458N"
+      ],
+      "recommendation": "Maintain current development velocity. Consider documenting feature decisions and user impact."
+    },
+    {
+      "id": "pattern-refactor-decision-1762943769902",
+      "pattern": "Regular refactoring commits (9 refactors) indicate proactive technical debt management",
+      "frequency": 9,
+      "confidence": 0.825,
+      "impact": "Technical_Debt",
+      "category": "structural",
+      "tags": [
+        "refactor",
+        "technical-debt",
+        "quality"
+      ],
+      "firstSeen": "2025-11-03T10:10:33+01:00",
+      "lastSeen": "2025-10-26T19:21:00+01:00",
+      "evidenceIds": [
+        "git-c805873f-1762204443N",
+        "git-fb3959f9-1762204455N",
+        "git-e3360351-1762204455N",
+        "git-f0dab50d-1762204455N",
+        "git-b1e6f20e-1762204455N",
+        "git-1cf1b841-1762204455N",
+        "git-75542732-1762204455N",
+        "git-9800a53e-1762204456N",
+        "git-3d817ae1-1762204457N"
+      ],
+      "recommendation": "Continue refactoring efforts. Document architectural improvements and measure code quality metrics."
+    }
+  ],
+  "forecasts": [
+    {
+      "forecast_id": "fc-1762943770003-i6gzuajuq",
+      "predicted_decision": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+      "decision_type": "ADR_Proposal",
+      "rationale": [
+        "Pattern: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
+        "Correlation: emerging (score: 0.21)"
+      ],
+      "confidence": 0.65,
+      "suggested_timeframe": "H2 2026",
+      "related_patterns": [
+        "pattern-kernel-evolution-1762943769901"
+      ],
+      "urgency": "low",
+      "estimated_effort": "high"
+    },
+    {
+      "forecast_id": "fc-1762943770003-ggs6akk3e",
+      "predicted_decision": "Review and document: High frequency of fix commits (27 fixes) suggests areas requiring stability improvements",
+      "decision_type": "ADR_Proposal",
+      "rationale": [
+        "Pattern: High frequency of fix commits (27 fixes) suggests areas requiring stability improvements",
+        "Correlation: emerging (score: 0.7354204592588152)"
+      ],
+      "confidence": 0.65,
+      "suggested_timeframe": "H2 2026",
+      "related_patterns": [
+        "pattern-fix-cycle-1762943769902"
+      ],
+      "urgency": "low",
+      "estimated_effort": "high"
+    },
+    {
+      "forecast_id": "fc-1762943770004-98kvc2r7y",
+      "predicted_decision": "Review and document: Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+      "decision_type": "ADR_Proposal",
+      "rationale": [
+        "Pattern: Consistent feature development (53 features) indicates healthy product iteration and experimentation",
+        "Correlation: emerging (score: 0.65697338815655)"
+      ],
+      "confidence": 0.65,
+      "suggested_timeframe": "H2 2026",
+      "related_patterns": [
+        "pattern-feature-velocity-1762943769902"
+      ],
+      "urgency": "low",
+      "estimated_effort": "high"
+    },
+    {
+      "forecast_id": "fc-1762943770004-595ycchsm",
+      "predicted_decision": "Address accumulated technical debt",
+      "decision_type": "Refactor",
+      "rationale": [
+        "Pattern: Regular refactoring commits (9 refactors) indicate proactive technical debt management",
+        "Correlation: emerging (score: 0.6914245298718671)"
+      ],
+      "confidence": 0.65,
+      "suggested_timeframe": "H2 2026",
+      "related_patterns": [
+        "pattern-refactor-decision-1762943769902"
+      ],
+      "urgency": "low",
+      "estimated_effort": "medium"
+    }
+  ],
+  "correlations": [],
+  "cognitive_load": 0.4791666666666667,
+  "git_context": {
+    "last_commit": "",
+    "time_since_commit_sec": 85830
+  },
+  "files_active": [
+    "extension/webview/ui/src/App.tsx",
+    "package.json",
+    "reasoning-layer-rl4-2.1.9.vsix",
+    "extension/extension.ts",
+    "reasoning-layer-rl4-2.2.0.vsix"
+  ]
+}

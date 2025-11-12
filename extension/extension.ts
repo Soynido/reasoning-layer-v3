@@ -14,12 +14,15 @@ import { GitCommitListener } from './kernel/inputs/GitCommitListener';
 import { FileChangeWatcher } from './kernel/inputs/FileChangeWatcher';
 import { AppendOnlyWriter } from './kernel/AppendOnlyWriter';
 import { KernelBootstrap } from './kernel/KernelBootstrap';
+import { CognitiveLogger } from './kernel/CognitiveLogger';
 import { ADRValidationCommands } from './commands/adr-validation';
-import { generateWhereAmI, generateSnapshotJSON } from './kernel/api/WhereAmISnapshot';
+import { UnifiedPromptBuilder } from './kernel/api/UnifiedPromptBuilder';
+import { ADRParser } from './kernel/api/ADRParser';
+import { PlanTasksContextParser } from './kernel/api/PlanTasksContextParser';
 import * as path from 'path';
 
-// Output Channel
-let outputChannel: vscode.OutputChannel | null = null;
+// Cognitive Logger
+let logger: CognitiveLogger | null = null;
 
 // RL4 Kernel
 let kernel: {
@@ -37,9 +40,6 @@ let webviewPanel: vscode.WebviewPanel | null = null;
 // Status Bar Item
 let statusBarItem: vscode.StatusBarItem | null = null;
 
-// Snapshot Push Interval
-let snapshotInterval: NodeJS.Timeout | null = null;
-
 export async function activate(context: vscode.ExtensionContext) {
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!workspaceRoot) {
@@ -47,29 +47,21 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
     }
     
-    // Create dedicated Output Channel with timestamps
-    outputChannel = vscode.window.createOutputChannel('RL4 Kernel');
+    // Create Cognitive Logger
+    const outputChannel = vscode.window.createOutputChannel('RL4 Kernel');
+    logger = new CognitiveLogger(workspaceRoot, outputChannel);
     outputChannel.show();
     
-    const logWithTime = (msg: string) => {
-        const timestamp = new Date().toISOString();
-        const timeDisplay = timestamp.substring(11, 23); // HH:MM:SS.mmm
-        outputChannel!.appendLine(`[${timeDisplay}] ${msg}`);
-    };
-    
-    outputChannel.appendLine('');
-    logWithTime('=== RL4 KERNEL — Minimal Mode ===');
-    logWithTime(`Workspace: ${workspaceRoot}`);
-    logWithTime('==================================');
-    outputChannel.appendLine('');
+    logger.system('=== RL4 KERNEL — Cognitive Console ===', '🧠');
+    logger.system(`Workspace: ${workspaceRoot}`, '📁');
+    logger.system('=====================================', '═');
     
     // Load kernel configuration
     const kernelConfig = loadKernelConfig(workspaceRoot);
-    logWithTime(`⚙️ Config: ${JSON.stringify(kernelConfig, null, 2)}`);
     
     // Initialize RL4 Kernel
     if (kernelConfig.USE_TIMER_REGISTRY) {
-        logWithTime('🔧 Initializing RL4 Kernel...');
+        logger.system('🔧 Initializing RL4 Kernel...', '🔧');
         
         // Create components
         const timerRegistry = new TimerRegistry();
@@ -80,7 +72,7 @@ export async function activate(context: vscode.ExtensionContext) {
         const bootstrap = KernelBootstrap.initialize(workspaceRoot);
         const forecastMetrics = bootstrap.metrics;
         
-        const scheduler = new CognitiveScheduler(workspaceRoot, timerRegistry, outputChannel, forecastMetrics);
+        const scheduler = new CognitiveScheduler(workspaceRoot, timerRegistry, logger, forecastMetrics);
         const execPool = new ExecPool(2, 2000, workspaceRoot);
         const api = new KernelAPI(
             timerRegistry,
@@ -100,34 +92,34 @@ export async function activate(context: vscode.ExtensionContext) {
             api
         };
         
-        logWithTime('✅ RL4 Kernel components created');
+        logger.system('✅ RL4 Kernel components created', '✅');
         
         // Bootstrap already loaded above (before scheduler creation)
         if (bootstrap.initialized) {
-            logWithTime(`✅ Bootstrap complete: ${bootstrap.universals ? Object.keys(bootstrap.universals).length : 0} universals loaded`);
+            logger.system(`✅ Bootstrap complete: ${bootstrap.universals ? Object.keys(bootstrap.universals).length : 0} universals loaded`, '✅');
             
             // Load state into StateRegistry if available
             if (bootstrap.state) {
                 // StateRegistry can be extended to accept loaded state
-                logWithTime('📦 Kernel state restored from artifacts');
+                logger.system('📦 Kernel state restored from artifacts', '📦');
             }
             
             // Log forecast baseline (now integrated into ForecastEngine)
             if (bootstrap.metrics?.forecast_precision) {
-                logWithTime(`📊 Forecast precision baseline: ${bootstrap.metrics.forecast_precision.toFixed(3)} (Phase E1 active)`);
+                logger.system(`📊 Forecast precision baseline: ${bootstrap.metrics.forecast_precision.toFixed(3)} (Phase E1 active)`, '📊');
             }
         } else {
-            logWithTime('⚠️  No kernel artifacts found, starting with default baseline (0.73)');
+            logger.warning('No kernel artifacts found, starting with default baseline (0.73)');
         }
         
         // Start health monitoring
         if (kernelConfig.USE_HEALTH_MONITOR) {
             healthMonitor.start(timerRegistry);
-            logWithTime('❤️ Health Monitor started');
+            logger.system('❤️ Health Monitor started', '❤️');
         }
         
         // Start CognitiveScheduler (double-delay for Extension Host stability)
-        logWithTime('🧠 Starting CognitiveScheduler (delayed start in 3s)...');
+        logger.system('🧠 Starting CognitiveScheduler (delayed start in 3s)...', '🧠');
         
         // External delay: Ensure kernel is fully initialized before scheduler starts
         const channel = outputChannel; // Capture for setTimeout callback
@@ -172,42 +164,21 @@ export async function activate(context: vscode.ExtensionContext) {
                     `Uptime: ${Math.floor(uptime / 60)}min`;
                 
                 vscode.window.showInformationMessage(message);
-                logWithTime(message);
+                logger!.system(message);
             }),
             
                 vscode.commands.registerCommand('reasoning.kernel.reflect', async () => {
-                logWithTime('🧠 Running manual cycle...');
+                logger!.system('🧠 Running manual cycle...', '🧠');
                 const result = await kernel!.scheduler.runCycle();
                 const message = `✅ Cycle ${result.cycleId}: ${result.duration}ms, ${result.phases.length} phases`;
                 vscode.window.showInformationMessage(message);
-                logWithTime(message);
+                logger!.system(message);
             }),
             
                 vscode.commands.registerCommand('reasoning.kernel.flush', async () => {
                     await kernel!.api.flush();
                 vscode.window.showInformationMessage('✅ Flushed');
-                logWithTime('💾 All queues flushed');
-            }),
-            
-                vscode.commands.registerCommand('reasoning.kernel.whereami', async () => {
-                logWithTime('🧠 Generating cognitive snapshot...');
-                try {
-                    const snapshot = await generateWhereAmI(path.join(workspaceRoot, '.reasoning_rl4'));
-                    
-                    // Display in new editor
-                    const doc = await vscode.workspace.openTextDocument({
-                        content: snapshot,
-                        language: 'markdown'
-                    });
-                    await vscode.window.showTextDocument(doc);
-                    
-                    logWithTime('✅ Cognitive snapshot generated');
-                    vscode.window.showInformationMessage('🧠 Where Am I? — Snapshot ready');
-                } catch (error) {
-                    const errorMsg = error instanceof Error ? error.message : String(error);
-                    logWithTime(`❌ Snapshot error: ${errorMsg}`);
-                    vscode.window.showErrorMessage(`Failed to generate snapshot: ${errorMsg}`);
-                }
+                logger!.system('💾 All queues flushed', '💾');
             })
         );
         
@@ -221,10 +192,10 @@ export async function activate(context: vscode.ExtensionContext) {
         statusBarItem.command = 'rl4.toggleWebview';
         statusBarItem.show();
         context.subscriptions.push(statusBarItem);
-        logWithTime('✅ Status Bar item created');
+        logger.system('✅ Status Bar item created', '✅');
         
         // Phase E2.7: Create WebView Dashboard with auto-push snapshots
-        logWithTime('🖥️ Creating RL4 Dashboard WebView...');
+        logger.system('🖥️ Creating RL4 Dashboard WebView...', '🖥️');
         
         webviewPanel = vscode.window.createWebviewPanel(
             'rl4Webview',
@@ -241,47 +212,115 @@ export async function activate(context: vscode.ExtensionContext) {
         
         // Load WebView HTML
         webviewPanel.webview.html = getWebviewHtml(context, webviewPanel);
-        logWithTime('✅ WebView HTML loaded');
+        logger.system('✅ WebView HTML loaded', '✅');
         
-        // Setup snapshot push interval (every 10 seconds)
-        snapshotInterval = setInterval(async () => {
-            if (webviewPanel) {
-                try {
-                    const snapshot = await generateSnapshotJSON(path.join(workspaceRoot, '.reasoning_rl4'));
-                    webviewPanel.webview.postMessage({ 
-                        type: 'updateStore', 
-                        payload: snapshot
-                    });
-                    logWithTime(`📤 JSON snapshot pushed (cycle ${snapshot.cycleId})`);
-                } catch (error) {
-                    const errorMsg = error instanceof Error ? error.message : String(error);
-                    logWithTime(`⚠️ Snapshot push error: ${errorMsg}`);
+        // Phase E3.3: Handle messages from WebView
+        const rl4Path = path.join(workspaceRoot, '.reasoning_rl4');
+        const promptBuilder = new UnifiedPromptBuilder(rl4Path);
+        const adrParser = new ADRParser(rl4Path);
+        const planParser = new PlanTasksContextParser(rl4Path);
+
+        // Initialize default Plan/Tasks/Context files if needed
+        await promptBuilder.initializeDefaults();
+
+        webviewPanel.webview.onDidReceiveMessage(
+            async (message) => {
+                console.log('[RL4 Extension] Received message from WebView:', message.type);
+                
+                switch (message.type) {
+                    case 'generateSnapshot':
+                        try {
+                            logger!.system('📋 Generating unified context snapshot...', '📋');
+                            const snapshot = await promptBuilder.generate();
+                            
+                            webviewPanel!.webview.postMessage({
+                                type: 'snapshotGenerated',
+                                payload: snapshot
+                            });
+                            
+                            logger!.system(`✅ Snapshot generated (${snapshot.length} chars)`, '✅');
+                        } catch (error) {
+                            logger!.error(`Failed to generate snapshot: ${error}`);
+                            webviewPanel!.webview.postMessage({
+                                type: 'error',
+                                payload: 'Failed to generate snapshot'
+                            });
+                        }
+                        break;
                 }
+            },
+            undefined,
+            context.subscriptions
+        );
+        
+        // Phase E3.3: Setup FileWatchers for Plan/Tasks/Context/ADRs.RL4
+        const planWatcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(rl4Path, 'Plan.RL4')
+        );
+        const tasksWatcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(rl4Path, 'Tasks.RL4')
+        );
+        const contextWatcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(rl4Path, 'Context.RL4')
+        );
+        const adrWatcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(rl4Path, 'ADRs.RL4')
+        );
+
+        // Handle Plan.RL4 changes
+        planWatcher.onDidChange(async () => {
+            logger!.system('📋 Plan.RL4 changed, recalculating metrics...', '📋');
+            // Confidence/bias will be recalculated on next snapshot generation
+        });
+
+        // Handle Tasks.RL4 changes
+        tasksWatcher.onDidChange(async () => {
+            logger!.system('✅ Tasks.RL4 changed, updating state...', '✅');
+        });
+
+        // Handle Context.RL4 changes
+        contextWatcher.onDidChange(async () => {
+            logger!.system('🔍 Context.RL4 changed, refreshing...', '🔍');
+        });
+
+        // Handle ADRs.RL4 changes (parse and append to ledger)
+        adrWatcher.onDidChange(async () => {
+            logger!.system('📜 ADRs.RL4 changed, processing...', '📜');
+            const result = adrParser.processADRsFile();
+            
+            if (result.added > 0) {
+                vscode.window.showInformationMessage(
+                    `✅ RL4: ${result.added} new ADR(s) added to ledger`
+                );
+                logger!.system(`✅ ${result.added} ADR(s) appended to ledger`, '✅');
             }
-        }, 10_000);
+        });
+
+        adrWatcher.onDidCreate(async () => {
+            logger!.system('📜 ADRs.RL4 created, processing...', '📜');
+            const result = adrParser.processADRsFile();
+            
+            if (result.added > 0) {
+                vscode.window.showInformationMessage(
+                    `✅ RL4: Processed ${result.added} ADR(s)`
+                );
+            }
+        });
+
+        context.subscriptions.push(planWatcher, tasksWatcher, contextWatcher, adrWatcher);
+        logger.system('✅ FileWatchers registered for Plan/Tasks/Context/ADRs.RL4', '✅');
+        
+        // Phase E3.3: No auto-push, WebView requests snapshot on demand via 'generateSnapshot' message
         
         // Clean up on panel dispose
         webviewPanel.onDidDispose(() => {
-            if (snapshotInterval) {
-                clearInterval(snapshotInterval);
-                snapshotInterval = null;
-            }
             webviewPanel = null;
             if (statusBarItem) {
                 statusBarItem.text = '$(brain) RL4 Dashboard';
                 statusBarItem.tooltip = 'Click to open RL4 Cognitive Dashboard';
             }
-            logWithTime('🖥️ WebView disposed');
+            logger!.system('🖥️ WebView disposed', '🖥️');
         }, null, context.subscriptions);
-        
-        context.subscriptions.push({ 
-            dispose: () => {
-                if (snapshotInterval) {
-                    clearInterval(snapshotInterval);
-                    snapshotInterval = null;
-                }
-            }
-        });
         
         // Add command to toggle WebView
         context.subscriptions.push(
@@ -292,7 +331,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         statusBarItem.text = '$(brain) RL4 Dashboard $(check)';
                         statusBarItem.tooltip = 'RL4 Dashboard is open';
                     }
-                    logWithTime('🖥️ WebView revealed');
+                    logger!.system('🖥️ WebView revealed', '🖥️');
                 } else {
                     // Recreate WebView if disposed
                     webviewPanel = vscode.window.createWebviewPanel(
@@ -310,31 +349,44 @@ export async function activate(context: vscode.ExtensionContext) {
                     
                     webviewPanel.webview.html = getWebviewHtml(context, webviewPanel);
                     
-                    // Recreate snapshot interval
-                    const newInterval = setInterval(async () => {
-                        if (webviewPanel) {
-                            try {
-                                const snapshot = await generateSnapshotJSON(path.join(workspaceRoot, '.reasoning_rl4'));
-                                webviewPanel.webview.postMessage({ 
-                                    type: 'updateStore', 
-                                    payload: snapshot
-                                });
-                                logWithTime(`📤 JSON snapshot pushed (cycle ${snapshot.cycleId})`);
-                            } catch (error) {
-                                const errorMsg = error instanceof Error ? error.message : String(error);
-                                logWithTime(`⚠️ Snapshot push error: ${errorMsg}`);
+                    // Phase E3.3: WebView requests snapshot on demand, no auto-push
+                    webviewPanel.webview.onDidReceiveMessage(
+                        async (message) => {
+                            console.log('[RL4 Extension] Received message from WebView:', message.type);
+                            
+                            switch (message.type) {
+                                case 'generateSnapshot':
+                                    try {
+                                        logger!.system('📋 Generating unified context snapshot...', '📋');
+                                        const snapshot = await promptBuilder.generate();
+                                        
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'snapshotGenerated',
+                                            payload: snapshot
+                                        });
+                                        
+                                        logger!.system(`✅ Snapshot generated (${snapshot.length} chars)`, '✅');
+                                    } catch (error) {
+                                        logger!.error(`Failed to generate snapshot: ${error}`);
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'error',
+                                            payload: 'Failed to generate snapshot'
+                                        });
+                                    }
+                                    break;
                             }
-                        }
-                    }, 10_000);
+                        },
+                        null,
+                        context.subscriptions
+                    );
                     
                     webviewPanel.onDidDispose(() => {
-                        clearInterval(newInterval);
                         webviewPanel = null;
                         if (statusBarItem) {
                             statusBarItem.text = '$(brain) RL4 Dashboard';
                             statusBarItem.tooltip = 'Click to open RL4 Cognitive Dashboard';
                         }
-                        logWithTime('🖥️ WebView disposed');
+                        logger!.system('🖥️ WebView disposed', '🖥️');
                     }, null, context.subscriptions);
                     
                     if (statusBarItem) {
@@ -342,17 +394,17 @@ export async function activate(context: vscode.ExtensionContext) {
                         statusBarItem.tooltip = 'RL4 Dashboard is open';
                     }
                     
-                    logWithTime('🖥️ WebView recreated');
+                    logger!.system('🖥️ WebView recreated', '🖥️');
                 }
             })
         );
         
-        logWithTime('✅ RL4 Kernel activated');
-        logWithTime('🎯 8 commands registered (4 kernel + 3 ADR validation + 1 webview)');
-        logWithTime('🖥️ Dashboard auto-opened in column 2');
+        logger.system('✅ RL4 Kernel activated', '✅');
+        logger.system('🎯 8 commands registered (4 kernel + 3 ADR validation + 1 webview)', '🎯');
+        logger.system('🖥️ Dashboard auto-opened in column 2', '🖥️');
             
         } else {
-        logWithTime('⚠️ TimerRegistry disabled');
+        logger.warning('TimerRegistry disabled');
     }
 }
 
@@ -365,8 +417,8 @@ function getWebviewHtml(context: vscode.ExtensionContext, panel: vscode.WebviewP
     const indexHtml = require('fs').readFileSync(indexHtmlPath.fsPath, 'utf-8');
     
     // Extract script and style paths from index.html
-    const scriptMatch = indexHtml.match(/src="\/assets\/(index-[^"]+\.js)"/);
-    const styleMatch = indexHtml.match(/href="\/assets\/(index-[^"]+\.css)"/);
+    const scriptMatch = indexHtml.match(/src="\.\/assets\/(index-[^"]+\.js)"/);
+    const styleMatch = indexHtml.match(/href="\.\/assets\/(index-[^"]+\.css)"/);
     
     if (!scriptMatch || !styleMatch) {
         throw new Error('Failed to parse Vite build assets from index.html');
@@ -394,6 +446,26 @@ function getWebviewHtml(context: vscode.ExtensionContext, panel: vscode.WebviewP
             </head>
             <body>
                 <div id="root"></div>
+                <script>
+                    // Acquire VS Code API BEFORE React loads
+                    // This can only be called once per webview lifetime
+                    (function() {
+                        if (typeof acquireVsCodeApi === 'function') {
+                            try {
+                                window.vscode = acquireVsCodeApi();
+                                console.log('[RL4 WebView] VS Code API acquired in inline script');
+                            } catch (e) {
+                                console.warn('[RL4 WebView] Could not acquire API (may already be acquired):', e.message);
+                                // API already acquired somewhere else - try to find it
+                                if (!window.vscode) {
+                                    console.error('[RL4 WebView] CRITICAL: API acquired elsewhere but not available in window.vscode');
+                                }
+                            }
+                        } else {
+                            console.error('[RL4 WebView] acquireVsCodeApi function not found');
+                        }
+                    })();
+                </script>
                 <script type="module" src="${scriptUri}"></script>
             </body>
         </html>
@@ -401,27 +473,20 @@ function getWebviewHtml(context: vscode.ExtensionContext, panel: vscode.WebviewP
 }
 
 export async function deactivate() {
-    outputChannel?.appendLine('🛑 RL4 Kernel deactivating...');
-    
-    // Clear snapshot interval
-    if (snapshotInterval) {
-        clearInterval(snapshotInterval);
-        snapshotInterval = null;
-        outputChannel?.appendLine('✅ Snapshot interval cleared');
-    }
+    logger?.system('🛑 RL4 Kernel deactivating...', '🛑');
     
     // Dispose Status Bar Item
     if (statusBarItem) {
         statusBarItem.dispose();
         statusBarItem = null;
-        outputChannel?.appendLine('✅ Status Bar disposed');
+        logger?.system('✅ Status Bar disposed', '✅');
     }
     
     // Dispose WebView
     if (webviewPanel) {
         webviewPanel.dispose();
         webviewPanel = null;
-        outputChannel?.appendLine('✅ WebView disposed');
+        logger?.system('✅ WebView disposed', '✅');
     }
     
     // Flush ledger
@@ -429,30 +494,30 @@ export async function deactivate() {
         const ledger = (globalThis as any).RBOM_LEDGER;
         if (ledger?.flush) {
                     await ledger.flush();
-            outputChannel?.appendLine('✅ Ledger flushed');
+            logger?.system('✅ Ledger flushed', '✅');
         }
     } catch (error) {
-        outputChannel?.appendLine(`❌ Flush error: ${error}`);
+        logger?.error(`Flush error: ${error}`);
     }
     
     // Clear timers
     if (kernel?.timerRegistry) {
         kernel.timerRegistry.clear('kernel:cognitive-cycle');
         kernel.timerRegistry.clear('kernel:cognitive-watchdog');
-        outputChannel?.appendLine('✅ Timers cleared');
+        logger?.system('✅ Timers cleared', '✅');
     }
     
     // Shutdown kernel
     if (kernel?.api) {
         try {
             await kernel.api.shutdown();
-            outputChannel?.appendLine('✅ Kernel shutdown complete');
+            logger?.system('✅ Kernel shutdown complete', '✅');
         } catch (error) {
-            outputChannel?.appendLine(`❌ Shutdown error: ${error}`);
+            logger?.error(`Shutdown error: ${error}`);
         }
     }
     
-    outputChannel?.appendLine('🧠 RL4 Kernel deactivated cleanly');
+    logger?.system('🧠 RL4 Kernel deactivated cleanly', '🧠');
 }
 // test flush fix
 // test flush fix

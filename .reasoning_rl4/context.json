@@ -1,21 +1,20 @@
 {
-  "last_updated": "2025-11-11T10:45:37.108Z",
-  "current_cycle": 162,
+  "last_updated": "2025-11-12T14:21:18.484Z",
+  "current_cycle": 296,
   "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
   "pattern_confidence": 0.8625,
   "forecast": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
   "forecast_confidence": 0.65,
-  "intent": "feature",
+  "intent": "chore",
   "adr": "Review and document: High frequency of fix commits (27 fixes) suggests areas requiring stability improvements",
   "files": [
-    "SYNC_COMPLETE.md",
-    "extension/kernel/api/WhereAmISnapshot.ts",
-    "validate-cognitive-data.js",
-    "test-snapshot-real.js",
-    "test-snapshot-generation.js"
+    "extension/kernel/api/UnifiedPromptBuilder.ts",
+    "package.json",
+    "extension/kernel/api/ADRSignalEnricher.ts",
+    "reasoning-layer-rl4-2.7.0-adr-detection.vsix"
   ],
   "stats": {
-    "total_cycles": 162,
+    "total_cycles": 296,
     "total_patterns": 4,
     "total_forecasts": 4,
     "total_adrs": 3

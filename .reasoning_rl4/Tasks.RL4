@@ -1,0 +1,54 @@
+---
+version: 1.2
+updated: 2025-11-12T13:00:00.000Z
+bias: 0.0
+---
+
+# RL4 Task List
+
+## Active (Priority Order) — MODE STRICT (0% deviation)
+1. [x] **[P0]** Create ADRSignalEnricher.ts (auto-detect ADRs via commit signals) ✅
+   - Read ONLY existing RL4 assets (git_commits.jsonl, file_changes.jsonl, cycles.jsonl)
+   - Calculate ADR score (type, files, lines, cognitive pattern)
+   - Output: EnrichedCommit[] with adrScore field
+2. [x] **[P0]** Integrate ADRSignalEnricher into UnifiedPromptBuilder ✅
+   - Add import ADRSignalEnricher
+   - Call enrichCommits(24h)
+   - Add "ADR Detection Signals" section to prompt
+3. [ ] **[P1]** Implement Smart UI Components (Phase E4):
+   - [ ] NextStepsCard (reads Tasks.RL4 → P0 tasks)
+   - [ ] ConfidenceGauge (reads Plan.RL4 → confidence)
+   - [ ] BlockersAlert (reads Tasks.RL4 → blockers)
+   - [ ] CognitiveLoadMeter (reads Context.RL4 → observations)
+   - [ ] TimelineChart (reads HistorySummary → activity trends)
+   - [ ] DecisionHistory (reads ADRs.RL4 → ADR timeline)
+4. [ ] **[P2]** Test ADR auto-detection with last 10 commits
+5. [ ] **[P2]** Add real-time UI refresh on .RL4 file changes
+
+## Completed (Last Session)
+- [x] BiasCalculator.ts created (deviation accepted: +15%)
+- [x] Deviation Guard integrated into UnifiedPromptBuilder
+- [x] ADR-007 documented
+- [x] Baseline Plan.RL4.v1.0 saved
+- [x] Mode STRICT activated (0% tolerance)
+
+## Completed (Last 24h)
+- [x] Fix ADR parser regex (ADR-XXX: format support) (completed: 13:00)
+- [x] Simplify WebView UI (remove 4 tabs → 1 button) (completed: 12:30)
+- [x] Create UnifiedPromptBuilder.ts (completed: 12:15)
+- [x] Create BlindSpotDataLoader.ts (completed: 12:10)
+- [x] Create ADRParser.ts (completed: 12:05)
+- [x] Create PlanTasksContextParser.ts (completed: 12:08)
+- [x] Fix VS Code API acquisition (double call bug) (completed: 12:25)
+- [x] Cleanup fake data (patterns.json, forecasts.json, goals.json) (completed: 11:50)
+- [x] Add FileWatchers for Plan/Tasks/Context/ADRs.RL4 (completed: 12:20)
+
+## Blockers
+~~- ADR-005 not detected in snapshot (parser issue with ADRs.RL4)~~ ✅ **RESOLVED** (13:00)
+
+## Metrics
+- Total tasks: 16 (9 completed, 7 active)
+- Completion rate: 56%
+- Current sprint: E3.3 (Day 1/3)
+- Velocity: High (9 tasks in 2h)
+- Blockers resolved: 1/1 (100%)

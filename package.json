@@ -1,7 +1,7 @@
 {
   "name": "reasoning-layer-rl4",
   "displayName": "Reasoning Layer RL4 (Kernel)",
-  "version": "2.0.9",
+  "version": "2.7.0-adr-detection",
   "publisher": "valentingaludec",
   "author": {
     "name": "Valentin Galudec",
@@ -105,6 +105,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^18.0.0",
     "@types/uuid": "^10.0.0",
     "@types/vscode": "^1.85.0",

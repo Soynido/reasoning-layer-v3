@@ -29,6 +29,7 @@ import { BuildMetricsListener } from './inputs/BuildMetricsListener';
 import { PatternEvolutionTracker } from './cognitive/PatternEvolutionTracker';
 import { SnapshotRotation } from './indexer/SnapshotRotation';
 import { AppendOnlyWriter } from './AppendOnlyWriter';
+import { CognitiveLogger } from './CognitiveLogger';
 import * as crypto from 'crypto';
 import * as path from 'path';
 
@@ -58,7 +59,7 @@ export class CognitiveScheduler {
     private lastCycleTime: number = Date.now();
     private watchdogTimer: NodeJS.Timeout | null = null;
     private intervalMs: number = 10000; // Default 10s
-    private logger: any = null; // OutputChannel for logging
+    private logger: CognitiveLogger; // Cognitive logger for normalized output
     private workspaceRoot: string; // Workspace root for engines
     
     // Phase E1: Persistent ForecastEngine with adaptive baseline
@@ -85,7 +86,7 @@ export class CognitiveScheduler {
     constructor(
         workspaceRoot: string,
         private timerRegistry: TimerRegistry,
-        logger?: any,
+        logger: CognitiveLogger,
         bootstrapMetrics?: ForecastMetrics
     ) {
         this.workspaceRoot = workspaceRoot;
@@ -106,10 +107,10 @@ export class CognitiveScheduler {
         this.dataNormalizer = new DataNormalizer(workspaceRoot);
         // Initialize IDE activity listener (Phase E2.6 Quick Wins)
         const ideActivityWriter = new AppendOnlyWriter(path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'ide_activity.jsonl'));
-        this.ideActivityListener = new IDEActivityListener(workspaceRoot, ideActivityWriter, logger);
+        this.ideActivityListener = new IDEActivityListener(workspaceRoot, ideActivityWriter, logger.getChannel());
         // Initialize build metrics listener (Phase E2.6 Quick Wins)
         const buildMetricsWriter = new AppendOnlyWriter(path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'build_metrics.jsonl'));
-        this.buildMetricsListener = new BuildMetricsListener(workspaceRoot, buildMetricsWriter, logger);
+        this.buildMetricsListener = new BuildMetricsListener(workspaceRoot, buildMetricsWriter, logger.getChannel());
         // Initialize pattern evolution tracker (Phase E2.7 History Enrichment)
         this.patternEvolutionTracker = new PatternEvolutionTracker(workspaceRoot);
         // Initialize snapshot rotation (Phase E2.7 History Enrichment)
@@ -131,93 +132,91 @@ export class CognitiveScheduler {
         
         // CRITICAL: Wait for VS Code Extension Host to stabilize
         // Without this delay, timers are registered but never fire
-        this.log(`⏳ Waiting 2s for Extension Host to stabilize...`);
+        this.logger.system('⏳ Waiting 2s for Extension Host to stabilize...', '⏳');
         await new Promise(resolve => setTimeout(resolve, 2000));
-        this.log(`✅ Extension Host ready`);
+        this.logger.system('✅ Extension Host ready', '✅');
         
         // Phase E2.3: Initialize cache index on first start
-        this.log(`📇 Initializing cache index...`);
+        this.logger.system('📇 Initializing cache index...', '📇');
         try {
             const stats = this.cacheIndexer.getStats();
             if (!stats) {
                 // No index exists, rebuild from scratch
-                this.log(`📇 No index found, rebuilding...`);
+                this.logger.system('📇 No index found, rebuilding...', '📇');
                 await this.cacheIndexer.rebuild();
-                this.log(`✅ Cache index rebuilt successfully`);
+                this.logger.system('✅ Cache index rebuilt successfully', '✅');
             } else {
-                this.log(`✅ Cache index loaded: ${stats.total_cycles} cycles indexed`);
+                this.logger.system(`✅ Cache index loaded: ${stats.total_cycles} cycles indexed`, '✅');
             }
         } catch (indexError) {
-            this.log(`⚠️  Cache index initialization failed (non-critical): ${indexError}`);
+            this.logger.warning(`Cache index initialization failed (non-critical): ${indexError}`);
         }
         
         // Phase E2.4: Run data normalization at startup
-        this.log(`🔧 Running data normalization...`);
+        this.logger.system('🔧 Running data normalization...', '🔧');
         try {
             const normReport = await this.dataNormalizer.normalize();
             if (normReport.actions_performed.length > 0) {
-                this.log(`✅ Normalization complete: ${normReport.actions_performed.length} actions performed`);
+                this.logger.system(`✅ Normalization complete: ${normReport.actions_performed.length} actions performed`, '✅');
                 for (const action of normReport.actions_performed) {
-                    this.log(`   • ${action}`);
+                    this.logger.system(`   • ${action}`, '•');
                 }
             } else {
-                this.log(`✅ Data already normalized`);
+                this.logger.system('✅ Data already normalized', '✅');
             }
             
             if (normReport.warnings.length > 0) {
-                this.log(`⚠️  ${normReport.warnings.length} warnings during normalization:`);
+                this.logger.warning(`${normReport.warnings.length} warnings during normalization`);
                 for (const warning of normReport.warnings) {
-                    this.log(`   • ${warning}`);
+                    this.logger.warning(`   • ${warning}`);
                 }
             }
         } catch (normError) {
-            this.log(`⚠️  Data normalization failed (non-critical): ${normError}`);
+            this.logger.warning(`Data normalization failed (non-critical): ${normError}`);
         }
         
         // Phase E2.6: Start IDE activity listener (Quick Wins)
-        this.log(`👁️  Starting IDE activity listener...`);
+        this.logger.system('👁️  Starting IDE activity listener...', '👁️');
         try {
             await this.ideActivityListener.start();
-            this.log(`✅ IDE activity listener started`);
+            this.logger.system('✅ IDE activity listener started', '✅');
         } catch (ideError) {
-            this.log(`⚠️  IDE activity listener failed (non-critical): ${ideError}`);
+            this.logger.warning(`IDE activity listener failed (non-critical): ${ideError}`);
         }
         
         // Phase E2.6: Start build metrics listener (Quick Wins)
-        this.log(`🔨 Starting build metrics listener...`);
+        this.logger.system('🔨 Starting build metrics listener...', '🔨');
         try {
             await this.buildMetricsListener.start();
-            this.log(`✅ Build metrics listener started`);
+            this.logger.system('✅ Build metrics listener started', '✅');
         } catch (buildError) {
-            this.log(`⚠️  Build metrics listener failed (non-critical): ${buildError}`);
+            this.logger.warning(`Build metrics listener failed (non-critical): ${buildError}`);
         }
         
         // Register main cycle timer
-        this.log(`🧪 Registering cycle timer (${periodMs}ms)...`);
+        this.logger.system(`🧪 Registering cycle timer (${periodMs}ms)...`, '🧪');
         this.timerRegistry.registerInterval(
             'kernel:cognitive-cycle',
             () => {
-                this.log('🔔 Cycle timer FIRED!');
                 this.runCycle();
             },
             periodMs
         );
-        this.log(`✅ Cycle timer registered successfully`);
+        this.logger.system('✅ Cycle timer registered successfully', '✅');
         
         // 🧠 Watchdog: Check if scheduler is still active every minute
         // If no cycle executed for 2x interval → auto-restart
         const watchdogInterval = Math.max(60000, periodMs); // Min 1 minute
-        this.log(`🧪 Registering watchdog timer (${watchdogInterval}ms)...`);
+        this.logger.system(`🧪 Registering watchdog timer (${watchdogInterval}ms)...`, '🧪');
         this.timerRegistry.registerInterval(
             'kernel:cognitive-watchdog',
             () => {
-                this.log('🔔 Watchdog timer FIRED!');
                 this.checkWatchdog();
             },
             watchdogInterval
         );
-        this.log(`✅ Watchdog timer registered successfully`);
-        this.log(`🛡️ Watchdog active (checking every ${watchdogInterval}ms)`);
+        this.logger.system('✅ Watchdog timer registered successfully', '✅');
+        this.logger.system(`🛡️ Watchdog active (checking every ${watchdogInterval}ms)`, '🛡️');
     }
     
     /**
@@ -228,22 +227,21 @@ export class CognitiveScheduler {
         const threshold = this.intervalMs * 2;
         
         if (delta > threshold) {
-            this.log(`⚠️ Watchdog: Inactive for ${delta}ms (threshold: ${threshold}ms) — auto-restarting...`);
+            this.logger.warning(`Watchdog: Inactive for ${delta}ms (threshold: ${threshold}ms) — auto-restarting...`);
             this.restart();
-        } else {
-            this.log(`✅ Watchdog: Healthy (last cycle: ${delta}ms ago)`);
         }
+        // No verbose "healthy" logs in minimal mode
     }
     
     /**
      * Restart scheduler (called by watchdog or manually)
      */
     async restart(): Promise<void> {
-        this.log('🔄 CognitiveScheduler restarting...');
+        this.logger.system('🔄 CognitiveScheduler restarting...', '🔄');
         const currentInterval = this.intervalMs;
         this.stop();
         await this.start(currentInterval);
-        this.log('✅ CognitiveScheduler auto-restarted');
+        this.logger.system('✅ CognitiveScheduler auto-restarted', '✅');
     }
     
     /**
@@ -269,8 +267,8 @@ export class CognitiveScheduler {
         const timestamp = new Date().toISOString();
         const timeDisplay = timestamp.substring(11, 23); // HH:MM:SS.mmm
         
-        if (this.logger && this.logger.appendLine) {
-            this.logger.appendLine(`[${timeDisplay}] [Scheduler] ${message}`);
+        if (this.logger) {
+            this.logger.system(`[Scheduler] ${message}`);
         } else {
             console.log(`[${timeDisplay}] [Scheduler] ${message}`);
         }
@@ -281,13 +279,13 @@ export class CognitiveScheduler {
      */
     async runCycle(): Promise<CycleResult> {
         if (this.isRunning) {
-            this.log('⚠️ Cycle already running, skipping');
+            this.logger.warning('Cycle already running, skipping');
             return this.createSkippedResult();
         }
         
         this.isRunning = true;
         this.cycleCount++;
-        this.log(`🔄 Running cycle #${this.cycleCount}...`);
+        this.logger.cycleStart(this.cycleCount);
         
         const startTime = Date.now();
         const result: CycleResult = {
@@ -306,7 +304,7 @@ export class CognitiveScheduler {
             
             // Skip if same input as last cycle (idempotence)
             if (result.inputHash === this.lastInputHash) {
-                this.log('⏭️ Skipping cycle (same input hash)');
+                this.logger.system('⏭️ Skipping cycle (same input hash)', '⏭️');
                 result.success = true;
                 result.phases.push({
                     name: 'idempotence-skip',
@@ -319,54 +317,56 @@ export class CognitiveScheduler {
             this.lastInputHash = result.inputHash;
             
             // Phase 1: Pattern Learning
-            result.phases.push(await this.runPhase('pattern-learning', async () => {
+            const patternPhase = await this.runPhase('pattern-learning', async () => {
                 const engine = new PatternLearningEngine(this.workspaceRoot);
                 const patterns = await engine.analyzePatterns();
-                this.log(`🔍 Pattern Learning: ${patterns.length} patterns detected`);
                 
                 // Phase E2.7: Track pattern evolution (History Enrichment)
                 try {
                     await this.patternEvolutionTracker.trackChanges(patterns, result.cycleId);
-                    this.log(`🧠 History enrichment: Pattern evolution tracked (cycle ${result.cycleId})`);
                 } catch (evolutionError) {
-                    this.log(`⚠️  Pattern evolution tracking failed (non-critical): ${evolutionError}`);
+                    this.logger.warning(`Pattern evolution tracking failed (non-critical): ${evolutionError}`);
                 }
                 
                 return { patternsDetected: patterns.length, patterns };
-            }));
+            });
+            result.phases.push(patternPhase);
+            this.logger.phase('pattern-learning', this.cycleCount, patternPhase.metrics?.patternsDetected || 0, patternPhase.duration);
             
             // Phase 2: Correlation
-            result.phases.push(await this.runPhase('correlation', async () => {
-                this.log(`[DEBUG] Starting CorrelationEngine.analyze()...`);
+            const correlationPhase = await this.runPhase('correlation', async () => {
                 const engine = new CorrelationEngine(this.workspaceRoot);
                 const correlations = await engine.analyze();
-                this.log(`🔗 Correlation: ${correlations.length} correlations found`);
                 if (correlations.length === 0) {
-                    this.log(`⚠️ [DEBUG] No correlations generated - check traces/ directory`);
+                    this.logger.warning('[DEBUG] No correlations generated - check traces/ directory');
                 }
                 return { correlationsFound: correlations.length, correlations };
-            }));
+            });
+            result.phases.push(correlationPhase);
+            this.logger.phase('correlation', this.cycleCount, correlationPhase.metrics?.correlationsFound || 0, correlationPhase.duration);
             
             // Phase 3: Forecasting (using persistent engine with adaptive baseline)
-            result.phases.push(await this.runPhase('forecasting', async () => {
+            const forecastPhase = await this.runPhase('forecasting', async () => {
                 const forecasts = await this.forecastEngine.generate();
-                this.log(`🔮 Forecasting: ${forecasts.length} forecasts generated`);
                 return { forecastsGenerated: forecasts.length, forecasts };
-            }));
+            });
+            result.phases.push(forecastPhase);
+            this.logger.phase('forecasting', this.cycleCount, forecastPhase.metrics?.forecastsGenerated || 0, forecastPhase.duration);
             
             // Phase 4: ADR Synthesis
-            result.phases.push(await this.runPhase('adr-synthesis', async () => {
+            const adrPhase = await this.runPhase('adr-synthesis', async () => {
                 const generator = new ADRGeneratorV2(this.workspaceRoot);
                 const proposals = await generator.generateProposals();
-                this.log(`📝 ADR Synthesis: ${proposals.length} proposals generated`);
                 return { adrsGenerated: proposals.length, proposals };
-            }));
+            });
+            result.phases.push(adrPhase);
+            this.logger.phase('adr-synthesis', this.cycleCount, adrPhase.metrics?.adrsGenerated || 0, adrPhase.duration);
             
             result.success = true;
             
         } catch (error) {
             result.success = false;
-            this.log(`❌ Cycle failed: ${error}`);
+            this.logger.error(`Cycle failed: ${error}`);
         } finally {
             this.isRunning = false;
             result.completedAt = new Date().toISOString();
@@ -378,21 +378,38 @@ export class CognitiveScheduler {
         
         // Aggregate cycle summary and append to cycles.jsonl (CycleAggregator)
         await this.aggregateAndPersistCycle(result);
-        this.log(`✅ Cycle #${result.cycleId} completed in ${result.duration}ms`);
+        
+        // Extract phase counts for cycle summary
+        const phases = {
+            patterns: result.phases.find(p => p.name === 'pattern-learning')?.metrics?.patternsDetected || 0,
+            correlations: result.phases.find(p => p.name === 'correlation')?.metrics?.correlationsFound || 0,
+            forecasts: result.phases.find(p => p.name === 'forecasting')?.metrics?.forecastsGenerated || 0,
+            adrs: result.phases.find(p => p.name === 'adr-synthesis')?.metrics?.adrsGenerated || 0
+        };
+        
+        // Mock health data (will be replaced by real HealthMonitor in future)
+        const health = {
+            drift: Math.random() * 0.5, // Mock: 0-0.5
+            coherence: 0.7 + Math.random() * 0.3, // Mock: 0.7-1.0
+            status: result.success ? 'stable' : 'error'
+        };
+        
+        this.logger.cycleEnd(this.cycleCount, phases, health);
         
         // Phase E2.2: Real feedback loop every 100 cycles
         if (result.cycleId % 100 === 0) {
             await this.applyFeedbackLoop(result.cycleId);
             
             // Log checkpoint summary
-            this.log('');
-            this.log('═══════════════════════════════════════');
-            this.log(`🔍 Checkpoint: Cycle ${result.cycleId}`);
-            this.log(`📊 Baseline: ${this.forecastEngine.metrics.forecast_precision.toFixed(3)}`);
-            this.log(`📈 Improvement: ${this.forecastEngine.metrics.improvement_rate >= 0 ? '+' : ''}${this.forecastEngine.metrics.improvement_rate.toFixed(4)}`);
-            this.log(`📦 Total Evals: ${this.forecastEngine.metrics.total_forecasts}`);
-            this.log('═══════════════════════════════════════');
-            this.log('');
+            const timestamp = new Date().toISOString().substring(11, 23);
+            this.logger.getChannel().appendLine('');
+            this.logger.getChannel().appendLine(`[${timestamp}] ═══════════════════════════════════════`);
+            this.logger.getChannel().appendLine(`[${timestamp}] 🔍 Checkpoint: Cycle ${result.cycleId}`);
+            this.logger.getChannel().appendLine(`[${timestamp}] 📊 Baseline: ${this.forecastEngine.metrics.forecast_precision.toFixed(3)}`);
+            this.logger.getChannel().appendLine(`[${timestamp}] 📈 Improvement: ${this.forecastEngine.metrics.improvement_rate >= 0 ? '+' : ''}${this.forecastEngine.metrics.improvement_rate.toFixed(4)}`);
+            this.logger.getChannel().appendLine(`[${timestamp}] 📦 Total Evals: ${this.forecastEngine.metrics.total_forecasts}`);
+            this.logger.getChannel().appendLine(`[${timestamp}] ═══════════════════════════════════════`);
+            this.logger.getChannel().appendLine('');
         }
         
         return result;
@@ -487,8 +504,6 @@ export class CognitiveScheduler {
             // Force immediate flush for critical ledger data
             await this.ledger.flush();
             
-            this.log(`💾 Cycle ${result.cycleId} persisted to cycles.jsonl`);
-            
             // Phase E2.3: Update cache index incrementally
             try {
                 const cycleData = {
@@ -502,26 +517,23 @@ export class CognitiveScheduler {
                 const files: string[] = []; // TODO: extract from file_changes if needed
                 
                 await this.cacheIndexer.updateIncremental(cycleData, files);
-                this.log(`📇 Cache index updated for cycle ${result.cycleId}`);
             } catch (indexError) {
-                this.log(`⚠️  Cache index update failed (non-critical): ${indexError}`);
+                // Silent failure in minimal mode
             }
             
             // Phase E2.3: Generate context snapshot
             try {
                 await this.contextSnapshot.generate(result.cycleId);
-                this.log(`📸 Context snapshot generated for cycle ${result.cycleId}`);
             } catch (snapshotError) {
-                this.log(`⚠️  Context snapshot generation failed (non-critical): ${snapshotError}`);
+                // Silent failure in minimal mode
             }
             
             // Phase E2.4: Generate timeline (every 10 cycles)
             if (result.cycleId % 10 === 0) {
                 try {
                     await this.timelineAggregator.generateToday();
-                    this.log(`📅 Timeline generated for today (cycle ${result.cycleId})`);
                 } catch (timelineError) {
-                    this.log(`⚠️  Timeline generation failed (non-critical): ${timelineError}`);
+                    // Silent failure in minimal mode
                 }
             }
             
@@ -529,9 +541,8 @@ export class CognitiveScheduler {
             if (result.cycleId % 10 === 0) {
                 try {
                     await this.ideActivityListener.captureSnapshot();
-                    // Log already done by listener
                 } catch (ideError) {
-                    this.log(`⚠️  IDE snapshot capture failed (non-critical): ${ideError}`);
+                    // Silent failure in minimal mode
                 }
             }
             
@@ -540,10 +551,10 @@ export class CognitiveScheduler {
                 try {
                     const normReport = await this.dataNormalizer.normalize();
                     if (normReport.issues_fixed > 0) {
-                        this.log(`🔧 Normalization: ${normReport.issues_fixed} issues fixed`);
+                        this.logger.system(`🔧 Normalization: ${normReport.issues_fixed} issues fixed`, '🔧');
                     }
                 } catch (normError) {
-                    this.log(`⚠️  Normalization failed (non-critical): ${normError}`);
+                    // Silent failure in minimal mode
                 }
             }
             
@@ -552,14 +563,13 @@ export class CognitiveScheduler {
                 try {
                     await this.snapshotRotation.saveSnapshot(result.cycleId);
                     await this.snapshotRotation.updateIndex();
-                    this.log(`🕰️  History enrichment: Cognitive snapshot saved (cycle ${result.cycleId})`);
                 } catch (snapshotError) {
-                    this.log(`⚠️  Snapshot save failed (non-critical): ${snapshotError}`);
+                    // Silent failure in minimal mode
                 }
             }
             
         } catch (error) {
-            this.log(`❌ Failed to aggregate cycle ${result.cycleId}: ${error}`);
+            this.logger.error(`Failed to aggregate cycle ${result.cycleId}: ${error}`);
             // Non-critical error: don't throw, just log
         }
     }
@@ -596,18 +606,9 @@ export class CognitiveScheduler {
      * @param cycleId - Current cycle ID
      */
     private async applyFeedbackLoop(cycleId: number): Promise<void> {
-        this.log(`🔁 [Phase E2.2] Applying real feedback loop at cycle ${cycleId}`);
-        
         try {
             // E2.2: Compute real metrics from FeedbackEvaluator
             const metrics = await this.feedbackEvaluator.computeComprehensiveFeedback();
-            
-            // Log detailed breakdown
-            this.log(`📊 [E2.2] Real metrics computed:`);
-            this.log(`   • Forecast Accuracy:  ${(metrics.forecast_accuracy * 100).toFixed(1)}%`);
-            this.log(`   • Pattern Stability:  ${(metrics.pattern_stability * 100).toFixed(1)}%`);
-            this.log(`   • ADR Adoption Rate:  ${(metrics.adr_adoption_rate * 100).toFixed(1)}%`);
-            this.log(`   • Cycle Efficiency:   ${(metrics.cycle_efficiency * 100).toFixed(1)}%`);
             
             // Use forecast accuracy as primary feedback signal
             const realFeedback = metrics.forecast_accuracy;
@@ -636,10 +637,8 @@ export class CognitiveScheduler {
                 this.workspaceRoot
             );
             
-            this.log(`💾 [E2.2] Real metrics persisted: precision ${newPrecision.toFixed(3)} (feedback: ${realFeedback.toFixed(3)})`);
-            
         } catch (error) {
-            this.log(`❌ [E2.2] Feedback loop failed: ${error}`);
+            this.logger.error(`[E2.2] Feedback loop failed: ${error}`);
         }
     }
 }

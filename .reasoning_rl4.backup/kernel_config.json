@@ -1,0 +1,14 @@
+{
+  "USE_TIMER_REGISTRY": true,
+  "USE_APPEND_ONLY_IO": true,
+  "USE_EXEC_POOL": true,
+  "USE_STATE_REGISTRY": true,
+  "USE_HEALTH_MONITOR": true,
+  "USE_MINIMAL_LOGS": true,
+  "USE_VERBOSE_LOGS": false,
+  "exec_pool_size": 2,
+  "exec_timeout_ms": 2000,
+  "health_check_interval_ms": 10000,
+  "state_snapshot_interval_ms": 600000,
+  "cognitive_cycle_interval_ms": 10000
+}

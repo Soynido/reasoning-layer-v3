@@ -1,0 +1,12 @@
+{
+  "import_time": "2025-11-10T10:50:02Z",
+  "source": "/Users/valentingaludec/RL4-Trainer/_export_final",
+  "destination": "/Users/valentingaludec/Reasoning Layer V3/.reasoning_rl4/kernel",
+  "files": [
+    "cognitive_state",
+    "forecast_metrics",
+    "state",
+    "universals",
+    "universals_analysis"
+  ]
+}

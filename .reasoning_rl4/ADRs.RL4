@@ -1,0 +1,318 @@
+---
+version: 1.0
+created: 2025-11-12T12:25:00.000Z
+---
+
+# Architecture Decision Records (Agent-Proposed)
+
+## ADR-005: Single Context Snapshot Architecture
+
+**Status**: proposed  
+**Date**: 2025-11-12  
+**Author**: Agent LLM (Claude Sonnet 4.5)
+
+### Context
+Phase E3.2 (PromptBridge) used 4 separate prompts (Now, Before, Next, Restore) which:
+- Confused users (which prompt to use?)
+- Scattered information across 4 views
+- Contained fake/static data (patterns, forecasts, goals)
+- Lacked clear feedback loop for agents
+
+Users reported:
+- "Too many buttons, unclear workflow"
+- "Patterns never change, seems fake"
+- "How do I update RL4 state from my agent?"
+
+### Decision
+Implement **Single Context Snapshot System** with:
+1. **1-button UI**: "Generate Context Snapshot" → unified Markdown prompt
+2. **Real data only**: Timeline, commits, file patterns, ADRs, health metrics
+3. **Agent feedback loop**: 
+   - Agent analyzes prompt
+   - Agent updates `.reasoning_rl4/Plan.RL4`, `Tasks.RL4`, `Context.RL4`, `ADRs.RL4`
+   - RL4 FileWatchers detect changes
+   - RL4 parses updates and recalculates Confidence/Bias
+4. **Unified prompt format**: All data in single Markdown block
+
+### Consequences
+
+**Positive:**
+- ✅ Simpler UX (1 button vs 4 tabs)
+- ✅ Honest data (no fake patterns/forecasts)
+- ✅ Clear feedback loop (agent → .RL4 files → RL4)
+- ✅ Confidence/Bias metrics (quantify alignment)
+- ✅ Production-ready architecture
+
+**Negative:**
+- ❌ Loss of granular views (Now/Before/Next/Restore)
+- ❌ Single prompt can be long (1500+ characters)
+- ❌ Requires agent to parse structured Markdown
+
+**Risks:**
+- Prompt format changes may break agent workflows
+- FileWatchers may trigger too frequently (spam)
+- Confidence/Bias formulas may need tuning
+
+**Alternatives Considered:**
+1. Keep 4 tabs, add feedback loop → Rejected (too complex)
+2. Use JSON instead of Markdown → Rejected (less human-readable)
+3. No feedback loop, read-only → Rejected (not useful for agents)
+
+### Implementation Status
+- [x] UnifiedPromptBuilder.ts created
+- [x] BlindSpotDataLoader.ts created
+- [x] ADRParser.ts created
+- [x] PlanTasksContextParser.ts created
+- [x] FileWatchers added
+- [x] UI simplified to 1 button
+- [x] Feedback loop tested end-to-end
+- [x] ADR parsing regex fixed (ADR-XXX: format)
+
+---
+
+## ADR-006: Smart UI with LLM-Validated KPIs
+
+**Status**: proposed  
+**Date**: 2025-11-12  
+**Author**: Agent LLM (Claude Sonnet 4.5)
+
+### Context
+After implementing the Single Context Snapshot System (ADR-005), we identified a critical architectural insight:
+
+**The Problem:**
+- Kernel logs raw data (25 MB of cycles.jsonl, health.jsonl, etc.)
+- UI could display raw stats (e.g., "186 edits on extension.ts")
+- But raw stats are **meaningless** without context
+
+**The Insight:**
+User asked: "Et alors ? C'est grave ?" (So what? Is it serious?)
+→ Raw data doesn't tell the user WHAT TO DO
+
+**The Hack:**
+Use `.RL4` files as **LLM-validated data store** for UI consumption:
+1. Kernel = Dumb logger (just append, no analysis)
+2. Prompt = Compression middleware (25 MB → 2 KB JSON)
+3. LLM = Cognitive validator (analyze, prioritize, structure)
+4. `.RL4` files = Validated knowledge base
+5. UI = Smart display (show LLM insights, not raw stats)
+
+### Decision
+Implement **Smart UI Architecture** where:
+
+1. **Single CTA remains:** "Generate Context Snapshot"
+   - User clicks → Prompt generated → LLM validates → `.RL4` files updated
+   - No fragmentation (no "Analyze This", "Show That" buttons)
+
+2. **UI reads `.RL4` files (LLM-validated):**
+   - `Tasks.RL4` → Next Steps Card (P0/P1/P2 priorities already set by LLM)
+   - `Plan.RL4` → Confidence Gauge (71% calculated by LLM, not UI)
+   - `Context.RL4` → Cognitive Load Meter (observations validated by LLM)
+   - `ADRs.RL4` → Decision History Timeline
+
+3. **UI displays intelligent KPIs:**
+   - NOT: "186 edits detected" (raw stat)
+   - BUT: "🔴 BLOCKER: extension.ts cognitive overload → Refactor recommended (P0)" (LLM insight)
+
+4. **Feedback loop preserved:**
+   - User updates via LLM (not via UI forms)
+   - UI is **read-only display** of LLM-validated state
+   - FileWatchers detect `.RL4` changes → UI refreshes
+
+### Consequences
+
+**Positive:**
+- ✅ UI shows **actionable insights**, not raw data
+- ✅ LLM becomes "Data Validation Layer"
+- ✅ `.RL4` files = Source of Truth for both LLM and UI
+- ✅ Single CTA workflow preserved (no complexity creep)
+- ✅ User always knows WHAT TO DO (not just "what happened")
+- ✅ System self-documents its own evolution (this ADR proves it!)
+
+**Negative:**
+- ❌ UI cannot edit directly (must go through LLM)
+- ❌ Requires LLM call for every update (latency)
+- ❌ `.RL4` files become critical path (corruption = UI breaks)
+
+**Risks:**
+- If LLM validation fails, UI shows stale data
+- User might want quick edits (e.g., mark task done) without LLM
+- `.RL4` parsing errors could crash UI
+
+**Alternatives Considered:**
+1. **UI with edit forms** → Rejected (bypasses LLM validation)
+2. **Dual-source (Kernel + .RL4)** → Rejected (creates data inconsistency)
+3. **Smart Kernel (analyze in Kernel)** → Rejected (Kernel should stay dumb/fast)
+
+### Implementation Roadmap
+
+**Phase E3.3 (Current):**
+- [x] Single CTA: "Generate Context Snapshot"
+- [x] UnifiedPromptBuilder with HistorySummarizer
+- [x] LLM updates Plan/Tasks/Context/ADRs.RL4
+- [x] FileWatchers detect changes
+
+**Phase E4 (Next):**
+- [ ] Smart UI Components:
+  - [ ] NextStepsCard (reads Tasks.RL4 → P0 tasks)
+  - [ ] ConfidenceGauge (reads Plan.RL4 → confidence metric)
+  - [ ] BlockersAlert (reads Tasks.RL4 → blockers)
+  - [ ] CognitiveLoadMeter (reads Context.RL4 → observations)
+  - [ ] TimelineChart (reads HistorySummary → activity trends)
+  - [ ] DecisionHistory (reads ADRs.RL4 → recent ADRs)
+- [ ] Real-time refresh on `.RL4` file changes
+- [ ] Error handling for parsing failures
+
+**Phase E5 (Future):**
+- [ ] Predictive insights (Next Hotspot, Optimal Work Hours)
+- [ ] Milestone auto-detection (M1.0 → M1.1 transitions)
+- [ ] Cognitive load score visualization
+
+### Success Metrics
+- User opens RL4 UI → Immediately knows WHAT TO DO (not "what happened")
+- Zero "raw stat" displays (e.g., "186 edits" without context)
+- 100% of KPIs are LLM-validated (no UI-calculated metrics)
+- Single CTA workflow maintained (<3 clicks to update)
+
+---
+
+## ADR-007: Agent Self-Deviation Detection (Deviation Guard)
+
+**Status**: proposed  
+**Date**: 2025-11-12  
+**Author**: Agent LLM (Claude Sonnet 4.5)
+
+### Context
+**Meta-Problem Discovered:**
+During implementation of Phase E3.3 → E4, user suggested "Add deviation system to track bias."
+
+Agent LLM (me) immediately:
+1. Created `BiasCalculator.ts` (350 lines)
+2. Modified `kernel_config.json`
+3. Integrated into `UnifiedPromptBuilder.ts`
+
+**WITHOUT:**
+- Checking if "deviation system" was in Active Tasks (P0/P1)
+- Asking if this should be Phase E4 or E5
+- Calculating bias impact (+15% for new module)
+
+**Result:** Agent deviated from Plan, same problem users face!
+
+**User's insight:**
+"Tu vois là par exemple, on avait un plan initial avec des tasks. Mais vu que je t'écris cette nouvelle idée, tu l'appliques tout de suite alors que ça pourrait être un point qui apparaît plus tard dans le plan.. C'est toute cette logique qu'on doit calibrer et qui emmerde les développers quand ils t'utilisent."
+
+**Root Cause:**
+Agents (LLMs) suffer from "shiny object syndrome" - they implement new ideas immediately without checking:
+- Is this in the current Plan?
+- Does this align with P0/P1 tasks?
+- What's the deviation cost?
+
+### Decision
+Implement **Deviation Guard** system that:
+
+1. **Calculates Bias** (drift from original Plan)
+   - Compare Plan v1.0 (baseline) vs Plan vX.Y (current)
+   - Measure per dimension: phase, goal, timeline, criteria
+   - Weighted total: goal (40%), timeline (25%), criteria (20%), phase (15%)
+
+2. **Defines Deviation Modes** (user-configurable)
+   - `strict` (0%): No deviation tolerated
+   - `flexible` (25%): Light deviation OK
+   - `exploratoire` (50%): Experimentation encouraged
+   - `free` (100%): No constraints
+
+3. **Adds Guard Rails to Prompt**
+   ```markdown
+   ## 🛡️ Deviation Guard
+   
+   **Current Phase:** E3.3
+   **Deviation Mode:** flexible (25% threshold)
+   **Current Bias:** 15%
+   
+   **Active Tasks (P0/P1 - DO THIS NOW):**
+   1. Create ADRSignalEnricher.ts
+   2. Implement Smart UI
+   
+   **🚨 RULE FOR LLM AGENT:**
+   Before implementing ANY new idea:
+   1. Check if in Active Tasks → YES: proceed, NO: ask user
+   2. Calculate bias impact (new module = +15%)
+   3. If exceeds threshold → STOP, show options
+   ```
+
+4. **Forces Agent to Ask User**
+   ```
+   User: "Add deviation system"
+   
+   Agent response:
+   "⚠️ This idea adds +15% bias (total: 30% > 25% threshold).
+   
+   Options:
+   a) Implement now (Phase E4, accept 30% deviation)
+   b) Add to Phase E5 backlog (bias stays 15%)
+   c) Reject (focus on P0 tasks)
+   
+   What do you prefer?"
+   ```
+
+### Consequences
+
+**Positive:**
+- ✅ Agent (LLM) can't silently deviate anymore
+- ✅ User controls when to pivot vs stay on track
+- ✅ Bias is quantified (15%, 30%, etc.)
+- ✅ Configurable discipline levels (strict/flexible/exploratoire/free)
+- ✅ Teaches agent to respect the Plan
+- ✅ Solves "shiny object syndrome" for both humans AND agents
+
+**Negative:**
+- ❌ More friction (agent must ask before implementing)
+- ❌ User must make decisions ("Phase E4 or E5?")
+- ❌ Baseline Plan.RL4 must be preserved (`.baseline/` directory)
+
+**Risks:**
+- Too strict mode might block good ideas
+- Bias calculation might be inaccurate (Levenshtein distance for goal)
+- User might ignore warnings ("just implement it!")
+
+**Alternatives Considered:**
+1. **No guard (status quo)** → Rejected (agent deviates silently)
+2. **Hard block (strict only)** → Rejected (too rigid, kills creativity)
+3. **UI-based approval** → Rejected (bypasses LLM validation layer)
+
+### Implementation
+
+**Modules Created:**
+- [x] `BiasCalculator.ts` - Calculate drift from baseline Plan
+- [x] `kernel_config.json` - Add deviation_mode, deviation_threshold
+- [x] `UnifiedPromptBuilder.ts` - Add "Deviation Guard" section to prompt
+
+**Workflow:**
+1. User clicks "Generate Snapshot"
+2. BiasCalculator compares Plan v1.0 vs vX.Y
+3. Bias report included in prompt with guard rails
+4. Agent sees "🚨 RULE FOR LLM AGENT" section
+5. Agent MUST check Active Tasks before implementing
+6. If not in P0/P1 → Agent asks user for decision
+
+**Baseline Preservation:**
+- `.reasoning_rl4/.baseline/Plan.RL4.v1.0` (immutable)
+- Created once at project start
+- Never modified (source of truth for bias calculation)
+
+### Success Metrics
+- Agent asks user before implementing ideas NOT in P0/P1 tasks
+- Bias calculation accuracy >90% (user validates)
+- Zero silent deviations (100% of pivots are explicit decisions)
+- User can configure tolerance (strict/flexible/exploratoire/free)
+
+### Meta Note
+**This ADR documents its own creation process:**
+1. User suggested "deviation system"
+2. Agent implemented immediately (deviated!)
+3. User pointed out the problem
+4. Agent created this ADR + Deviation Guard system
+5. Now agent can't make the same mistake again
+
+**This is RL4 self-correcting in real-time.** 🎯
+
+

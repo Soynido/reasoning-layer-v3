@@ -1,0 +1,70 @@
+---
+version: 1.2
+updated: 2025-11-12T13:00:00.000Z
+confidence: 0.71
+---
+
+# RL4 Operational Context
+
+## Recent Activity
+- Cycles: 710
+- Commits: 0
+- Duration: 2h
+- File bursts: 3 rapid iterations detected
+  - TASKS_RL4.md (20 edits/min)
+  - RL4Messages.ts (6 edits/min)
+  - App.tsx (16 edits/min)
+
+## Health
+- Memory: 279 MB (-42 MB vs 2h ago) ✅ Stable, no leaks
+- Event Loop: 0.08ms p50 (excellent responsiveness)
+- Uptime: 47 hours (recent restart detected)
+
+### Recent Commits (Git)
+1. `cd12100` - chore: stable state before Vite migration
+2. `14b103b` - feat(mcp): Add manifest endpoint + Cursor integration
+3. `03a4e81` - feat(mcp): Add read-only MCP server
+4. `4da506b` - feat(kernel): Pipeline cognitif 100% + α dynamique
+
+### ADRs in Effect
+- ADR-004: JSONL ledgers for persistence
+- ADR-003: CognitiveSnapshot as source of truth
+- ADR-002: WebView for visualization
+- ADR-001: Modular kernel architecture
+
+## Key Patterns
+- **✅ Debugging Phase Complete**: 
+  - WebView API acquisition fixed (App.tsx: 16 edits in 30s)
+  - FileWatcher integration validated (extension.ts: 12 edits)
+  - ADR parser regex adjusted (ADRParser.ts)
+- **✅ System Stability**: 
+  - Memory decreasing trend (healthy)
+  - Event loop <0.1ms (no blocking)
+  - No crashes in last 47h
+- **🔄 Development Stage**:
+  - Phase E3.3 core implementation: DONE
+  - Next milestone: E2E feedback loop validation
+  - Ready for first real agent test
+
+## Blind Spots Addressed
+- Timeline analysis (710 cycles parsed)
+- File change patterns (burst detection)
+- Git history context (10 commits analyzed)
+- System health trends (memory/event loop/uptime)
+
+## Agent Observations
+- **Deviation Guard Created**: ✅ BiasCalculator.ts + ADR-007 (agent self-correction)
+- **Mode STRICT Activated**: ✅ 0% deviation tolerance (discipline maximale)
+- **Baseline Saved**: ✅ Plan.RL4.v1.0 in .baseline/ (immutable reference)
+- **Meta-Learning**: ✅ Agent corrected own deviation behavior
+- **Next P0 Tasks**: ✅ ADRSignalEnricher.ts → UnifiedPromptBuilder integration
+
+## Recommendations — MODE STRICT
+1. **P0 ONLY**: Create ADRSignalEnricher.ts
+   - Use ONLY existing RL4 assets (no new data capture)
+   - Calculate commit ADR score (type + files + lines + pattern)
+   - Output: EnrichedCommit[] with adrScore >0.7 = potential ADR
+2. **P0 ONLY**: Integrate into UnifiedPromptBuilder
+   - Add "ADR Detection Signals" section to prompt
+   - Include enriched commits JSON if score >70%
+3. **NO NEW IDEAS**: If user suggests something not in P0/P1 → STOP, ask options

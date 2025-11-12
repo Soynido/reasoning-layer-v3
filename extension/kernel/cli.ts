@@ -30,7 +30,21 @@ async function main() {
     const timerRegistry = new TimerRegistry();
     const stateRegistry = new StateRegistry(workspaceRoot);
     const healthMonitor = new HealthMonitor(workspaceRoot, timerRegistry);
-    const scheduler = new CognitiveScheduler(workspaceRoot, timerRegistry);
+    
+    // Create dummy logger for CLI (no VS Code OutputChannel available)
+    const dummyLogger: any = {
+        system: (msg: string) => console.log(`[RL4] ${msg}`),
+        warning: (msg: string) => console.warn(`[RL4 WARNING] ${msg}`),
+        error: (msg: string) => console.error(`[RL4 ERROR] ${msg}`),
+        log: () => {},
+        cycleStart: () => {},
+        cycleEnd: () => {},
+        phase: () => {},
+        getChannel: () => null,
+        clear: () => {},
+    };
+    
+    const scheduler = new CognitiveScheduler(workspaceRoot, timerRegistry, dummyLogger);
     const execPool = new ExecPool(config.exec_pool_size, config.exec_timeout_ms);
     const writers = new Map<string, AppendOnlyWriter>();
     
