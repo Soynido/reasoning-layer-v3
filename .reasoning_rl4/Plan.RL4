@@ -51,6 +51,14 @@ Deliver a marketplace-ready VS Code extension that provides developers with acti
 5. [x] Optimize for public understanding (code comments, docs) ✅ Tracked in Issue #1
 6. [ ] VS Code Marketplace submission ⏳ After screenshots
 
+**Phase E6 Objectives (PLANNED — Post-Marketplace UX):**
+1. [ ] Dual-Mode Onboarding (Existing workspace vs New workspace)
+2. [ ] Cognitive Narrative Logs (Transform technical logs into storytelling)
+3. [ ] Emotional Intelligence (React to user behavior: bursts, gaps, commits)
+4. [ ] 5-Minute Insights (Contextual reflections and suggestions)
+5. [ ] Quick Setup Wizard (3 questions for first-time users)
+6. [ ] Log Mode Configuration (Narrative/Minimal/Verbose/Silent)
+
 **Milestones Achieved (Day 1):**
 - ✅ UnifiedPromptBuilder.ts created (generates single prompt)
 - ✅ BlindSpotDataLoader.ts (loads real timeline/git/health)
