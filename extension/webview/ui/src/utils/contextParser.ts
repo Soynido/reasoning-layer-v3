@@ -93,17 +93,17 @@ export function parseContextRL4(content: string): {
       };
     }
 
-    // 2. Parse Next Tasks
+    // 2. Parse Next Tasks (allow extra text after "Mode")
     const nextTasksMatch = kpiSection.match(
-      /### Next (?:Steps|Tasks) \((Strict|Flexible|Exploratory|Free) Mode\)([\s\S]*?)(?=###|$)/i
+      /### Next (?:Steps|Tasks) \((Strict|Flexible|Exploratory|Free) Mode[^\)]*\)([\s\S]*?)(?=###|$)/i
     );
     
     if (nextTasksMatch) {
       const mode = nextTasksMatch[1].toLowerCase() as 'strict' | 'flexible' | 'exploratory' | 'free';
       const stepsText = nextTasksMatch[2];
       
-      // Extract numbered steps with priorities
-      const stepMatches = stepsText.matchAll(/\d+\.\s*\*?\*?\[(P[012])\]\*?\*?\s*(.+?)(?=\n|$)/g);
+      // Extract numbered steps with priorities (flexible format: **[P0] TEXT:** or [P0] TEXT)
+      const stepMatches = stepsText.matchAll(/\d+\.\s*\*{0,2}\[(P[012])\][^\n]*?:\s*(.+?)(?=\n\d+\.|$)/gs);
       const steps: NextTaskData[] = [];
       
       for (const match of stepMatches) {
@@ -116,7 +116,7 @@ export function parseContextRL4(content: string): {
       result.nextSteps = { mode, steps };
     }
 
-    // 3. Parse Plan Drift
+    // 3. Parse Plan Drift (flexible: handles both drift and no-drift formats)
     const planDriftMatch = kpiSection.match(
       /### Plan Drift: (\d+)%([\s\S]*?)(?=###|$)/
     );
@@ -125,13 +125,16 @@ export function parseContextRL4(content: string): {
       const percentage = parseInt(planDriftMatch[1]);
       const driftText = planDriftMatch[2];
       
-      // Extract phase change
-      const phaseMatch = driftText.match(/- Phase: (.+?) → (.+?)(?:\n|$)/);
+      // Extract phase change (handles both "→" and "=" formats)
+      const phaseMatchArrow = driftText.match(/- Phase: (.+?) → (.+?) —/);
+      const phaseMatchEquals = driftText.match(/- Phase: (.+?) = (.+?) —/);
+      const phaseMatch = phaseMatchArrow || phaseMatchEquals;
+      
       const phase = phaseMatch 
         ? {
             original: phaseMatch[1].trim(),
             current: phaseMatch[2].trim(),
-            changed: true,
+            changed: phaseMatchArrow !== null, // Only true if arrow detected
           }
         : {
             original: 'Unknown',
@@ -139,20 +142,21 @@ export function parseContextRL4(content: string): {
             changed: false,
           };
       
-      // Extract goal percentage
+      // Extract goal percentage (if present)
       const goalMatch = driftText.match(/- Goal: (\d+)% different/);
       const goal = {
         percentage: goalMatch ? parseInt(goalMatch[1]) : 0,
       };
       
-      // Extract tasks added
+      // Extract tasks added (if present)
       const tasksMatch = driftText.match(/- Tasks: \+(\d+) added/);
       const tasks = {
         added: tasksMatch ? parseInt(tasksMatch[1]) : 0,
       };
       
-      // Determine threshold based on mode (assume flexible = 25% by default)
-      const threshold = 25; // TODO: Extract from deviation mode
+      // Extract threshold from text (e.g., "Strict: 0% threshold")
+      const thresholdMatch = driftText.match(/\((?:Strict|Flexible|Exploratory|Free): (\d+)% threshold\)/i);
+      const threshold = thresholdMatch ? parseInt(thresholdMatch[1]) : 25;
       
       result.planDrift = {
         percentage,
@@ -161,21 +165,23 @@ export function parseContextRL4(content: string): {
       };
     }
 
-    // 4. Parse Risks
+    // 4. Parse Risks (accept any emoji)
     const risksMatch = kpiSection.match(/### Risks([\s\S]*?)(?=###|$)/);
     
     if (risksMatch) {
       const risksText = risksMatch[1];
-      const riskMatches = risksText.matchAll(/- (🔴|🟡|🟢)\s*(.+?)(?=\n-|$)/gs);
+      // Match any emoji (Unicode range for emojis) followed by text
+      const riskMatches = risksText.matchAll(/- ([\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}✅]+)\s*(.+?)(?=\n-|$)/gsu);
       const risks: RiskData[] = [];
       
       for (const match of riskMatches) {
-        const emoji = match[1];
+        const emoji = match[1].trim();
         const description = match[2].trim();
         
-        const severity = emoji === '🔴' 
+        // Infer severity from emoji
+        const severity = (emoji === '🔴' || emoji.includes('🔴'))
           ? 'critical' 
-          : emoji === '🟡' 
+          : (emoji === '🟡' || emoji.includes('🟡') || emoji.includes('⚠'))
           ? 'warning' 
           : 'ok';
         
