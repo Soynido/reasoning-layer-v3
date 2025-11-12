@@ -77,7 +77,10 @@ export function parseContextRL4(content: string): {
     }
 
     const kpiSection = kpiMatch[1];
-    console.log('[RL4 Parser] ✅ KPI section extracted:', kpiSection.substring(0, 200) + '...');
+    console.log('[RL4 Parser] ✅ KPI section extracted (first 500 chars):', kpiSection.substring(0, 500));
+    console.log('[RL4 Parser] First line after "KPIs":', kpiSection.split('\n')[0]);
+    console.log('[RL4 Parser] Second line:', kpiSection.split('\n')[1]);
+    console.log('[RL4 Parser] Third line:', kpiSection.split('\n')[2]);
 
     // 1. Parse Cognitive Load
     const cognitiveLoadMatch = kpiSection.match(
