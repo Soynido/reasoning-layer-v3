@@ -219,6 +219,29 @@ export async function activate(context: vscode.ExtensionContext) {
         const promptBuilder = new UnifiedPromptBuilder(rl4Path);
         const adrParser = new ADRParser(rl4Path);
         const planParser = new PlanTasksContextParser(rl4Path);
+        
+        // Helper: Send Context.RL4 to WebView for initial KPI load
+        const sendContextToWebView = async () => {
+            if (webviewPanel) {
+                try {
+                    const fs = await import('fs/promises');
+                    const contextPath = path.join(rl4Path, 'Context.RL4');
+                    const contextContent = await fs.readFile(contextPath, 'utf-8');
+                    
+                    webviewPanel.webview.postMessage({
+                        type: 'kpisUpdated',
+                        payload: contextContent
+                    });
+                    
+                    logger!.system('✅ Initial Context.RL4 sent to WebView', '✅');
+                } catch (error) {
+                    logger!.system(`⚠️ Context.RL4 not found yet (will use mock data)`, '⚠️');
+                }
+            }
+        };
+        
+        // Wait 500ms for WebView to be ready, then send initial Context.RL4
+        setTimeout(sendContextToWebView, 500);
 
         // Initialize default Plan/Tasks/Context files if needed
         await promptBuilder.initializeDefaults();
@@ -279,9 +302,27 @@ export async function activate(context: vscode.ExtensionContext) {
             logger!.system('✅ Tasks.RL4 changed, updating state...', '✅');
         });
 
-        // Handle Context.RL4 changes
+        // Handle Context.RL4 changes → Send to WebView for KPI update
         contextWatcher.onDidChange(async () => {
             logger!.system('🔍 Context.RL4 changed, refreshing...', '🔍');
+            
+            // Read Context.RL4 and send to WebView for KPI parsing
+            if (webviewPanel) {
+                try {
+                    const fs = await import('fs/promises');
+                    const contextPath = path.join(rl4Path, 'Context.RL4');
+                    const contextContent = await fs.readFile(contextPath, 'utf-8');
+                    
+                    webviewPanel.webview.postMessage({
+                        type: 'kpisUpdated',
+                        payload: contextContent
+                    });
+                    
+                    logger!.system('✅ Context.RL4 sent to WebView for KPI update', '✅');
+                } catch (error) {
+                    logger!.error(`Failed to read Context.RL4: ${error}`);
+                }
+            }
         });
 
         // Handle ADRs.RL4 changes (parse and append to ledger)
@@ -349,6 +390,9 @@ export async function activate(context: vscode.ExtensionContext) {
                     );
                     
                     webviewPanel.webview.html = getWebviewHtml(context, webviewPanel);
+                    
+                    // Send initial Context.RL4 to WebView after a delay
+                    setTimeout(sendContextToWebView, 500);
                     
                     // Phase E3.3: WebView requests snapshot on demand, no auto-push
                     webviewPanel.webview.onDidReceiveMessage(
