@@ -101,17 +101,17 @@ export default function App() {
         <div className="rl4-hero">
           {/* Deviation Mode Selector */}
           <div className="deviation-mode-selector">
-            <label htmlFor="deviation-mode">🎯 Angle de perception :</label>
+            <label htmlFor="deviation-mode">🎯 Perception Angle:</label>
             <select 
               id="deviation-mode"
               value={deviationMode}
               onChange={(e) => setDeviationMode(e.target.value as DeviationMode)}
               disabled={loading}
             >
-              <option value="strict">🔴 Strict (0%) — P0 uniquement</option>
+              <option value="strict">🔴 Strict (0%) — P0 only</option>
               <option value="flexible">🟡 Flexible (25%) — P0+P1 OK</option>
-              <option value="exploratory">🟢 Exploratoire (50%) — Nouvelles idées bienvenues</option>
-              <option value="free">⚪ Libre (100%) — Mode créatif</option>
+              <option value="exploratory">🟢 Exploratory (50%) — New ideas welcome</option>
+              <option value="free">⚪ Free (100%) — Creative mode</option>
             </select>
           </div>
 

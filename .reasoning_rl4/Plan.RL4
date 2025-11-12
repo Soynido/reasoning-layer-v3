@@ -1,14 +1,14 @@
 ---
-version: 1.8
+version: 1.9
 original_version: 1.0
-updated: 2025-11-12T16:10:00.000Z
+updated: 2025-11-12T16:15:00.000Z
 confidence: 0.98
 baseline_saved: true
 deviation_mode: ui_driven
-commit: f9d61c4
+commit: 97e4843
 vsix: reasoning-layer-rl4-2.7.0-adr-detection.vsix
 snapshot_validated: true
-milestone: Mermaid Diagrams + Plan Evolution Tracking
+milestone: Mermaid Syntax Fixed
 ---
 
 # RL4 Strategic Plan
@@ -116,6 +116,10 @@ Transform RL4 UI from "data display" to "actionable insights" via LLM-validated 
 - Mermaid diagrams to all ADRs (ADR-005 to ADR-009)
 - `.reasoning_rl4/ADR_TEMPLATE.md` (Template for future ADRs)
 - Phase Evolution Tracking section in Plan.RL4 (this section)
+
+**FIXED:**
+- Mermaid syntax errors (removed dots from labels: `.RL4` → `RL4`, `.jsonl` → `jsonl`)
+- All diagrams now render correctly in Markdown viewers
 
 **PLANNED (E4.2):**
 - Smart UI Components (NextStepsCard, ConfidenceGauge, etc.)

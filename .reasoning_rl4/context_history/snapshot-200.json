@@ -6,10 +6,10 @@
   ],
   "duration_sec": 1000,
   "source": "auto",
-  "timestamp": "2025-11-12T13:32:37.180Z",
+  "timestamp": "2025-11-12T14:57:31.230Z",
   "patterns": [
     {
-      "id": "pattern-kernel-evolution-1762954356893",
+      "id": "pattern-kernel-evolution-1762959450949",
       "pattern": "Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
       "frequency": 21,
       "confidence": 0.8312499999999999,
@@ -49,7 +49,7 @@
       "pattern_id": "pattern-7f8bc135"
     },
     {
-      "id": "pattern-fix-cycle-1762954356893",
+      "id": "pattern-fix-cycle-1762959450949",
       "pattern": "High frequency of fix commits (27 fixes) suggests areas requiring stability improvements",
       "frequency": 27,
       "confidence": 0.7875,
@@ -95,7 +95,7 @@
       "pattern_id": "pattern-9c1c9915"
     },
     {
-      "id": "pattern-feature-velocity-1762954356893",
+      "id": "pattern-feature-velocity-1762959450950",
       "pattern": "Consistent feature development (53 features) indicates healthy product iteration and experimentation",
       "frequency": 53,
       "confidence": 0.8625,
@@ -167,7 +167,7 @@
       "pattern_id": "pattern-1b6688ed"
     },
     {
-      "id": "pattern-refactor-decision-1762954356894",
+      "id": "pattern-refactor-decision-1762959450950",
       "pattern": "Regular refactoring commits (9 refactors) indicate proactive technical debt management",
       "frequency": 9,
       "confidence": 0.825,
@@ -197,7 +197,7 @@
   ],
   "forecasts": [
     {
-      "forecast_id": "fc-1762954357014-8r2v5j1ow",
+      "forecast_id": "fc-1762959451077-90fhbmisf",
       "predicted_decision": "Review and document: Frequent kernel architecture commits (21 commits) indicate active evolution of core reasoning infrastructure",
       "decision_type": "ADR_Proposal",
       "rationale": [
@@ -207,58 +207,58 @@
       "confidence": 0.65,
       "suggested_timeframe": "H2 2026",
       "related_patterns": [
-        "pattern-kernel-evolution-1762954356893"
+        "pattern-kernel-evolution-1762959450949"
       ],
       "urgency": "low",
       "estimated_effort": "high",
       "cycle_id": 200
     },
     {
-      "forecast_id": "fc-1762954357014-s3yw6jrpm",
+      "forecast_id": "fc-1762959451077-b06s4g7p1",
       "predicted_decision": "Review and document: High frequency of fix commits (27 fixes) suggests areas requiring stability improvements",
       "decision_type": "ADR_Proposal",
       "rationale": [
         "Pattern: High frequency of fix commits (27 fixes) suggests areas requiring stability improvements",
-        "Correlation: emerging (score: 0.7217285189778039)"
+        "Correlation: emerging (score: 0.7295596011039596)"
       ],
       "confidence": 0.65,
       "suggested_timeframe": "H2 2026",
       "related_patterns": [
-        "pattern-fix-cycle-1762954356893"
+        "pattern-fix-cycle-1762959450949"
       ],
       "urgency": "low",
       "estimated_effort": "high",
       "cycle_id": 200
     },
     {
-      "forecast_id": "fc-1762954357014-rryr6vjyu",
+      "forecast_id": "fc-1762959451077-aokimaybf",
       "predicted_decision": "Review and document: Consistent feature development (53 features) indicates healthy product iteration and experimentation",
       "decision_type": "ADR_Proposal",
       "rationale": [
         "Pattern: Consistent feature development (53 features) indicates healthy product iteration and experimentation",
-        "Correlation: emerging (score: 0.6693018717719289)"
+        "Correlation: emerging (score: 0.7338036135954449)"
       ],
-      "confidence": 0.65,
+      "confidence": 0.66,
       "suggested_timeframe": "H2 2026",
       "related_patterns": [
-        "pattern-feature-velocity-1762954356893"
+        "pattern-feature-velocity-1762959450950"
       ],
       "urgency": "low",
       "estimated_effort": "high",
       "cycle_id": 200
     },
     {
-      "forecast_id": "fc-1762954357014-hu3paozd2",
+      "forecast_id": "fc-1762959451077-98slna9su",
       "predicted_decision": "Address accumulated technical debt",
       "decision_type": "Refactor",
       "rationale": [
         "Pattern: Regular refactoring commits (9 refactors) indicate proactive technical debt management",
-        "Correlation: emerging (score: 0.6465082022285324)"
+        "Correlation: emerging (score: 0.710419964728482)"
       ],
       "confidence": 0.65,
       "suggested_timeframe": "H2 2026",
       "related_patterns": [
-        "pattern-refactor-decision-1762954356894"
+        "pattern-refactor-decision-1762959450950"
       ],
       "urgency": "low",
       "estimated_effort": "medium",
@@ -266,16 +266,14 @@
     }
   ],
   "correlations": [],
-  "cognitive_load": 0.5358796296296295,
+  "cognitive_load": 0.5584490740740741,
   "git_context": {
     "last_commit": "",
-    "time_since_commit_sec": 96417
+    "time_since_commit_sec": 760
   },
   "files_active": [
-    "extension/kernel/api/HistorySummarizer.ts",
     "extension/kernel/api/UnifiedPromptBuilder.ts",
-    "package.json",
-    "docs/WHY_SMART_UI.md",
-    "RL4_VISION_FINALE.md"
+    "reasoning-layer-rl4-2.7.0-adr-detection.vsix",
+    "extension/webview/ui/src/App.css"
   ]
 }

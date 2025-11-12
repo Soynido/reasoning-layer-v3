@@ -61,8 +61,8 @@ export class UnifiedPromptBuilder {
     // Load compressed historical summary (30 days → 2KB JSON)
     const historySummary = await this.historySummarizer.summarize(30);
 
-    // Calculate bias (deviation from original plan)
-    const biasReport = await this.biasCalculator.calculateBias();
+    // Calculate bias (deviation from original plan) with user-selected mode
+    const biasReport = await this.biasCalculator.calculateBias(deviationMode);
 
     // Enrich commits with ADR detection signals (last 24h)
     const enrichedCommits = await this.adrEnricher.enrichCommits(24);

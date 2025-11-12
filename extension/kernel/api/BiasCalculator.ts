@@ -67,11 +67,12 @@ export class BiasCalculator {
 
   /**
    * Calculate bias between original and current Plan
+   * @param userMode Optional user-selected deviation mode (overrides config)
    */
-  async calculateBias(): Promise<BiasReport> {
+  async calculateBias(userMode?: string): Promise<BiasReport> {
     // Load config
     const config = this.loadConfig();
-    const deviationMode = config.deviation_mode || 'flexible';
+    const deviationMode = userMode || config.deviation_mode || 'flexible';
     const threshold = config.deviation_threshold || 0.25;
 
     // Load Plans
@@ -199,11 +200,11 @@ export class BiasCalculator {
     if (mode === 'strict' && total > 0.05) {
       recs.push(`⚠️ STRICT MODE: Any deviation detected (${(total * 100).toFixed(0)}%). Recalibrate immediately.`);
     } else if (mode === 'flexible' && total > threshold) {
-      recs.push(`⚠️ Deviation exceeds threshold: ${(total * 100).toFixed(0)}% > ${(threshold * 100).toFixed(0)}%`);
-    } else if (mode === 'exploratoire' && total > threshold) {
-      recs.push(`ℹ️ Exploration drift: ${(total * 100).toFixed(0)}%. Monitor progress.`);
+      recs.push(`⚠️ FLEXIBLE MODE: Deviation exceeds threshold (${(total * 100).toFixed(0)}% > ${(threshold * 100).toFixed(0)}%). Focus on P0+P1.`);
+    } else if (mode === 'exploratory' && total > threshold) {
+      recs.push(`ℹ️ EXPLORATORY MODE: Exploration drift detected (${(total * 100).toFixed(0)}% > ${(threshold * 100).toFixed(0)}%). Monitor progress.`);
     } else if (mode === 'free') {
-      recs.push(`✅ FREE MODE: No constraints. Current drift: ${(total * 100).toFixed(0)}%`);
+      recs.push(`✅ FREE MODE: No constraints. Current drift: ${(total * 100).toFixed(0)}%. Creativity encouraged.`);
       return recs;
     }
 

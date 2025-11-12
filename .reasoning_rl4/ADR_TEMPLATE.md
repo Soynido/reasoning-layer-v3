@@ -144,3 +144,17 @@ graph LR
 - Use dotted lines (`-.->`) for influences/constraints
 - Group related nodes with subgraphs if needed
 
+### Common Pitfalls (AVOID):
+- ❌ **Dots in labels**: `[Plan.RL4]` → Use `["Plan RL4"]` or `[Plan RL4]`
+- ❌ **File extensions**: `.jsonl`, `.tsx`, `.ts` → Remove dots or quote
+- ❌ **Decimal numbers**: `0.25` → Use `0 25` or quote "0.25"
+- ❌ **Special chars**: `/`, `+`, `=` → Quote labels containing them
+- ✅ **Solution**: Use quotes around labels with special characters
+
+**Example:**
+```mermaid
+graph TD
+    A["Load Plan.RL4"] --> B["Parse JSON"]  <!-- Correct: quoted -->
+    C[Load Plan RL4] --> D[Parse JSON]      <!-- Also correct: no dots -->
+```
+
