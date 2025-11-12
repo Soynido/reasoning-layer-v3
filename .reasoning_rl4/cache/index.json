@@ -1,10 +1,10 @@
 {
   "version": "1.0.0",
-  "generated_at": "2025-11-12T19:26:11.380Z",
-  "total_cycles": 12643,
+  "generated_at": "2025-11-12T19:28:51.433Z",
+  "total_cycles": 12659,
   "date_range": {
     "first": "2025-11-03T16:33:56.387Z",
-    "last": "2025-11-12T19:26:11.334Z"
+    "last": "2025-11-12T19:28:51.389Z"
   },
   "by_day": {
     "2025-11-03": [
@@ -19073,7 +19073,16 @@
       124,
       125,
       126,
-      127
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      142,
+      143
     ]
   },
   "entries": [
@@ -133300,6 +133309,150 @@
     {
       "cycleId": 127,
       "timestamp": "2025-11-12T19:26:11.334Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 128,
+      "timestamp": "2025-11-12T19:26:21.357Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 129,
+      "timestamp": "2025-11-12T19:26:31.344Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 130,
+      "timestamp": "2025-11-12T19:26:41.338Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 131,
+      "timestamp": "2025-11-12T19:26:51.360Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 132,
+      "timestamp": "2025-11-12T19:27:01.358Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 133,
+      "timestamp": "2025-11-12T19:27:11.334Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 134,
+      "timestamp": "2025-11-12T19:27:21.379Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 135,
+      "timestamp": "2025-11-12T19:27:31.339Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 136,
+      "timestamp": "2025-11-12T19:27:41.350Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 137,
+      "timestamp": "2025-11-12T19:27:51.348Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 138,
+      "timestamp": "2025-11-12T19:28:01.394Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 139,
+      "timestamp": "2025-11-12T19:28:11.362Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 140,
+      "timestamp": "2025-11-12T19:28:21.379Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 141,
+      "timestamp": "2025-11-12T19:28:31.328Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 142,
+      "timestamp": "2025-11-12T19:28:41.360Z",
+      "day": "2025-11-12",
+      "hour": 20,
+      "patterns_count": 4,
+      "forecasts_count": 4,
+      "files": []
+    },
+    {
+      "cycleId": 143,
+      "timestamp": "2025-11-12T19:28:51.389Z",
       "day": "2025-11-12",
       "hour": 20,
       "patterns_count": 4,
