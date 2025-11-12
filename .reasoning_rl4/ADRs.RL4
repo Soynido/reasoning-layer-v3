@@ -707,4 +707,210 @@ graph TD
 - Smart UI adapts to chosen mode (different insights) ✅
 - User satisfaction: "Je contrôle l'angle de perception" ✅
 
+---
+
+## ADR-010: Smart UI with LLM-Validated KPIs (No Hallucinations)
+
+**Status**: accepted  
+**Date**: 2025-11-12  
+**Author**: Agent LLM (validated by user)  
+**Mode**: Flexible (25% threshold)  
+**Bias Impact**: +15% (total: 45% > 25%) — Deviation accepted
+
+### Context
+
+**Problem:**
+Initial Smart UI design included KPIs that hallucinated information:
+- ❌ "Goal Achievement Probability: 72%" (no deadline data)
+- ❌ "Required velocity: 3 tasks/day" (no context)
+- ❌ "Burnout Risk: 58%" (intrusive, not RL4 scope)
+- ❌ Predictions without sufficient historical data
+
+User feedback: "Attention aux hallucinations. C'est typiquement le genre de choses que je déteste."
+
+**Core Issue:**
+Mixing **factual observations** with **speculative predictions** erodes trust.
+
+### Decision
+
+**Implement Smart UI with 4 FACTUAL KPIs only:**
+
+1. **🧠 Cognitive Load** (factual: bursts, switches, parallel tasks)
+2. **🎯 Next Steps** (mode-driven: Strict=P0, Flexible=P0+P1, etc.)
+3. **📊 Plan Drift** (factual: baseline vs current comparison)
+4. **⚠️ Risks** (factual: uncommitted files, system health)
+
+**Core Principle:**
+```
+IF data = observable → Display
+IF data = inferred → Don't display OR explicit uncertainty
+```
+
+**What We DON'T Show:**
+- ❌ Deadlines (not in RL4 data)
+- ❌ Velocity predictions (not enough history)
+- ❌ "You are late" (no business context)
+- ❌ Burnout risk (too personal, speculative)
+
+**What We DO Show:**
+- ✅ Cognitive Load (bursts, switches — factual)
+- ✅ Plan Drift (baseline diff — mathematical)
+- ✅ Next Steps (mode-driven — contextual)
+- ✅ Risks (uncommitted files — observable)
+
+### Architecture Diagram
+
+```mermaid
+graph TD
+    A[User Selects Mode] --> B["Generate Snapshot"]
+    B --> C[UnifiedPromptBuilder]
+    C --> D["Raw Data + Mode"]
+    D --> E[LLM Agent]
+    
+    E --> F{Mode?}
+    F -->|Strict| G["Next Steps: P0 only"]
+    F -->|Flexible| H["Next Steps: P0+P1"]
+    F -->|Exploratory| I["Next Steps: Creative"]
+    F -->|Free| J["Next Steps: No constraints"]
+    
+    G --> K["Update Context RL4"]
+    H --> K
+    I --> K
+    J --> K
+    
+    K --> L[FileWatcher Detects]
+    L --> M[UI Refresh]
+    M --> N["Display KPIs"]
+    
+    N --> O["Cognitive Load Card"]
+    N --> P["Next Steps Card"]
+    N --> Q["Plan Drift Card"]
+    N --> R["Risks Card"]
+    
+    style E fill:#667eea
+    style K fill:#00c864
+    style N fill:#ff9500
+    style F fill:#ff4d4d
+```
+
+### Alternatives Considered
+
+1. **Option A: Keep Predictive KPIs**
+   - Pros: More ambitious, "AI-powered"
+   - Cons: Hallucinations, user distrust
+   - **Rejected**: "Je déteste les hallucinations"
+
+2. **Option B: No KPIs (Just Raw Data)**
+   - Pros: Zero hallucinations
+   - Cons: User must interpret everything
+   - **Rejected**: Not "Smart" UI
+
+3. **Option C: Factual KPIs + Mode Adaptation** ✅
+   - Pros: No hallucinations, mode-driven insights
+   - Cons: Less "impressive" than predictions
+   - **CHOSEN**: Trust > Impressiveness
+
+### Implementation
+
+**1. KPI Calculator** (`extension/kernel/api/KPICalculator.ts`):
+```typescript
+interface KPIs {
+  cognitiveLoad: {
+    value: number;        // 0-1
+    factors: {
+      bursts: number;
+      switches: number;
+      parallelTasks: number;
+      uncommittedFiles: number;
+    };
+  };
+  nextSteps: Task[];      // Mode-filtered
+  planDrift: {
+    value: number;        // 0-1
+    changes: string[];    // Factual diffs
+  };
+  risks: Risk[];          // Observable only
+}
+```
+
+**2. Context.RL4 Schema Update**:
+```markdown
+## KPIs (LLM-Calculated)
+
+### Cognitive Load: 72% (High)
+- Bursts: 4
+- Switches: 38
+- Parallel Tasks: 3
+- Uncommitted Files: 18
+
+### Next Steps (Flexible Mode)
+1. [P0] Commit 18 files
+2. [P1] Complete Smart UI Components
+3. [P1] Test ADR detection
+
+### Plan Drift: 30%
+- Phase: E3.3 → E4
+- Goal: 70% different
+- Tasks: +3 added
+
+### Risks
+- 18 uncommitted files (23min ago)
+- Burst activity (UnifiedPromptBuilder.ts)
+```
+
+**3. UI Components**:
+- `CognitiveLoadCard.tsx` (displays load + tooltip)
+- `NextStepsCard.tsx` (mode-aware task list)
+- `PlanDriftCard.tsx` (baseline comparison)
+- `RisksCard.tsx` (factual alerts)
+
+**4. Tooltips**:
+Each KPI has an info icon with factual explanation:
+- What this measures (bursts, switches, etc.)
+- Why it matters (mental saturation, data loss risk)
+- How to act (commit, take break, recalibrate)
+- **NO predictions, NO judgments**
+
+### Consequences
+
+**Positive:**
+- ✅ Zero hallucinations (trust preserved)
+- ✅ Mode-driven insights (4 different behaviors)
+- ✅ Actionable KPIs (user knows WHAT TO DO)
+- ✅ Factual tooltips (educate without speculating)
+- ✅ First IDE with LLM-computed KPIs (revolutionary)
+
+**Negative:**
+- ❌ Less "impressive" than predictive AI
+- ❌ Can't answer "Will I finish on time?" (no deadlines)
+- ❌ Requires LLM update loop (latency)
+
+**Trade-offs:**
+- Trust vs Impressiveness → **Trust wins**
+- Predictions vs Facts → **Facts win**
+- Automated vs User-driven → **User-driven wins**
+
+### Success Metrics
+
+**Phase 1 (Today):**
+- [x] User validates approach (no hallucinations)
+- [ ] 4 KPIs implemented and tested
+- [ ] Tooltips explain KPIs factually
+- [ ] UI updates after LLM modifies Context.RL4
+
+**Phase 2 (E4.2):**
+- [ ] User tests all 4 deviation modes
+- [ ] KPIs adapt correctly per mode
+- [ ] User satisfaction: "Je sais quoi faire"
+
+**Phase 3 (E5+):**
+- [ ] Add visualizations (graphs, timelines)
+- [ ] Long-term predictions (6+ months data)
+- [ ] Automated actions (optional)
+
+### Related ADRs
+- ADR-005: Single Context Snapshot (foundation)
+- ADR-006: Smart UI Architecture (LLM as middleware)
+- ADR-009: UI-Driven Deviation Mode (mode selection)
+
 

@@ -458,7 +458,73 @@ export class UnifiedPromptBuilder {
     // Footer: Agent Instructions
     prompt += `---\n\n`;
     prompt += `## 🎯 Agent Instructions\n\n`;
-    prompt += `Based on this snapshot, provide:\n\n`;
+    prompt += `Based on this snapshot, you MUST calculate and update these 4 KPIs in Context.RL4:\n\n`;
+    
+    // KPI 1: Cognitive Load
+    prompt += `### 1. Cognitive Load (Factual)\n`;
+    prompt += `**Calculate from raw data:**\n`;
+    prompt += `- Bursts: Count rapid edit sessions (>30 edits in <2min)\n`;
+    prompt += `- Switches: Count file jumps in timeline\n`;
+    prompt += `- Parallel Tasks: Count tasks with status "in_progress"\n`;
+    prompt += `- Uncommitted: Run \`git status --porcelain | wc -l\` (estimate from timeline)\n\n`;
+    prompt += `**Formula:**\n`;
+    prompt += `\`\`\`\n`;
+    prompt += `load = (bursts/10 * 0.3) + (switches/50 * 0.2) + (parallelTasks/3 * 0.3) + (uncommitted/20 * 0.2)\n`;
+    prompt += `level = 'critical' if load > 0.8 else 'high' if load > 0.6 else 'normal'\n`;
+    prompt += `\`\`\`\n\n`;
+    prompt += `**NO predictions, NO judgments. Just facts.**\n\n`;
+    
+    // KPI 2: Next Steps (Mode-Driven)
+    prompt += `### 2. Next Steps (Mode-Driven: ${data.deviationMode})\n`;
+    if (data.deviationMode === 'strict') {
+      prompt += `**STRICT MODE (0% threshold):**\n`;
+      prompt += `- Focus ONLY on P0 tasks from baseline plan\n`;
+      prompt += `- Suggest recalibration if bias > 0%\n`;
+      prompt += `- Reject ALL new ideas (add to backlog)\n`;
+      prompt += `- Top 3 actions: Commit, Recalibrate, Complete P0\n\n`;
+    } else if (data.deviationMode === 'flexible') {
+      prompt += `**FLEXIBLE MODE (25% threshold):**\n`;
+      prompt += `- Focus on P0+P1 tasks\n`;
+      prompt += `- New ideas OK if total bias < 25%\n`;
+      prompt += `- Ask user before adding P2 features\n`;
+      prompt += `- Top 3 actions: Complete P1, Manage risks, Accept/Reject drift\n\n`;
+    } else if (data.deviationMode === 'exploratory') {
+      prompt += `**EXPLORATORY MODE (50% threshold):**\n`;
+      prompt += `- Encourage exploration of new ideas\n`;
+      prompt += `- Suggest improvements and alternatives\n`;
+      prompt += `- Creative problem-solving\n`;
+      prompt += `- Top 3 actions: Explore alternatives, Identify opportunities, Innovate\n\n`;
+    } else {
+      prompt += `**FREE MODE (100% threshold):**\n`;
+      prompt += `- Full creative freedom\n`;
+      prompt += `- Suggest major refactors if beneficial\n`;
+      prompt += `- No constraints\n`;
+      prompt += `- Top 3 actions: Whatever you think is best\n\n`;
+    }
+    
+    // KPI 3: Plan Drift
+    prompt += `### 3. Plan Drift (Factual)\n`;
+    prompt += `**Already calculated:** ${(data.bias * 100).toFixed(0)}%\n`;
+    prompt += `**What changed (vs baseline):**\n`;
+    if (data.biasReport.breakdown) {
+      prompt += `- Phase: ${data.biasReport.breakdown.phase > 0.05 ? 'Changed' : 'Unchanged'}\n`;
+      prompt += `- Goal: ${(data.biasReport.breakdown.goal * 100).toFixed(0)}% different\n`;
+      prompt += `- Timeline: ${(data.biasReport.breakdown.timeline * 100).toFixed(0)}% drift\n`;
+      prompt += `- Tasks: Check Tasks.RL4 for additions\n\n`;
+    }
+    prompt += `**NO judgments. Just state facts and let user decide.**\n\n`;
+    
+    // KPI 4: Risks
+    prompt += `### 4. Risks (Observable Only)\n`;
+    prompt += `**Detect from data:**\n`;
+    prompt += `- 🔴 Uncommitted files: Count from timeline (if >15 files)\n`;
+    prompt += `- 🟡 Burst activity: Files with >30 edits in <2min\n`;
+    prompt += `- 🟡 Long gaps: Breaks >30min (potential blocker?)\n`;
+    prompt += `- 🟢 System health: Memory >400MB or event loop >1ms p95\n\n`;
+    prompt += `**NO speculation. Only observable risks.**\n\n`;
+    
+    prompt += `---\n\n`;
+    prompt += `Based on the above KPIs, provide:\n\n`;
     
     prompt += `1. **Analysis:**\n`;
     prompt += `   - What is the current state vs Plan?\n`;
@@ -487,14 +553,33 @@ export class UnifiedPromptBuilder {
     prompt += `   [UPDATED_TASKS_CONTENT]\n`;
     prompt += `   \`\`\`\n\n`;
     
-    prompt += `   **Context.RL4** (update workspace state):\n`;
+    prompt += `   **Context.RL4** (update workspace state + KPIs):\n`;
     prompt += `   \`\`\`markdown\n`;
     prompt += `   ---\n`;
     prompt += `   version: ${(parseFloat(data.context?.version || '1.0.0') + 0.1).toFixed(1)}\n`;
     prompt += `   updated: ${new Date().toISOString()}\n`;
     prompt += `   confidence: [YOUR_CALCULATED_CONFIDENCE]\n`;
-    prompt += `   ---\n`;
-    prompt += `   [UPDATED_CONTEXT_CONTENT]\n`;
+    prompt += `   ---\n\n`;
+    prompt += `   # RL4 Operational Context\n\n`;
+    prompt += `   ## KPIs (LLM-Calculated)\n\n`;
+    prompt += `   ### Cognitive Load: [XX]% ([Level])\n`;
+    prompt += `   - Bursts: [N]\n`;
+    prompt += `   - Switches: [N]\n`;
+    prompt += `   - Parallel Tasks: [N]\n`;
+    prompt += `   - Uncommitted Files: [N]\n\n`;
+    prompt += `   ### Next Steps (${data.deviationMode.charAt(0).toUpperCase() + data.deviationMode.slice(1)} Mode)\n`;
+    prompt += `   1. [P0/P1] [Action 1]\n`;
+    prompt += `   2. [P0/P1] [Action 2]\n`;
+    prompt += `   3. [P0/P1] [Action 3]\n\n`;
+    prompt += `   ### Plan Drift: [XX]%\n`;
+    prompt += `   - Phase: [Original] → [Current]\n`;
+    prompt += `   - Goal: [XX]% different\n`;
+    prompt += `   - Tasks: +[N] added\n\n`;
+    prompt += `   ### Risks\n`;
+    prompt += `   - [Emoji] [Risk description]\n`;
+    prompt += `   - [Emoji] [Risk description]\n\n`;
+    prompt += `   ## Agent Observations\n`;
+    prompt += `   [Your analysis and recommendations]\n`;
     prompt += `   \`\`\`\n\n`;
 
     prompt += `3. **ADRs (if decisions made):**\n`;
