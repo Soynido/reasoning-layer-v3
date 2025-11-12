@@ -1,10 +1,24 @@
 /**
- * RL4 WebView UI — Single Context Snapshot System
- * Phase E3.3: Radical simplification - 1 button, 0 confusion
+ * RL4 WebView UI — Smart UI with LLM-Validated KPIs
+ * Phase E4: Transform "data display" into "actionable insights"
  */
 
 import { useState, useEffect } from 'react';
 import './App.css';
+import { 
+  CognitiveLoadCard, 
+  NextStepsCard, 
+  PlanDriftCard, 
+  RisksCard 
+} from './components';
+import { 
+  parseContextRL4, 
+  getMockKPIData,
+  type CognitiveLoadData,
+  type NextStepsData,
+  type PlanDriftData,
+  type RisksData
+} from './utils/contextParser';
 
 // Declare vscode API
 declare global {
@@ -25,6 +39,13 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [deviationMode, setDeviationMode] = useState<DeviationMode>('flexible');
+  
+  // KPI States
+  const [cognitiveLoad, setCognitiveLoad] = useState<CognitiveLoadData | null>(null);
+  const [nextSteps, setNextSteps] = useState<NextStepsData | null>(null);
+  const [planDrift, setPlanDrift] = useState<PlanDriftData | null>(null);
+  const [risks, setRisks] = useState<RisksData | null>(null);
+  const [showKPIs, setShowKPIs] = useState(false);
 
   // Listen for messages from extension
   useEffect(() => {
@@ -57,11 +78,35 @@ export default function App() {
           setFeedback('❌ Error generating snapshot');
           setTimeout(() => setFeedback(null), 3000);
           break;
+          
+        case 'kpisUpdated':
+          console.log('[RL4 WebView] KPIs updated:', message.payload);
+          if (message.payload) {
+            const parsed = parseContextRL4(message.payload);
+            setCognitiveLoad(parsed.cognitiveLoad);
+            setNextSteps(parsed.nextSteps);
+            setPlanDrift(parsed.planDrift);
+            setRisks(parsed.risks);
+            setShowKPIs(true);
+            setFeedback('✅ KPIs updated from Context.RL4');
+            setTimeout(() => setFeedback(null), 3000);
+          }
+          break;
       }
     };
 
     window.addEventListener('message', messageHandler);
     return () => window.removeEventListener('message', messageHandler);
+  }, []);
+  
+  // Load mock KPIs on mount for development
+  useEffect(() => {
+    const mockData = getMockKPIData();
+    setCognitiveLoad(mockData.cognitiveLoad);
+    setNextSteps(mockData.nextSteps);
+    setPlanDrift(mockData.planDrift);
+    setRisks(mockData.risks);
+    setShowKPIs(true);
   }, []);
 
   // Generate snapshot handler
@@ -140,6 +185,47 @@ export default function App() {
             </ol>
           </div>
         </div>
+
+        {/* KPI Dashboard */}
+        {showKPIs && (
+          <div className="kpi-dashboard">
+            <div className="kpi-dashboard-header">
+              <h2>📊 Smart UI — LLM-Validated KPIs</h2>
+              <p className="kpi-disclaimer">
+                ✅ Factual data only. NO predictions, NO hallucinations.
+              </p>
+            </div>
+            
+            <div className="kpi-grid">
+              {cognitiveLoad && (
+                <CognitiveLoadCard 
+                  percentage={cognitiveLoad.percentage}
+                  level={cognitiveLoad.level}
+                  metrics={cognitiveLoad.metrics}
+                />
+              )}
+              
+              {nextSteps && (
+                <NextStepsCard 
+                  mode={nextSteps.mode}
+                  steps={nextSteps.steps}
+                />
+              )}
+              
+              {planDrift && (
+                <PlanDriftCard 
+                  percentage={planDrift.percentage}
+                  threshold={planDrift.threshold}
+                  changes={planDrift.changes}
+                />
+              )}
+              
+              {risks && (
+                <RisksCard risks={risks.risks} />
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Prompt Preview */}
         {prompt && (
