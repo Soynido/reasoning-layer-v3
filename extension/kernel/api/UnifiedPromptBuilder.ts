@@ -137,7 +137,11 @@ export class UnifiedPromptBuilder {
       'free': 1.0
     };
     const threshold = thresholdMap[data.deviationMode];
-    let prompt = `# 🧠 RL4 Context Snapshot\n`;
+    
+    // Get project name from workspace (GENERIC, not RL4-specific)
+    const projectName = data.plan?.phase?.split(' ')[0] || path.basename(this.rl4Path).replace('.reasoning_rl4', '');
+    
+    let prompt = `# 🧠 ${projectName} — Development Context Snapshot\n`;
     prompt += `Generated: ${data.generated}\n`;
     prompt += `Confidence: ${(data.confidence * 100).toFixed(0)}% | Bias: ${(data.bias * 100).toFixed(0)}%\n\n`;
     
