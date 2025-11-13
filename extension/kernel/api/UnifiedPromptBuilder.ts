@@ -24,6 +24,7 @@ import { ADRParser } from './ADRParser';
 import { HistorySummarizer, HistorySummary } from './HistorySummarizer';
 import { BiasCalculator, BiasReport } from './BiasCalculator';
 import { ADRSignalEnricher, EnrichedCommit } from './ADRSignalEnricher';
+import { ProjectAnalyzer, ProjectContext } from './ProjectAnalyzer';
 
 export class UnifiedPromptBuilder {
   private rl4Path: string;
@@ -33,6 +34,7 @@ export class UnifiedPromptBuilder {
   private historySummarizer: HistorySummarizer;
   private biasCalculator: BiasCalculator;
   private adrEnricher: ADRSignalEnricher;
+  private projectAnalyzer: ProjectAnalyzer;
 
   constructor(rl4Path: string) {
     this.rl4Path = rl4Path;
@@ -42,6 +44,7 @@ export class UnifiedPromptBuilder {
     this.historySummarizer = new HistorySummarizer(rl4Path);
     this.biasCalculator = new BiasCalculator(rl4Path);
     this.adrEnricher = new ADRSignalEnricher(rl4Path);
+    this.projectAnalyzer = new ProjectAnalyzer(rl4Path);
   }
 
   /**
@@ -66,6 +69,9 @@ export class UnifiedPromptBuilder {
 
     // Enrich commits with ADR detection signals (last 24h)
     const enrichedCommits = await this.adrEnricher.enrichCommits(24);
+
+    // Analyze project context (for Exploratory/Free modes)
+    const projectContext = await this.projectAnalyzer.analyze();
 
     // Load blind spot data (recent activity only)
     const timeline = this.blindSpotLoader.loadTimeline(period);
@@ -105,7 +111,8 @@ export class UnifiedPromptBuilder {
       confidence,
       bias,
       generated: now.toISOString(),
-      deviationMode  // User choice from UI
+      deviationMode,  // User choice from UI
+      projectContext  // Project analysis for intelligent modes
     });
   }
 
@@ -128,6 +135,7 @@ export class UnifiedPromptBuilder {
     bias: number;
     generated: string;
     deviationMode: 'strict' | 'flexible' | 'exploratory' | 'free';
+    projectContext: ProjectContext;
   }): string {
     // Map deviation mode to threshold
     const thresholdMap: Record<string, number> = {
@@ -478,33 +486,9 @@ export class UnifiedPromptBuilder {
     prompt += `\`\`\`\n\n`;
     prompt += `**NO predictions, NO judgments. Just facts.**\n\n`;
     
-    // KPI 2: Next Steps (Mode-Driven)
-    prompt += `### 2. Next Steps (Mode-Driven: ${data.deviationMode})\n`;
-    if (data.deviationMode === 'strict') {
-      prompt += `**STRICT MODE (0% threshold):**\n`;
-      prompt += `- Focus ONLY on P0 tasks from baseline plan\n`;
-      prompt += `- Suggest recalibration if bias > 0%\n`;
-      prompt += `- Reject ALL new ideas (add to backlog)\n`;
-      prompt += `- Top 3 actions: Commit, Recalibrate, Complete P0\n\n`;
-    } else if (data.deviationMode === 'flexible') {
-      prompt += `**FLEXIBLE MODE (25% threshold):**\n`;
-      prompt += `- Focus on P0+P1 tasks\n`;
-      prompt += `- New ideas OK if total bias < 25%\n`;
-      prompt += `- Ask user before adding P2 features\n`;
-      prompt += `- Top 3 actions: Complete P1, Manage risks, Accept/Reject drift\n\n`;
-    } else if (data.deviationMode === 'exploratory') {
-      prompt += `**EXPLORATORY MODE (50% threshold):**\n`;
-      prompt += `- Encourage exploration of new ideas\n`;
-      prompt += `- Suggest improvements and alternatives\n`;
-      prompt += `- Creative problem-solving\n`;
-      prompt += `- Top 3 actions: Explore alternatives, Identify opportunities, Innovate\n\n`;
-    } else {
-      prompt += `**FREE MODE (100% threshold):**\n`;
-      prompt += `- Full creative freedom\n`;
-      prompt += `- Suggest major refactors if beneficial\n`;
-      prompt += `- No constraints\n`;
-      prompt += `- Top 3 actions: Whatever you think is best\n\n`;
-    }
+    // KPI 2: Next Steps (Mode-Driven) - ENHANCED with ProjectContext
+    prompt += `### 2. Next Steps (Mode-Driven: ${data.deviationMode})\n\n`;
+    prompt += this.formatModeInstructions(data.deviationMode, data.projectContext, data.tasks, data.plan);
     
     // KPI 3: Plan Drift
     prompt += `### 3. Plan Drift (Factual)\n`;
@@ -613,6 +597,390 @@ export class UnifiedPromptBuilder {
     prompt += `**Important:** Save all updates to \`.reasoning_rl4/\` directory. RL4 will detect changes and update internal state.\n`;
 
     return prompt;
+  }
+
+  /**
+   * Format mode-specific instructions
+   */
+  private formatModeInstructions(
+    mode: 'strict' | 'flexible' | 'exploratory' | 'free',
+    projectContext: ProjectContext,
+    tasks: TasksData | null,
+    plan: PlanData | null
+  ): string {
+    switch (mode) {
+      case 'strict':
+        return this.formatStrictMode(tasks);
+      case 'flexible':
+        return this.formatFlexibleMode(tasks);
+      case 'exploratory':
+        return this.formatExploratoryMode(projectContext, tasks);
+      case 'free':
+        return this.formatFreeMode(projectContext, plan);
+      default:
+        return this.formatFlexibleMode(tasks);
+    }
+  }
+
+  /**
+   * STRICT MODE: Zero deviation tolerance
+   */
+  private formatStrictMode(tasks: TasksData | null): string {
+    let section = `**🚫 STRICT MODE (0% threshold) — Zero Deviation**\n\n`;
+    
+    section += `**Your role:** Execution Guardian — Protect the plan at all costs.\n\n`;
+    
+    section += `**Rules:**\n`;
+    section += `1. ❌ **REJECT all new ideas** (add to backlog)\n`;
+    section += `2. ✅ **Execute ONLY P0 tasks**\n`;
+    section += `3. ⚠️ **Alert on ANY deviation**\n\n`;
+    
+    // List P0 tasks
+    if (tasks && tasks.active.length > 0) {
+      const p0Tasks = tasks.active.filter(t => !t.completed && t.task.includes('[P0]'));
+      
+      if (p0Tasks.length > 0) {
+        section += `**P0 Tasks Remaining:**\n`;
+        p0Tasks.forEach((t, idx) => {
+          section += `${idx + 1}. ${t.task}\n`;
+        });
+        section += `\n`;
+      } else {
+        section += `✅ **All P0 tasks complete.** Phase ready to advance.\n\n`;
+      }
+    }
+    
+    section += `**Decision Framework:**\n`;
+    section += `User proposes ANY idea → Your response:\n\n`;
+    section += `\`\`\`\n`;
+    section += `⛔ STRICT MODE: This idea is not in P0 tasks.\n\n`;
+    section += `Options:\n`;
+    section += `a) ❌ Reject (recommended)\n`;
+    section += `b) 📋 Add to Future Backlog (bias stays 0%)\n`;
+    section += `c) 🔄 Exit Strict Mode (switch to Flexible)\n`;
+    section += `\`\`\`\n\n`;
+    
+    return section;
+  }
+
+  /**
+   * FLEXIBLE MODE: Balanced approach
+   */
+  private formatFlexibleMode(tasks: TasksData | null): string {
+    let section = `**⚖️ FLEXIBLE MODE (25% threshold) — Balanced**\n\n`;
+    
+    section += `**Your role:** Pragmatic Manager — Balance progress with quality.\n\n`;
+    
+    section += `**Rules:**\n`;
+    section += `1. ✅ Focus on P0+P1 tasks\n`;
+    section += `2. 🤔 Consider small improvements (bias < 25%)\n`;
+    section += `3. ❓ Ask before adding P2/P3\n\n`;
+    
+    // List P0+P1 tasks
+    if (tasks && tasks.active.length > 0) {
+      const priorityTasks = tasks.active.filter(t => 
+        !t.completed && (t.task.includes('[P0]') || t.task.includes('[P1]'))
+      );
+      
+      if (priorityTasks.length > 0) {
+        section += `**Priority Tasks (P0+P1):**\n`;
+        priorityTasks.slice(0, 5).forEach((t, idx) => {
+          section += `${idx + 1}. ${t.task}\n`;
+        });
+        section += `\n`;
+      }
+    }
+    
+    section += `**Improvement Suggestions:**\n`;
+    section += `You may suggest 1-2 small improvements if:\n`;
+    section += `- Aligned with current work\n`;
+    section += `- Low effort (< 1 hour)\n`;
+    section += `- Bias impact < 10%\n\n`;
+    
+    return section;
+  }
+
+  /**
+   * EXPLORATORY MODE: Proactive innovation
+   */
+  private formatExploratoryMode(projectContext: ProjectContext, tasks: TasksData | null): string {
+    let section = `**🔍 EXPLORATORY MODE (50% threshold) — Proactive Innovation**\n\n`;
+    
+    section += `**Your role:** Innovation Consultant — Find opportunities for improvement.\n\n`;
+    
+    // Project analysis
+    section += `**Context Analysis:**\n`;
+    section += `- Project maturity: ${projectContext.maturity}\n`;
+    section += `- Stack: ${projectContext.stackDetected.join(', ') || 'generic'}\n`;
+    section += `- Total cycles: ${projectContext.totalCycles}\n`;
+    section += `- Project age: ${projectContext.projectAge} days\n`;
+    section += `- Quality score: ${projectContext.qualityScore}/10\n\n`;
+    
+    section += `**Quality Breakdown:**\n`;
+    section += `- Tests: ${projectContext.hasTests ? '✅ Detected' : '❌ Missing'}\n`;
+    section += `- Linter: ${projectContext.hasLinter ? '✅ Configured' : '❌ Missing'}\n`;
+    section += `- CI/CD: ${projectContext.hasCI ? '✅ Active' : '❌ Missing'}\n`;
+    section += `- Hotspots: ${projectContext.hotspotCount} files (>30 edits)\n\n`;
+    
+    if (projectContext.topHotspots.length > 0) {
+      section += `**Top Hotspots:**\n`;
+      projectContext.topHotspots.slice(0, 3).forEach((h, idx) => {
+        section += `${idx + 1}. ${h.file} — ${h.editCount} edits\n`;
+      });
+      section += `\n`;
+    }
+    
+    section += `---\n\n`;
+    
+    section += `**🚀 YOUR MISSION (Proactive Analysis):**\n\n`;
+    section += `**Step 1:** Analyze current state comprehensively\n`;
+    section += `- What's working well? (strengths)\n`;
+    section += `- What's missing? (gaps)\n`;
+    section += `- What's inefficient? (bottlenecks)\n\n`;
+    
+    section += `**Step 2:** Detect 5-10 concrete opportunities\n`;
+    section += `Categories:\n`;
+    section += `- 🧪 Testing: Missing coverage\n`;
+    section += `- 🏗️ Architecture: Hotspots to refactor\n`;
+    section += `- ⚡ Performance: Optimization opportunities\n`;
+    section += `- 🔧 DX: Tooling improvements\n`;
+    section += `- 🛡️ Quality: Linter, formatter\n`;
+    section += `- 🚀 CI/CD: Automation\n\n`;
+    
+    section += `**Step 3:** Provide implementation for EACH\n`;
+    section += `- **Why**: Data-driven reason\n`;
+    section += `- **What**: Solution + code example\n`;
+    section += `- **Effort**: Realistic hours/days\n`;
+    section += `- **Impact**: Quantified benefit\n`;
+    section += `- **Priority**: 1-10\n`;
+    section += `- **Bias**: +X%\n\n`;
+    
+    // Auto-detected opportunities
+    section += `**🔍 Auto-Detected Opportunities:**\n\n`;
+    
+    if (!projectContext.hasTests) {
+      section += `1. ❌ **No tests detected**\n`;
+      section += `   → Priority: 9/10 (prevents 60% bugs)\n`;
+      section += `   → Suggest: Add testing framework\n\n`;
+    }
+    
+    if (projectContext.hotspotCount > 0) {
+      section += `${!projectContext.hasTests ? '2' : '1'}. 🔥 **${projectContext.hotspotCount} hotspot(s) detected**\n`;
+      section += `   → Priority: 8/10 (reduces cognitive load)\n`;
+      section += `   → Suggest: Refactor ${projectContext.topHotspots[0]?.file || 'top file'}\n\n`;
+    }
+    
+    if (!projectContext.hasCI) {
+      section += `${this.getOpportunityNumber(projectContext)}. ⚠️ **No CI/CD detected**\n`;
+      section += `   → Priority: 6/10 (automation)\n`;
+      section += `   → Suggest: Setup GitHub Actions\n\n`;
+    }
+    
+    if (!projectContext.hasLinter) {
+      section += `${this.getOpportunityNumber(projectContext)}. ⚠️ **No linter detected**\n`;
+      section += `   → Priority: 6/10 (code quality)\n`;
+      section += `   → Suggest: Add ESLint + Prettier\n\n`;
+    }
+    
+    // Strategy based on maturity
+    if (projectContext.maturity === 'new') {
+      section += `**🌱 New Project Strategy:**\n`;
+      section += `Focus on **foundations** before features:\n`;
+      section += `- Tests prevent future debt\n`;
+      section += `- Linter establishes consistency\n`;
+      section += `- CI catches issues early\n`;
+      section += `- Good architecture avoids refactors\n\n`;
+    } else if (projectContext.maturity === 'growing') {
+      section += `**📈 Growing Project Strategy:**\n`;
+      section += `Balance **features vs. quality**:\n`;
+      section += `- Refactor hotspots before they become debt\n`;
+      section += `- Add tests for critical paths\n`;
+      section += `- Monitor performance metrics\n\n`;
+    } else {
+      section += `**🏆 Mature Project Strategy:**\n`;
+      section += `Focus on **optimization**:\n`;
+      section += `- Identify architectural improvements from patterns\n`;
+      section += `- Performance optimizations from metrics\n`;
+      section += `- Consider next-gen features\n\n`;
+    }
+    
+    section += `**📋 REQUIRED OUTPUT FORMAT:**\n\n`;
+    section += `\`\`\`markdown\n`;
+    section += `## 🔍 Exploratory Analysis\n\n`;
+    section += `### Project Health: [X/10]\n\n`;
+    section += `**Strengths:** [List 2-3]\n`;
+    section += `**Gaps:** [List 2-3]\n\n`;
+    section += `### 🚀 5 Optimization Opportunities\n\n`;
+    section += `#### 1. [IMPACT] [Title]\n`;
+    section += `**Why:** [Reason with data]\n`;
+    section += `**What:** [Solution]\n`;
+    section += `**Implementation:**\n`;
+    section += `\\\`\\\`\\\`[language]\n`;
+    section += `[Complete code]\n`;
+    section += `\\\`\\\`\\\`\n`;
+    section += `**Effort:** [X hours] | **Impact:** [Benefit] | **Priority:** [X/10] | **Bias:** +[Y]%\n\n`;
+    section += `... (4 more)\n\n`;
+    section += `### Summary\n`;
+    section += `Total bias if all: [X]% | Recommended: [Which to accept]\n`;
+    section += `\`\`\`\n\n`;
+    
+    return section;
+  }
+
+  /**
+   * FREE MODE: Visionary thinking
+   */
+  private formatFreeMode(projectContext: ProjectContext, plan: PlanData | null): string {
+    let section = `**🔥 FREE MODE (100% threshold) — Visionary**\n\n`;
+    
+    section += `**Your role:** Technology Visionary — Think 10x, not 10%.\n\n`;
+    
+    section += `**No constraints. Challenge everything.**\n\n`;
+    
+    section += `---\n\n`;
+    
+    // Current state
+    const projectName = path.basename(this.rl4Path).replace('.reasoning_rl4', '');
+    section += `**Current State:**\n`;
+    section += `- Project: ${projectName}\n`;
+    section += `- Stack: ${projectContext.stackDetected.join(', ') || 'generic'}\n`;
+    section += `- Maturity: ${projectContext.maturity} (${projectContext.totalCycles} cycles, ${projectContext.projectAge} days)\n`;
+    section += `- Goal: ${plan?.goal || 'Not defined'}\n\n`;
+    
+    section += `---\n\n`;
+    
+    section += `**🎨 YOUR MISSION (Think Big):**\n\n`;
+    
+    section += `**Step 1:** Envision optimal future\n`;
+    section += `- What if rebuilt from scratch?\n`;
+    section += `- What architecture?\n`;
+    section += `- What technologies?\n\n`;
+    
+    section += `**Step 2:** Challenge current approach\n`;
+    section += `- Is this the right architecture?\n`;
+    section += `- Optimal tools being used?\n`;
+    section += `- Could we 10x this differently?\n\n`;
+    
+    section += `**Step 3:** Design transformation path\n`;
+    section += `- What needs to change fundamentally?\n`;
+    section += `- What's the inflection point?\n`;
+    section += `- How to bridge current → future?\n\n`;
+    
+    section += `---\n\n`;
+    
+    section += `**🌟 BRAINSTORMING AREAS:**\n\n`;
+    
+    section += `### 1. 🏗️ Architecture Reimagination\n`;
+    section += `- Event-driven vs request-response?\n`;
+    section += `- Micro-frontends / microservices?\n`;
+    section += `- Serverless / edge computing?\n`;
+    section += `- Monorepo vs polyrepo?\n\n`;
+    
+    section += `### 2. ⚡ Technology Stack 2.0\n\n`;
+    
+    // Stack-specific suggestions
+    if (projectContext.stackDetected.includes('react')) {
+      section += `**React Innovations:**\n`;
+      section += `- Solid.js (2x faster)\n`;
+      section += `- Qwik (instant loading)\n`;
+      section += `- Next.js 15 (RSC, Turbopack)\n\n`;
+    }
+    
+    if (projectContext.stackDetected.includes('three') || projectContext.stackDetected.includes('three.js')) {
+      section += `**Three.js Enhancements:**\n`;
+      section += `- WebGPU (next-gen rendering)\n`;
+      section += `- R3F (React Three Fiber)\n`;
+      section += `- Babylon.js alternative\n\n`;
+    }
+    
+    if (projectContext.stackDetected.includes('node') || projectContext.projectType === 'node') {
+      section += `**Node.js Alternatives:**\n`;
+      section += `- Bun (3x faster startup)\n`;
+      section += `- Deno 2.0 (TypeScript-native)\n\n`;
+    }
+    
+    section += `**Build Tools:**\n`;
+    section += `- Turbopack (10x faster)\n`;
+    section += `- Rspack (Rust-based)\n`;
+    section += `- Bun (all-in-one)\n\n`;
+    
+    section += `### 3. 🚀 10x Performance\n`;
+    section += `- Edge deployment (<50ms latency)\n`;
+    section += `- WebAssembly (2-10x faster)\n`;
+    section += `- Code splitting (↓80% bundle)\n`;
+    section += `- Service worker (offline-first)\n\n`;
+    
+    section += `### 4. 🧠 AI Integration\n\n`;
+    
+    if (projectContext.stackDetected.includes('three') || projectContext.stackDetected.includes('three.js')) {
+      section += `**AI for 3D:**\n`;
+      section += `- Text → 3D models (Stable Diffusion)\n`;
+      section += `- Procedural generation with GPT\n`;
+      section += `- AI camera director (cinematic)\n\n`;
+    } else {
+      section += `**AI Opportunities:**\n`;
+      section += `- AI code assistant\n`;
+      section += `- Semantic search\n`;
+      section += `- Auto test generation\n\n`;
+    }
+    
+    section += `### 5. 🎨 UX Transformation\n`;
+    section += `- Voice commands\n`;
+    section += `- Multiplayer (WebRTC)\n`;
+    section += `- VR/AR support\n`;
+    section += `- Real-time collaboration\n\n`;
+    
+    section += `### 6. 💰 Business Model\n`;
+    section += `- Freemium?\n`;
+    section += `- Pro features?\n`;
+    section += `- API marketplace?\n`;
+    section += `- SaaS transformation?\n\n`;
+    
+    section += `---\n\n`;
+    
+    section += `**📋 REQUIRED OUTPUT:**\n\n`;
+    section += `\`\`\`markdown\n`;
+    section += `## 🔥 Vision: ${projectName} 2.0\n\n`;
+    section += `### Current Trajectory\n`;
+    section += `[Where heading with current approach]\n\n`;
+    section += `### Optimal Future State\n`;
+    section += `[What it should become]\n\n`;
+    section += `### 🚀 10 Disruptive Ideas (ROI Ranked)\n\n`;
+    section += `1. [GAME-CHANGER] [Idea]\n`;
+    section += `   - Why: [Reason]\n`;
+    section += `   - Tech: [Stack]\n`;
+    section += `   - Effort: [Weeks]\n`;
+    section += `   - ROI: [X/10]\n\n`;
+    section += `... (9 more)\n\n`;
+    section += `### Decision Matrix\n`;
+    section += `| Idea | Effort | Impact | Risk | ROI |\n\n`;
+    section += `### Strategic Roadmap\n`;
+    section += `- Short (1-2w): Foundation\n`;
+    section += `- Medium (1-3m): Differentiation\n`;
+    section += `- Long (3-12m): Scale\n\n`;
+    section += `### The Big Vision\n`;
+    section += `[Inspiring future with market potential]\n`;
+    section += `\`\`\`\n\n`;
+    
+    section += `**⚡ Key Principles:**\n`;
+    section += `- Think 10x, not 10%\n`;
+    section += `- Challenge assumptions\n`;
+    section += `- Be bold but practical\n`;
+    section += `- Inspire action\n\n`;
+    
+    return section;
+  }
+
+  /**
+   * Helper: Get opportunity number based on detected gaps
+   */
+  private getOpportunityNumber(context: ProjectContext): number {
+    let count = 0;
+    if (!context.hasTests) count++;
+    if (context.hotspotCount > 0) count++;
+    if (!context.hasCI) count++;
+    if (!context.hasLinter) count++;
+    return count;
   }
 
   /**
