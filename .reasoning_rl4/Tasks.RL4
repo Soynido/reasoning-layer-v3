@@ -1,25 +1,26 @@
 ---
-version: 1.8
-updated: 2025-11-12T16:35:00.000Z
-bias: 0.00
+version: 1.9
+updated: 2025-11-14T14:16:35.770Z
+bias: 0.66
 baseline_version: 2.0
 ---
 
 # RL4 Task List — BASELINE v2.0
 
-## Active (Priority Order) — MODE STRICT (0% deviation) ✅ Bias: 0%
+## Active (Priority Order) — MODE STRICT (0% deviation) ⚠️ Bias: 66%
 
-**Phase E4 Active 🚀 — Baseline Reset Complete ✅**
+**Phase E4 Active 🚀 — Deviation Alert Active**
 
-**✅ BASELINE RESET:** Bias reset from 63% → 0% (ADR-012 accepted)
-**Reason:** E4 accepted as fulfillment of E3.3 vision (production-ready extension)
-**Next:** Continue E4 development from fresh baseline v2.0
+**⚠️ DEVIATION ALERT:** Bias = 66% (vs 0% strict threshold)
+**Mode:** STRICT (0% threshold) — Zero deviation tolerance
+**Status:** Work CANNOT continue until baseline decision made
 
-1. [ ] **[P0] URGENT:** Commit 21 uncommitted files
+1. [ ] **[P0] URGENT:** Commit 102 uncommitted files
    - **Risk:** Data loss if crash or accidental reset
-   - **Files:** .reasoning_rl4/*.json, .reasoning_rl4/**/*.jsonl (git status)
+   - **Files:** .reasoning_rl4/*.json, .reasoning_rl4/**/*.jsonl (git status shows 102 files)
    - **Action:** `git add .reasoning_rl4/` + `git commit -m "feat(rl4): KPI update + deviation recalibration"`
    - **Added:** 2025-11-12T15:43 (LLM Agent)
+   - **Updated:** 2025-11-14T14:16:35 (LLM Agent - snapshot analysis)
    - **Bias Impact:** 0% (operational task, no scope change)
 
 2. [ ] **[P1] PRIORITY:** Document 6 potential ADRs

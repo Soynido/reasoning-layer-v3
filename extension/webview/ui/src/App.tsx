@@ -32,7 +32,35 @@ declare global {
   }
 }
 
-type DeviationMode = 'strict' | 'flexible' | 'exploratory' | 'free';
+type DeviationMode = 'strict' | 'flexible' | 'exploratory' | 'free' | 'firstUse';
+
+// FileLink component (defined outside to avoid re-creation on each render)
+const FileLink = ({ fileName }: { fileName: string }) => {
+  const handleOpenFile = (fileName: string) => {
+    if (window.vscode) {
+      window.vscode.postMessage({
+        type: 'openFile',
+        fileName
+      });
+    } else {
+      console.error('[RL4] vscode API not available');
+    }
+  };
+
+  return (
+    <code 
+      onClick={() => handleOpenFile(fileName)}
+      style={{ 
+        cursor: 'pointer', 
+        color: 'var(--vscode-textLink-foreground)',
+        textDecoration: 'underline'
+      }}
+      title={`Click to open ${fileName} in editor`}
+    >
+      {fileName}
+    </code>
+  );
+};
 
 export default function App() {
   const [prompt, setPrompt] = useState<string | null>(null);
@@ -128,6 +156,7 @@ export default function App() {
     }
   };
 
+
   return (
     <div className="rl4-layout">
       {/* Header */}
@@ -152,11 +181,19 @@ export default function App() {
               value={deviationMode}
               onChange={(e) => setDeviationMode(e.target.value as DeviationMode)}
               disabled={loading}
+              className={deviationMode === 'firstUse' ? 'first-use-mode' : ''}
             >
-              <option value="strict">🔴 Strict (0%) — P0 only</option>
-              <option value="flexible">🟡 Flexible (25%) — P0+P1 OK</option>
-              <option value="exploratory">🟢 Exploratory (50%) — New ideas welcome</option>
-              <option value="free">⚪ Free (100%) — Creative mode</option>
+              <optgroup label="Standard Modes">
+                <option value="strict">🔴 Strict (0%) — P0 only</option>
+                <option value="flexible">🟡 Flexible (25%) — P0+P1 OK</option>
+                <option value="exploratory">🟢 Exploratory (50%) — New ideas welcome</option>
+                <option value="free">⚪ Free (100%) — Creative mode</option>
+              </optgroup>
+              <optgroup label="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━">
+                <option value="firstUse">
+                  🔍 First Use — Analyze project history (~5s)
+                </option>
+              </optgroup>
             </select>
           </div>
 
@@ -179,7 +216,7 @@ export default function App() {
             <ol>
               <li>Click button → Prompt generated & copied</li>
               <li>Paste in Cursor/Claude → Agent analyzes</li>
-              <li>Agent updates <code>.reasoning_rl4/Plan.RL4</code>, <code>Tasks.RL4</code>, <code>Context.RL4</code></li>
+              <li>Agent updates <FileLink fileName="Plan.RL4" />, <FileLink fileName="Tasks.RL4" />, <FileLink fileName="Context.RL4" />, <FileLink fileName="ADRs.RL4" /></li>
               <li>RL4 detects changes → Updates internal state</li>
               <li>Next snapshot includes your updates ✅</li>
             </ol>
@@ -268,16 +305,16 @@ export default function App() {
           
           <div className="info-card">
             <h4>🔄 Feedback Loop</h4>
-            <p>Agent updates <code>Plan/Tasks/Context/ADRs.RL4</code> → RL4 parses → Next snapshot reflects changes.</p>
+            <p>Agent updates <FileLink fileName="Plan.RL4" />, <FileLink fileName="Tasks.RL4" />, <FileLink fileName="Context.RL4" />, <FileLink fileName="ADRs.RL4" /> → RL4 parses → Next snapshot reflects changes.</p>
           </div>
         </div>
       </main>
 
       {/* Footer */}
       <footer className="rl4-footer">
-        <p>RL4 v2.4.0 — Phase E3.3: Single Context Snapshot System</p>
+        <p>RL4 — Development Context Snapshot</p>
         <p style={{ fontSize: '11px', color: '#666' }}>
-          Files: <code>.reasoning_rl4/Plan.RL4</code>, <code>Tasks.RL4</code>, <code>Context.RL4</code>, <code>ADRs.RL4</code>
+          Files: <FileLink fileName="Plan.RL4" />, <FileLink fileName="Tasks.RL4" />, <FileLink fileName="Context.RL4" />, <FileLink fileName="ADRs.RL4" />
         </p>
       </footer>
     </div>

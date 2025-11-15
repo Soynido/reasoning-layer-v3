@@ -1,17 +1,17 @@
 ---
-version: 2.0
+version: 2.1
 original_version: 1.0
 baseline_date: 2025-11-12T16:35:00.000Z
 baseline_archived: .reasoning_rl4/baselines/Plan.RL4.v1.0.archived
-updated: 2025-11-12T16:35:00.000Z
-confidence: 0.95
-bias: 0.00
+updated: 2025-11-14T14:16:35.770Z
+confidence: 1.00
+bias: 0.66
 baseline_saved: true
-deviation_mode: ui_driven
-commit: cd44268
-vsix: reasoning-layer-rl4-3.0.0-production-ready.vsix
+deviation_mode: strict
+commit: (pending)
+vsix: reasoning-layer-rl4-3.4.0.vsix
 snapshot_validated: true
-milestone: E4 Baseline Reset — Production-Ready Extension Accepted
+milestone: E4 — Workspace Insights UI (Production-Ready)
 ---
 
 # RL4 Strategic Plan — BASELINE v2.0

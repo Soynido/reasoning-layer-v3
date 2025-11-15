@@ -17,9 +17,12 @@ import { KernelBootstrap } from './kernel/KernelBootstrap';
 import { CognitiveLogger } from './kernel/CognitiveLogger';
 import { ADRValidationCommands } from './commands/adr-validation';
 import { UnifiedPromptBuilder } from './kernel/api/UnifiedPromptBuilder';
+import { AdaptivePromptBuilder } from './kernel/api/AdaptivePromptBuilder';
 import { ADRParser } from './kernel/api/ADRParser';
 import { PlanTasksContextParser } from './kernel/api/PlanTasksContextParser';
+import { FirstBootstrapEngine } from './kernel/bootstrap/FirstBootstrapEngine';
 import * as path from 'path';
+import * as fs from 'fs';
 
 // Cognitive Logger
 let logger: CognitiveLogger | null = null;
@@ -132,9 +135,15 @@ export async function activate(context: vscode.ExtensionContext) {
             // Start Input Layer: GitCommitListener + FileChangeWatcher
             channel.appendLine(`[${new Date().toISOString().substring(11, 23)}] 📥 Starting Input Layer...`);
             
-            // 1. GitCommitListener
+            // 1. GitCommitListener (Phase 3: Uses CognitiveLogger + commit counter callback)
             const gitTracesWriter = new AppendOnlyWriter(path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'git_commits.jsonl'));
-            const gitListener = new GitCommitListener(workspaceRoot, execPool, gitTracesWriter, channel);
+            const gitListener = new GitCommitListener(
+                workspaceRoot, 
+                execPool, 
+                gitTracesWriter, 
+                logger || undefined,
+                () => scheduler.incrementCommitCount() // Callback to increment commit counter for hourly summary
+            );
             
             if (gitListener.isGitRepository()) {
                 await gitListener.startWatching();
@@ -145,7 +154,7 @@ export async function activate(context: vscode.ExtensionContext) {
             
             // 2. FileChangeWatcher
             const fileTracesWriter = new AppendOnlyWriter(path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'file_changes.jsonl'));
-            const fileWatcher = new FileChangeWatcher(workspaceRoot, fileTracesWriter, channel);
+            const fileWatcher = new FileChangeWatcher(workspaceRoot, fileTracesWriter, logger || undefined);
             await fileWatcher.startWatching();
             channel.appendLine(`[${new Date().toISOString().substring(11, 23)}] ✅ FileChangeWatcher active`);
         }, 3000);
@@ -179,6 +188,77 @@ export async function activate(context: vscode.ExtensionContext) {
                     await kernel!.api.flush();
                 vscode.window.showInformationMessage('✅ Flushed');
                 logger!.system('💾 All queues flushed', '💾');
+            }),
+            
+            vscode.commands.registerCommand('reasoning.kernel.whereami', async () => {
+                logger!.system('🧠 Generating cognitive snapshot...', '🧠');
+                
+                // Ask user to select Perception Angle mode
+                const choice = await vscode.window.showQuickPick([
+                    {
+                        label: '🔴 Strict (0%)',
+                        description: 'P0 only — Generate from existing RL4 data (~1s)',
+                        detail: 'Focus ONLY on critical tasks',
+                        mode: 'strict'
+                    },
+                    {
+                        label: '🟡 Flexible (25%)',
+                        description: 'P0+P1 OK — Generate from existing RL4 data (~1s)',
+                        detail: 'Focus on P0+P1 tasks, minor scope changes OK',
+                        mode: 'flexible'
+                    },
+                    {
+                        label: '🟢 Exploratory (50%)',
+                        description: 'New ideas welcome — Include recent history (~2s)',
+                        detail: 'Welcome creative solutions, new features OK',
+                        mode: 'exploratory'
+                    },
+                    {
+                        label: '⚪ Free (100%)',
+                        description: 'Creative mode — Include recent history (~2s)',
+                        detail: 'All ideas welcome, no constraints',
+                        mode: 'free'
+                    },
+                    {
+                        label: '🔍 First Use (Deep Analysis)',
+                        description: 'Analyze project history + Git commits (~5s)',
+                        detail: 'Use on first RL4 install or to refresh context',
+                        mode: 'firstUse'
+                    }
+                ], {
+                    placeHolder: 'Select Perception Angle (mode)'
+                });
+                
+                if (!choice) {
+                    return; // User cancelled
+                }
+                
+                try {
+                    logger!.system(`📋 Generating snapshot (mode: ${choice.mode})...`, '📋');
+                    
+                    // Generate adaptive prompt with selected mode (Phase 5: Pass CognitiveLogger)
+                    const promptBuilder = new AdaptivePromptBuilder(workspaceRoot, logger || undefined);
+                    const snapshot = await promptBuilder.buildPrompt({
+                        mode: choice.mode as any,
+                        includeHistory: choice.mode === 'exploratory' || choice.mode === 'free' || choice.mode === 'firstUse',
+                        includeGoals: true,
+                        includeTechStack: true
+                    });
+                    
+                    // Show in new document
+                    const doc = await vscode.workspace.openTextDocument({
+                        content: snapshot,
+                        language: 'markdown'
+                    });
+                    await vscode.window.showTextDocument(doc);
+                    
+                    vscode.window.showInformationMessage(`✅ Snapshot generated (${choice.label})! Copy-paste it into your AI agent.`);
+                    logger!.system('✅ Snapshot generated successfully', '✅');
+                } catch (error) {
+                    const msg = `❌ Failed to generate snapshot: ${error}`;
+                    vscode.window.showErrorMessage(msg);
+                    logger!.system(msg, '❌');
+                }
             })
         );
         
@@ -216,7 +296,7 @@ export async function activate(context: vscode.ExtensionContext) {
         
         // Phase E3.3: Handle messages from WebView
         const rl4Path = path.join(workspaceRoot, '.reasoning_rl4');
-        const promptBuilder = new UnifiedPromptBuilder(rl4Path);
+        const promptBuilder = new AdaptivePromptBuilder(workspaceRoot, logger || undefined);
         const adrParser = new ADRParser(rl4Path);
         const planParser = new PlanTasksContextParser(rl4Path);
         
@@ -245,6 +325,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
         // Initialize default Plan/Tasks/Context files if needed
         await promptBuilder.initializeDefaults();
+        
+        // Initialize Cursor rules for RL4 strict mode enforcement
+        ensureCursorRuleExists(workspaceRoot, logger);
 
         webviewPanel.webview.onDidReceiveMessage(
             async (message) => {
@@ -271,12 +354,107 @@ export async function activate(context: vscode.ExtensionContext) {
                             });
                         }
                         break;
+                    
+                    case 'openFile':
+                        try {
+                            const fileName = message.fileName;
+                            if (!fileName) {
+                                logger!.warning('openFile: fileName missing');
+                                break;
+                            }
+                            
+                            const filePath = path.join(rl4Path, fileName);
+                            const fileUri = vscode.Uri.file(filePath);
+                            
+                            // Open file in editor
+                            const document = await vscode.workspace.openTextDocument(fileUri);
+                            await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
+                            
+                            logger!.system(`📂 Opened ${fileName} in editor`, '📂');
+                        } catch (error) {
+                            logger!.error(`Failed to open file: ${error}`);
+                            vscode.window.showErrorMessage(`Failed to open ${message.fileName}: ${error}`);
+                        }
+                        break;
                 }
             },
             undefined,
             context.subscriptions
         );
         
+        // Phase 6: Helper function to detect and log RL4 file changes
+        const logRL4FileChange = async (fileType: 'Plan' | 'Tasks' | 'Context' | 'ADR', filePath: string) => {
+            if (!logger) return;
+            
+            try {
+                const fs = await import('fs/promises');
+                const content = await fs.readFile(filePath, 'utf-8');
+                
+                // Extract version and updated from frontmatter (between --- markers)
+                const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+                let versionNew = 'unknown';
+                let timestamp = new Date().toISOString();
+                
+                if (frontmatterMatch) {
+                    const frontmatter = frontmatterMatch[1];
+                    const versionMatch = frontmatter.match(/^version:\s*([^\n]+)/m);
+                    const updatedMatch = frontmatter.match(/^updated:\s*([^\n]+)/m);
+                    
+                    if (versionMatch) versionNew = versionMatch[1].trim();
+                    if (updatedMatch) timestamp = updatedMatch[1].trim();
+                }
+                
+                // Detect who made the change (try to get Git author from last commit, fallback to "User")
+                let updatedBy = 'User';
+                try {
+                    const { exec } = require('child_process');
+                    const { promisify } = require('util');
+                    const execAsync = promisify(exec);
+                    
+                    // Get last commit author for this file
+                    const result = await execAsync(`git log -1 --pretty=format:"%an" -- "${filePath}"`, {
+                        cwd: workspaceRoot,
+                        timeout: 2000
+                    });
+                    if (result.stdout && result.stdout.trim()) {
+                        updatedBy = result.stdout.trim();
+                    }
+                } catch (gitError) {
+                    // Fallback to "User" if Git fails
+                }
+                
+                // Extract a summary of changes (detect key sections modified)
+                let changes = 'Content updated';
+                if (fileType === 'Plan' && content.includes('Phase:')) {
+                    const phaseMatch = content.match(/Phase:\s*([^\n]+)/);
+                    if (phaseMatch) changes = `Phase updated: ${phaseMatch[1].trim()}`;
+                } else if (fileType === 'Tasks' && content.includes('Tasks:')) {
+                    const taskCount = (content.match(/- \[/g) || []).length;
+                    changes = `${taskCount} task(s) in file`;
+                } else if (fileType === 'Context' && content.includes('KPIs')) {
+                    changes = 'KPIs updated';
+                } else if (fileType === 'ADR' && content.includes('## ADR-')) {
+                    const adrCount = (content.match(/## ADR-/g) || []).length;
+                    changes = `${adrCount} ADR(s) in file`;
+                }
+                
+                // Get old version from cache (if available) or use "unknown"
+                const versionOld = 'unknown'; // TODO: Cache previous versions for comparison
+                
+                // Log via CognitiveLogger
+                logger.logRL4FileUpdate(fileType, {
+                    file: fileType,
+                    updated_by: updatedBy,
+                    changes: changes,
+                    version_old: versionOld,
+                    version_new: versionNew,
+                    timestamp: timestamp
+                });
+            } catch (error) {
+                logger.warning(`Failed to log ${fileType}.RL4 change: ${error}`);
+            }
+        };
+
         // Phase E3.3: Setup FileWatchers for Plan/Tasks/Context/ADRs.RL4
         const planWatcher = vscode.workspace.createFileSystemWatcher(
             new vscode.RelativePattern(rl4Path, 'Plan.RL4')
@@ -291,26 +469,31 @@ export async function activate(context: vscode.ExtensionContext) {
             new vscode.RelativePattern(rl4Path, 'ADRs.RL4')
         );
 
-        // Handle Plan.RL4 changes
+        // Handle Plan.RL4 changes (Phase 6: Log via CognitiveLogger)
         planWatcher.onDidChange(async () => {
+            const planPath = path.join(rl4Path, 'Plan.RL4');
+            await logRL4FileChange('Plan', planPath);
             logger!.system('📋 Plan.RL4 changed, recalculating metrics...', '📋');
             // Confidence/bias will be recalculated on next snapshot generation
         });
 
-        // Handle Tasks.RL4 changes
+        // Handle Tasks.RL4 changes (Phase 6: Log via CognitiveLogger)
         tasksWatcher.onDidChange(async () => {
+            const tasksPath = path.join(rl4Path, 'Tasks.RL4');
+            await logRL4FileChange('Tasks', tasksPath);
             logger!.system('✅ Tasks.RL4 changed, updating state...', '✅');
         });
 
-        // Handle Context.RL4 changes → Send to WebView for KPI update
+        // Handle Context.RL4 changes → Send to WebView for KPI update (Phase 6: Log via CognitiveLogger)
         contextWatcher.onDidChange(async () => {
+            const contextPath = path.join(rl4Path, 'Context.RL4');
+            await logRL4FileChange('Context', contextPath);
             logger!.system('🔍 Context.RL4 changed, refreshing...', '🔍');
             
             // Read Context.RL4 and send to WebView for KPI parsing
             if (webviewPanel) {
                 try {
                     const fs = await import('fs/promises');
-                    const contextPath = path.join(rl4Path, 'Context.RL4');
                     const contextContent = await fs.readFile(contextPath, 'utf-8');
                     
                     webviewPanel.webview.postMessage({
@@ -325,8 +508,10 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         });
 
-        // Handle ADRs.RL4 changes (parse and append to ledger)
+        // Handle ADRs.RL4 changes (parse and append to ledger) (Phase 6: Log via CognitiveLogger)
         adrWatcher.onDidChange(async () => {
+            const adrsPath = path.join(rl4Path, 'ADRs.RL4');
+            await logRL4FileChange('ADR', adrsPath);
             logger!.system('📜 ADRs.RL4 changed, processing...', '📜');
             const result = adrParser.processADRsFile();
             
@@ -339,6 +524,8 @@ export async function activate(context: vscode.ExtensionContext) {
         });
 
         adrWatcher.onDidCreate(async () => {
+            const adrsPath = path.join(rl4Path, 'ADRs.RL4');
+            await logRL4FileChange('ADR', adrsPath);
             logger!.system('📜 ADRs.RL4 created, processing...', '📜');
             const result = adrParser.processADRsFile();
             
@@ -391,10 +578,33 @@ export async function activate(context: vscode.ExtensionContext) {
                     
                     webviewPanel.webview.html = getWebviewHtml(context, webviewPanel);
                     
-                    // Send initial Context.RL4 to WebView after a delay
-                    setTimeout(sendContextToWebView, 500);
-                    
                     // Phase E3.3: WebView requests snapshot on demand, no auto-push
+                    const rl4PathRecreated = path.join(workspaceRoot, '.reasoning_rl4');
+                    const promptBuilderRecreated = new AdaptivePromptBuilder(workspaceRoot, logger || undefined);
+                    
+                    // Helper: Send Context.RL4 to WebView for initial KPI load (recreated)
+                    const sendContextToWebViewRecreated = async () => {
+                        if (webviewPanel) {
+                            try {
+                                const fs = await import('fs/promises');
+                                const contextPath = path.join(rl4PathRecreated, 'Context.RL4');
+                                const contextContent = await fs.readFile(contextPath, 'utf-8');
+                                
+                                webviewPanel.webview.postMessage({
+                                    type: 'kpisUpdated',
+                                    payload: contextContent
+                                });
+                                
+                                logger!.system('✅ Initial Context.RL4 sent to WebView', '✅');
+                            } catch (error) {
+                                logger!.system(`⚠️ Context.RL4 not found yet (will use mock data)`, '⚠️');
+                            }
+                        }
+                    };
+                    
+                    // Send initial Context.RL4 to WebView after a delay
+                    setTimeout(sendContextToWebViewRecreated, 500);
+                    
                     webviewPanel.webview.onDidReceiveMessage(
                         async (message) => {
                             console.log('[RL4 Extension] Received message from WebView:', message.type);
@@ -403,7 +613,7 @@ export async function activate(context: vscode.ExtensionContext) {
                                 case 'generateSnapshot':
                                     try {
                                         logger!.system('📋 Generating unified context snapshot...', '📋');
-                                        const snapshot = await promptBuilder.generate();
+                                        const snapshot = await promptBuilderRecreated.generate();
                                         
                                         webviewPanel!.webview.postMessage({
                                             type: 'snapshotGenerated',
@@ -417,6 +627,28 @@ export async function activate(context: vscode.ExtensionContext) {
                                             type: 'error',
                                             payload: 'Failed to generate snapshot'
                                         });
+                                    }
+                                    break;
+                                
+                                case 'openFile':
+                                    try {
+                                        const fileName = message.fileName;
+                                        if (!fileName) {
+                                            logger!.warning('openFile: fileName missing');
+                                            break;
+                                        }
+                                        
+                                        const filePath = path.join(rl4PathRecreated, fileName);
+                                        const fileUri = vscode.Uri.file(filePath);
+                                        
+                                        // Open file in editor
+                                        const document = await vscode.workspace.openTextDocument(fileUri);
+                                        await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
+                                        
+                                        logger!.system(`📂 Opened ${fileName} in editor`, '📂');
+                                    } catch (error) {
+                                        logger!.error(`Failed to open file: ${error}`);
+                                        vscode.window.showErrorMessage(`Failed to open ${message.fileName}: ${error}`);
                                     }
                                     break;
                             }
@@ -515,6 +747,170 @@ function getWebviewHtml(context: vscode.ExtensionContext, panel: vscode.WebviewP
             </body>
         </html>
     `;
+}
+
+/**
+ * Ensure Cursor rule file exists for RL4 strict mode enforcement
+ * This is called automatically on extension activation to ensure users don't need to manually add the rule
+ */
+function ensureCursorRuleExists(workspaceRoot: string, logger: CognitiveLogger | null): void {
+    try {
+        const cursorRulesDir = path.join(workspaceRoot, '.cursor', 'rules');
+        const ruleFilePath = path.join(cursorRulesDir, 'RL4_STRICT_MODE_ENFORCEMENT.mdc');
+        
+        // Check if rule file already exists
+        if (fs.existsSync(ruleFilePath)) {
+            if (logger) {
+                logger.system('✅ Cursor rule already exists', '✅');
+            }
+            return;
+        }
+        
+        // Create .cursor/rules directory if it doesn't exist
+        if (!fs.existsSync(cursorRulesDir)) {
+            fs.mkdirSync(cursorRulesDir, { recursive: true });
+            if (logger) {
+                logger.system(`📁 Created .cursor/rules directory`, '📁');
+            }
+        }
+        
+        // Write the rule file
+        const ruleContent = `---
+description: [RL4] Enforcement strict du mode deviation - OBLIGATOIRE avant toute modification
+globs: **/*
+alwaysApply: true
+manual: false
+---
+
+# 🛡️ RL4 STRICT MODE ENFORCEMENT — RÈGLE ABSOLUE
+
+## ⚠️ RÈGLE #1 : TOUJOURS VÉRIFIER LE MODE AVANT TOUTE ACTION
+
+**AVANT de créer, modifier ou supprimer un fichier TypeScript :**
+
+1. **Lire \`.reasoning_rl4/Plan.RL4\`** → Vérifier \`deviation_mode: strict|flexible|exploratory|free\`
+2. **Lire \`.reasoning_rl4/Tasks.RL4\`** → Lister les tâches P0 actives
+3. **Lire \`.reasoning_rl4/Context.RL4\`** → Vérifier le bias actuel
+
+## 🚫 MODE STRICT (0% threshold) — RÈGLES ABSOLUES
+
+**Si \`deviation_mode: strict\` dans Plan.RL4 :**
+
+### ❌ INTERDICTIONS ABSOLUES :
+- ❌ **NE PAS créer de nouveau fichier \`.ts\`** sauf si c'est explicitement une tâche P0
+- ❌ **NE PAS modifier un fichier** sauf si c'est pour compléter une tâche P0
+- ❌ **NE PAS ajouter de nouvelles fonctionnalités** même si "c'est une bonne idée"
+
+### ✅ AUTORISATIONS UNIQUES :
+- ✅ **Modifier uniquement les fichiers nécessaires pour compléter une tâche P0**
+- ✅ **Corriger des bugs critiques** (si c'est une tâche P0)
+- ✅ **Répondre aux questions** sans modifier de code
+
+### 📋 PROCESSUS OBLIGATOIRE EN MODE STRICT :
+
+**Avant TOUTE modification de code :**
+
+\`\`\`
+1. Lire Tasks.RL4 → Identifier les tâches P0
+2. Vérifier : "Cette modification correspond-elle à une tâche P0 ?"
+   - OUI → Continuer
+   - NON → STOP. Répondre :
+     "⛔ STRICT MODE: Cette modification n'est pas dans les tâches P0.
+     
+     Options:
+     a) ❌ Rejeter (recommandé)
+     b) 📋 Ajouter à Future Backlog (bias reste inchangé)
+     c) 🔄 Passer en mode Flexible (25% threshold)"
+\`\`\`
+
+## ⚖️ MODE FLEXIBLE (25% threshold) — RÈGLES RELATIVES
+
+**Si \`deviation_mode: flexible\` dans Plan.RL4 :**
+
+- ✅ Autoriser modifications P0 + P1
+- ✅ Autoriser petites améliorations si bias < 25%
+- ❌ Demander confirmation avant P2/P3
+
+## 🔍 MODE EXPLORATORY (50% threshold) — RÈGLES PERMISSIVES
+
+**Si \`deviation_mode: exploratory\` dans Plan.RL4 :**
+
+- ✅ Autoriser explorations et améliorations
+- ✅ Proposer des optimisations
+- ⚠️ Calculer bias impact avant d'implémenter
+
+## 🔥 MODE FREE (100% threshold) — AUCUNE RESTRICTION
+
+**Si \`deviation_mode: free\` dans Plan.RL4 :**
+
+- ✅ Toute modification autorisée
+- ✅ Création de fichiers libre
+- ⚠️ Toujours informer l'utilisateur des changements
+
+---
+
+## 🎯 CHECKLIST AVANT TOUTE MODIFICATION
+
+**Copier-coller cette checklist avant chaque modification :**
+
+\`\`\`
+[ ] 1. J'ai lu Plan.RL4 → Mode détecté: [strict/flexible/exploratory/free]
+[ ] 2. J'ai lu Tasks.RL4 → Tâches P0: [liste]
+[ ] 3. J'ai lu Context.RL4 → Bias actuel: [X]%
+[ ] 4. Cette modification correspond à une tâche P0 ? [OUI/NON]
+[ ] 5. Si NON, j'ai demandé confirmation à l'utilisateur ? [OUI/NON]
+[ ] 6. J'ai calculé le bias impact ? [OUI/NON]
+[ ] 7. Le bias total reste sous le threshold ? [OUI/NON]
+\`\`\`
+
+**Si une case est NON → STOP. Demander confirmation.**
+
+---
+
+## 📝 EXEMPLE DE VIOLATION (À NE PAS REPRODUIRE)
+
+**❌ MAUVAIS COMPORTEMENT :**
+\`\`\`
+Utilisateur: "Le snapshot est trop générique"
+Agent: [Crée immédiatement CodeStateAnalyzer.ts sans vérifier]
+→ VIOLATION : Fichier créé sans vérifier Tasks.RL4
+\`\`\`
+
+**✅ BON COMPORTEMENT :**
+\`\`\`
+Utilisateur: "Le snapshot est trop générique"
+Agent: 
+1. Lit Plan.RL4 → Mode: strict
+2. Lit Tasks.RL4 → P0: "Commit 102 fichiers"
+3. Répond: "⛔ STRICT MODE: Enrichir le snapshot n'est pas dans les tâches P0.
+   
+   Options:
+   a) ❌ Rejeter (recommandé en mode strict)
+   b) 📋 Ajouter à backlog
+   c) 🔄 Passer en mode Flexible"
+\`\`\`
+
+---
+
+## 🚨 RAPPEL CONSTANT
+
+**Cette règle doit être appliquée AVANT chaque modification de code, pas après.**
+
+**Si vous oubliez cette règle, vous violez le contrat RL4.**
+`;
+        
+        fs.writeFileSync(ruleFilePath, ruleContent, 'utf-8');
+        
+        if (logger) {
+            logger.system('✅ Cursor rule file created automatically', '✅');
+            logger.system('   → .cursor/rules/RL4_STRICT_MODE_ENFORCEMENT.mdc', '📄');
+        }
+    } catch (error) {
+        if (logger) {
+            logger.warning(`Failed to create Cursor rule file: ${error}`);
+        }
+        // Non-blocking: if rule file creation fails, extension still works
+    }
 }
 
 export async function deactivate() {

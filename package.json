@@ -1,18 +1,18 @@
 {
   "name": "reasoning-layer-rl4",
   "displayName": "Reasoning Layer RL4 (Kernel)",
-  "version": "2.7.0-adr-detection",
+  "version": "3.5.8",
   "publisher": "valentingaludec",
   "author": {
     "name": "Valentin Galudec",
     "email": ""
   },
-  "description": "RL4 Kernel - Append-only ledger, Merkle verification, autonomous cognitive scheduler with watchdog",
+  "description": "Dev Continuity System — Never lose your cognitive thread. Captures your dev context, generates structured prompts for AI agents, and maintains your reasoning history across sessions.",
   "license": "PROPRIETARY",
   "copyright": "Copyright © 2025 Valentin Galudec. All rights reserved.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Soynido/reasoning-layer-v3.git"
+    "url": "https://github.com/Soynido/rl4-official.git"
   },
   "engines": {
     "vscode": "^1.85.0"

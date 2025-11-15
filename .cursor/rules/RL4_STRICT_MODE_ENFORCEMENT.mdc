@@ -1,0 +1,122 @@
+---
+description: [RL4] Enforcement strict du mode deviation - OBLIGATOIRE avant toute modification
+globs: **/*
+alwaysApply: true
+manual: false
+---
+
+# 🛡️ RL4 STRICT MODE ENFORCEMENT — RÈGLE ABSOLUE
+
+## ⚠️ RÈGLE #1 : TOUJOURS VÉRIFIER LE MODE AVANT TOUTE ACTION
+
+**AVANT de créer, modifier ou supprimer un fichier TypeScript :**
+
+1. **Lire `.reasoning_rl4/Plan.RL4`** → Vérifier `deviation_mode: strict|flexible|exploratory|free`
+2. **Lire `.reasoning_rl4/Tasks.RL4`** → Lister les tâches P0 actives
+3. **Lire `.reasoning_rl4/Context.RL4`** → Vérifier le bias actuel
+
+## 🚫 MODE STRICT (0% threshold) — RÈGLES ABSOLUES
+
+**Si `deviation_mode: strict` dans Plan.RL4 :**
+
+### ❌ INTERDICTIONS ABSOLUES :
+- ❌ **NE PAS créer de nouveau fichier `.ts`** sauf si c'est explicitement une tâche P0
+- ❌ **NE PAS modifier un fichier** sauf si c'est pour compléter une tâche P0
+- ❌ **NE PAS ajouter de nouvelles fonctionnalités** même si "c'est une bonne idée"
+
+### ✅ AUTORISATIONS UNIQUES :
+- ✅ **Modifier uniquement les fichiers nécessaires pour compléter une tâche P0**
+- ✅ **Corriger des bugs critiques** (si c'est une tâche P0)
+- ✅ **Répondre aux questions** sans modifier de code
+
+### 📋 PROCESSUS OBLIGATOIRE EN MODE STRICT :
+
+**Avant TOUTE modification de code :**
+
+```
+1. Lire Tasks.RL4 → Identifier les tâches P0
+2. Vérifier : "Cette modification correspond-elle à une tâche P0 ?"
+   - OUI → Continuer
+   - NON → STOP. Répondre :
+     "⛔ STRICT MODE: Cette modification n'est pas dans les tâches P0.
+     
+     Options:
+     a) ❌ Rejeter (recommandé)
+     b) 📋 Ajouter à Future Backlog (bias reste inchangé)
+     c) 🔄 Passer en mode Flexible (25% threshold)"
+```
+
+## ⚖️ MODE FLEXIBLE (25% threshold) — RÈGLES RELATIVES
+
+**Si `deviation_mode: flexible` dans Plan.RL4 :**
+
+- ✅ Autoriser modifications P0 + P1
+- ✅ Autoriser petites améliorations si bias < 25%
+- ❌ Demander confirmation avant P2/P3
+
+## 🔍 MODE EXPLORATORY (50% threshold) — RÈGLES PERMISSIVES
+
+**Si `deviation_mode: exploratory` dans Plan.RL4 :**
+
+- ✅ Autoriser explorations et améliorations
+- ✅ Proposer des optimisations
+- ⚠️ Calculer bias impact avant d'implémenter
+
+## 🔥 MODE FREE (100% threshold) — AUCUNE RESTRICTION
+
+**Si `deviation_mode: free` dans Plan.RL4 :**
+
+- ✅ Toute modification autorisée
+- ✅ Création de fichiers libre
+- ⚠️ Toujours informer l'utilisateur des changements
+
+---
+
+## 🎯 CHECKLIST AVANT TOUTE MODIFICATION
+
+**Copier-coller cette checklist avant chaque modification :**
+
+```
+[ ] 1. J'ai lu Plan.RL4 → Mode détecté: [strict/flexible/exploratory/free]
+[ ] 2. J'ai lu Tasks.RL4 → Tâches P0: [liste]
+[ ] 3. J'ai lu Context.RL4 → Bias actuel: [X]%
+[ ] 4. Cette modification correspond à une tâche P0 ? [OUI/NON]
+[ ] 5. Si NON, j'ai demandé confirmation à l'utilisateur ? [OUI/NON]
+[ ] 6. J'ai calculé le bias impact ? [OUI/NON]
+[ ] 7. Le bias total reste sous le threshold ? [OUI/NON]
+```
+
+**Si une case est NON → STOP. Demander confirmation.**
+
+---
+
+## 📝 EXEMPLE DE VIOLATION (À NE PAS REPRODUIRE)
+
+**❌ MAUVAIS COMPORTEMENT :**
+```
+Utilisateur: "Le snapshot est trop générique"
+Agent: [Crée immédiatement CodeStateAnalyzer.ts sans vérifier]
+→ VIOLATION : Fichier créé sans vérifier Tasks.RL4
+```
+
+**✅ BON COMPORTEMENT :**
+```
+Utilisateur: "Le snapshot est trop générique"
+Agent: 
+1. Lit Plan.RL4 → Mode: strict
+2. Lit Tasks.RL4 → P0: "Commit 102 fichiers"
+3. Répond: "⛔ STRICT MODE: Enrichir le snapshot n'est pas dans les tâches P0.
+   
+   Options:
+   a) ❌ Rejeter (recommandé en mode strict)
+   b) 📋 Ajouter à backlog
+   c) 🔄 Passer en mode Flexible"
+```
+
+---
+
+## 🚨 RAPPEL CONSTANT
+
+**Cette règle doit être appliquée AVANT chaque modification de code, pas après.**
+
+**Si vous oubliez cette règle, vous violez le contrat RL4.**

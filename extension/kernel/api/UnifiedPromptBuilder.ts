@@ -25,9 +25,13 @@ import { HistorySummarizer, HistorySummary } from './HistorySummarizer';
 import { BiasCalculator, BiasReport } from './BiasCalculator';
 import { ADRSignalEnricher, EnrichedCommit } from './ADRSignalEnricher';
 import { ProjectAnalyzer, ProjectContext } from './ProjectAnalyzer';
+import { ProjectDetector } from '../detection/ProjectDetector';
+import { CognitiveLogger, SnapshotDataSummary, LLMAnalysisMetrics, Insight } from '../CognitiveLogger';
+import { CodeStateAnalyzer, CodeState } from './CodeStateAnalyzer';
 
 export class UnifiedPromptBuilder {
   private rl4Path: string;
+  private workspaceRoot: string;
   private planParser: PlanTasksContextParser;
   private blindSpotLoader: BlindSpotDataLoader;
   private adrParser: ADRParser;
@@ -35,9 +39,12 @@ export class UnifiedPromptBuilder {
   private biasCalculator: BiasCalculator;
   private adrEnricher: ADRSignalEnricher;
   private projectAnalyzer: ProjectAnalyzer;
+  private codeStateAnalyzer: CodeStateAnalyzer;
+  private cognitiveLogger: CognitiveLogger | null;
 
-  constructor(rl4Path: string) {
+  constructor(rl4Path: string, cognitiveLogger?: CognitiveLogger) {
     this.rl4Path = rl4Path;
+    this.workspaceRoot = path.dirname(rl4Path);
     this.planParser = new PlanTasksContextParser(rl4Path);
     this.blindSpotLoader = new BlindSpotDataLoader(rl4Path);
     this.adrParser = new ADRParser(rl4Path);
@@ -45,16 +52,33 @@ export class UnifiedPromptBuilder {
     this.biasCalculator = new BiasCalculator(rl4Path);
     this.adrEnricher = new ADRSignalEnricher(rl4Path);
     this.projectAnalyzer = new ProjectAnalyzer(rl4Path);
+    this.codeStateAnalyzer = new CodeStateAnalyzer(this.workspaceRoot);
+    this.cognitiveLogger = cognitiveLogger || null;
   }
 
   /**
    * Generate unified context snapshot with user-selected deviation mode
-   * @param deviationMode - User's perception angle (strict/flexible/exploratory/free)
+   * @param deviationMode - User's perception angle (strict/flexible/exploratory/free/firstUse)
    */
-  async generate(deviationMode: 'strict' | 'flexible' | 'exploratory' | 'free' = 'flexible'): Promise<string> {
+  async generate(deviationMode: 'strict' | 'flexible' | 'exploratory' | 'free' | 'firstUse' = 'flexible'): Promise<string> {
     const now = new Date();
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
     const period: TimelinePeriod = { from: twoHoursAgo, to: now };
+    
+    // Phase 5: Log snapshot generation start
+    if (this.cognitiveLogger) {
+      const dataSummary: SnapshotDataSummary = {
+        mode: deviationMode,
+        total_cycles: 0, // Will be updated below
+        recent_commits: 0, // Will be updated below
+        file_changes: 0, // Will be updated below
+        plan_rl4_found: false, // Will be updated below
+        tasks_rl4_found: false, // Will be updated below
+        context_rl4_found: false, // Will be updated below
+        adrs_count: 0 // Will be updated below
+      };
+      this.cognitiveLogger.logSnapshotStart(deviationMode, dataSummary);
+    }
 
     // Load persistent state files
     const plan = this.planParser.parsePlan();
@@ -64,14 +88,33 @@ export class UnifiedPromptBuilder {
     // Load compressed historical summary (30 days → 2KB JSON)
     const historySummary = await this.historySummarizer.summarize(30);
 
+    // If firstUse mode, run bootstrap first
+    if (deviationMode === 'firstUse') {
+      const { FirstBootstrapEngine } = await import('../bootstrap/FirstBootstrapEngine');
+      const bootstrapEngine = new FirstBootstrapEngine(this.workspaceRoot);
+      await bootstrapEngine.bootstrap();
+    }
+
     // Calculate bias (deviation from original plan) with user-selected mode
-    const biasReport = await this.biasCalculator.calculateBias(deviationMode);
+    const biasMode = deviationMode === 'firstUse' ? 'exploratory' : deviationMode;
+    const biasReport = await this.biasCalculator.calculateBias(biasMode);
 
     // Enrich commits with ADR detection signals (last 24h)
     const enrichedCommits = await this.adrEnricher.enrichCommits(24);
 
     // Analyze project context (for Exploratory/Free modes)
     const projectContext = await this.projectAnalyzer.analyze();
+    
+    // Detect project name from workspace (GENERIC, not RL4-specific)
+    const projectDetector = new ProjectDetector(this.workspaceRoot);
+    const detectedProject = await projectDetector.detect();
+
+    // Analyze actual code state (what's really implemented)
+    // Extract goals from plan (goal field) or tasks
+    const goalText = plan?.goal || '';
+    const taskTexts = tasks?.active.map(t => t.task) || [];
+    const goals = goalText ? [goalText, ...taskTexts] : taskTexts;
+    const codeState = await this.codeStateAnalyzer.analyze(goals);
 
     // Load blind spot data (recent activity only)
     const timeline = this.blindSpotLoader.loadTimeline(period);
@@ -94,9 +137,66 @@ export class UnifiedPromptBuilder {
     // Calculate metrics
     const confidence = plan ? this.planParser.calculateConfidence(plan, workspaceReality) : 0.5;
     const bias = biasReport.total;
+    
+    // Phase 5: Log data aggregation (after loading all data)
+    if (this.cognitiveLogger) {
+      const dataSummary: SnapshotDataSummary = {
+        mode: deviationMode,
+        total_cycles: timeline.length,
+        recent_commits: gitHistory.length,
+        file_changes: filePatterns ? Object.keys(filePatterns).length : 0, // Count unique file patterns
+        plan_rl4_found: plan !== null,
+        tasks_rl4_found: tasks !== null,
+        context_rl4_found: context !== null,
+        adrs_count: adrs.length
+      };
+      this.cognitiveLogger.logDataAggregation(dataSummary);
+    }
+    
+    // Phase 5: Log insights (after calculating metrics)
+    if (this.cognitiveLogger) {
+      const insights: Insight[] = [];
+      
+      // Insight: Confidence level
+      if (confidence < 0.5) {
+        insights.push({
+          type: 'alert',
+          message: `Low confidence (${(confidence * 100).toFixed(0)}%) - Consider generating more context or updating Plan.RL4`,
+          priority: 'medium'
+        });
+      } else if (confidence > 0.8) {
+        insights.push({
+          type: 'inference',
+          message: `High confidence (${(confidence * 100).toFixed(0)}%) - System has good understanding of project state`,
+          priority: 'low'
+        });
+      }
+      
+      // Insight: Bias level
+      if (bias > 0.5) {
+        insights.push({
+          type: 'pattern',
+          message: `Significant deviation from plan (bias: ${(bias * 100).toFixed(0)}%) - Project may have evolved beyond original plan`,
+          priority: 'medium'
+        });
+      }
+      
+      // Insight: Missing RL4 files
+      if (!plan || !tasks || !context) {
+        insights.push({
+          type: 'suggestion',
+          message: `Missing RL4 files - Consider initializing Plan.RL4, Tasks.RL4, and Context.RL4 for better context`,
+          priority: 'high'
+        });
+      }
+      
+      if (insights.length > 0) {
+        this.cognitiveLogger.logInsights(insights);
+      }
+    }
 
     // Build prompt with user-selected deviation mode
-    return this.formatPrompt({
+    const prompt = this.formatPrompt({
       plan,
       tasks,
       context,
@@ -112,8 +212,19 @@ export class UnifiedPromptBuilder {
       bias,
       generated: now.toISOString(),
       deviationMode,  // User choice from UI
-      projectContext  // Project analysis for intelligent modes
+      projectContext,  // Project analysis for intelligent modes
+      detectedProject,  // Detected project name/context
+      codeState  // Actual code implementation state
     });
+    
+    // Phase 5: Log snapshot generated (after prompt generation)
+    if (this.cognitiveLogger) {
+      // Count sections in prompt (approximate: count of ## headers)
+      const sections = (prompt.match(/^##\s+/gm) || []).length;
+      this.cognitiveLogger.logSnapshotGenerated(prompt.length, sections);
+    }
+    
+    return prompt;
   }
 
   /**
@@ -134,20 +245,25 @@ export class UnifiedPromptBuilder {
     confidence: number;
     bias: number;
     generated: string;
-    deviationMode: 'strict' | 'flexible' | 'exploratory' | 'free';
+    deviationMode: 'strict' | 'flexible' | 'exploratory' | 'free' | 'firstUse';
     projectContext: ProjectContext;
+    detectedProject?: { name: string; description?: string; structure?: string };
+    codeState: CodeState;
   }): string {
     // Map deviation mode to threshold
     const thresholdMap: Record<string, number> = {
       'strict': 0.0,
       'flexible': 0.25,
       'exploratory': 0.50,
-      'free': 1.0
+      'free': 1.0,
+      'firstUse': 0.50  // Same as exploratory
     };
     const threshold = thresholdMap[data.deviationMode];
     
-    // Get project name from workspace (GENERIC, not RL4-specific)
-    const projectName = data.plan?.phase?.split(' ')[0] || path.basename(this.rl4Path).replace('.reasoning_rl4', '');
+    // Get project name from detected project context (GENERIC, not RL4-specific)
+    const projectName = data.detectedProject?.name || 
+                        data.plan?.phase?.split(' ')[0] || 
+                        path.basename(this.rl4Path).replace('.reasoning_rl4', '');
     
     let prompt = `# 🧠 ${projectName} — Development Context Snapshot\n`;
     prompt += `Generated: ${data.generated}\n`;
@@ -159,13 +275,85 @@ export class UnifiedPromptBuilder {
       prompt += `⚠️ **DEVIATION ALERT**: Bias (${(data.bias * 100).toFixed(0)}%) exceeds ${data.deviationMode} threshold (${(threshold * 100).toFixed(0)}%)\n\n`;
     }
     
+    // 🚨 CRITICAL: Add strict mode enforcement at the TOP (most visible)
+    prompt += `---\n\n`;
+    prompt += `# 🚨 CRITICAL RULES — READ THIS FIRST\n\n`;
+    prompt += `**⚠️ BEFORE creating, modifying, or deleting ANY TypeScript file:**\n\n`;
+    prompt += `1. **READ \`.reasoning_rl4/Plan.RL4\`** → Check \`deviation_mode: ${data.deviationMode}\`\n`;
+    prompt += `2. **READ \`.reasoning_rl4/Tasks.RL4\`** → List active P0 tasks\n`;
+    prompt += `3. **READ \`.reasoning_rl4/Context.RL4\`** → Check current bias: ${(data.bias * 100).toFixed(0)}%\n\n`;
+    
+    // Mode-specific critical rules
+    if (data.deviationMode === 'strict') {
+      prompt += `## 🚫 STRICT MODE (0% threshold) — ZERO DEVIATION TOLERANCE\n\n`;
+      prompt += `**❌ ABSOLUTE PROHIBITIONS:**\n`;
+      prompt += `- ❌ **DO NOT create new \`.ts\` files** unless explicitly a P0 task\n`;
+      prompt += `- ❌ **DO NOT modify files** unless completing a P0 task\n`;
+      prompt += `- ❌ **DO NOT add new features** even if "it's a good idea"\n\n`;
+      prompt += `**✅ ONLY ALLOWED:**\n`;
+      prompt += `- ✅ Modify files needed to complete P0 tasks\n`;
+      prompt += `- ✅ Fix critical bugs (if P0 task)\n`;
+      prompt += `- ✅ Answer questions WITHOUT code changes\n\n`;
+      prompt += `**📋 MANDATORY PROCESS:**\n`;
+      prompt += `\`\`\`\n`;
+      prompt += `User proposes ANY idea → Your response:\n`;
+      prompt += `1. Check Tasks.RL4 → Is this in P0 tasks? NO\n`;
+      prompt += `2. STOP. Reply:\n`;
+      prompt += `   "⛔ STRICT MODE: This is not in P0 tasks.\n`;
+      prompt += `   \n`;
+      prompt += `   Options:\n`;
+      prompt += `   a) ❌ Reject (recommended)\n`;
+      prompt += `   b) 📋 Add to backlog (bias stays ${(data.bias * 100).toFixed(0)}%)\n`;
+      prompt += `   c) 🔄 Switch to Flexible mode (25% threshold)"\n`;
+      prompt += `\`\`\`\n\n`;
+    } else if (data.deviationMode === 'flexible') {
+      prompt += `## ⚖️ FLEXIBLE MODE (25% threshold) — BALANCED APPROACH\n\n`;
+      prompt += `**✅ ALLOWED:**\n`;
+      prompt += `- ✅ P0 + P1 tasks\n`;
+      prompt += `- ✅ Small improvements if bias < 25%\n`;
+      prompt += `- ⚠️ Ask before P2/P3 tasks\n\n`;
+      prompt += `**Current bias:** ${(data.bias * 100).toFixed(0)}% / 25% threshold\n`;
+      if (data.bias > 0.25) {
+        prompt += `⚠️ **WARNING:** Bias exceeds threshold! Focus on P0 tasks only.\n\n`;
+      } else {
+        prompt += `✅ **OK:** Within threshold. Small improvements allowed.\n\n`;
+      }
+    } else if (data.deviationMode === 'exploratory') {
+      prompt += `## 🔍 EXPLORATORY MODE (50% threshold) — PROACTIVE INNOVATION\n\n`;
+      prompt += `**✅ ALLOWED:**\n`;
+      prompt += `- ✅ Explorations and improvements\n`;
+      prompt += `- ✅ Optimization suggestions\n`;
+      prompt += `- ⚠️ Calculate bias impact before implementing\n\n`;
+      prompt += `**Current bias:** ${(data.bias * 100).toFixed(0)}% / 50% threshold\n\n`;
+    } else if (data.deviationMode === 'free') {
+      prompt += `## 🔥 FREE MODE (100% threshold) — NO RESTRICTIONS\n\n`;
+      prompt += `**✅ ALLOWED:**\n`;
+      prompt += `- ✅ Any modification\n`;
+      prompt += `- ✅ File creation\n`;
+      prompt += `- ⚠️ Always inform user of changes\n\n`;
+    }
+    
+    prompt += `**🎯 CHECKLIST BEFORE ANY CODE CHANGE:**\n`;
+    prompt += `\`\`\`\n`;
+    prompt += `[ ] 1. Read Plan.RL4 → Mode: ${data.deviationMode}\n`;
+    prompt += `[ ] 2. Read Tasks.RL4 → P0 tasks: [list them]\n`;
+    prompt += `[ ] 3. Read Context.RL4 → Bias: ${(data.bias * 100).toFixed(0)}%\n`;
+    prompt += `[ ] 4. Is this change in P0 tasks? [YES/NO]\n`;
+    prompt += `[ ] 5. If NO, asked user confirmation? [YES/NO]\n`;
+    prompt += `[ ] 6. Calculated bias impact? [YES/NO]\n`;
+    prompt += `[ ] 7. Total bias < threshold? [YES/NO]\n`;
+    prompt += `\`\`\`\n\n`;
+    prompt += `**If ANY checkbox is NO → STOP. Ask user first.**\n\n`;
     prompt += `---\n\n`;
 
     // Section 1: Plan (Strategic Intent)
     if (data.plan) {
       prompt += `## 📋 Plan (Strategic Intent)\n\n`;
-      prompt += `**Phase:** ${data.plan.phase}\n`;
-      prompt += `**Goal:** ${data.plan.goal}\n\n`;
+      // Filter out internal RL4 development references (E3.3, etc.) from user-visible prompt
+      const filteredPhase = this.filterInternalReferences(data.plan.phase);
+      const filteredGoal = this.filterInternalReferences(data.plan.goal);
+      prompt += `**Phase:** ${filteredPhase}\n`;
+      prompt += `**Goal:** ${filteredGoal}\n\n`;
       prompt += `**Timeline:**\n`;
       prompt += `- Start: ${data.plan.timeline.start}\n`;
       prompt += `- Target: ${data.plan.timeline.target}\n\n`;
@@ -173,7 +361,11 @@ export class UnifiedPromptBuilder {
       if (data.plan.successCriteria.length > 0) {
         prompt += `**Success Criteria:**\n`;
         data.plan.successCriteria.forEach(c => {
-          prompt += `- ${c}\n`;
+          // Filter out internal RL4 development references
+          const filtered = this.filterInternalReferences(c);
+          if (filtered && filtered !== 'Initial Setup') { // Skip if filtered to placeholder
+            prompt += `- ${filtered}\n`;
+          }
         });
         prompt += `\n`;
       }
@@ -224,11 +416,18 @@ export class UnifiedPromptBuilder {
       prompt += `⚠️ Tasks.RL4 not found. Create one to track active work.\n\n`;
     }
 
-    // Section 2.5: Deviation Guard (CRITICAL FOR AGENT LLM)
-    prompt += `## 🛡️ Deviation Guard (Active Constraints)\n\n`;
-    prompt += `**Current Phase:** ${data.plan?.phase || 'Unknown'}\n`;
+    // Section 2.5: Deviation Guard (CRITICAL FOR AGENT LLM) — Reinforced reminder
+    prompt += `## 🛡️ Deviation Guard (Active Constraints) — REMINDER\n\n`;
+    prompt += `**⚠️ REMINDER:** You already read the CRITICAL RULES at the top. This is a reinforcement.\n\n`;
+    // Filter out internal RL4 development references (E3.3, etc.) from user-visible prompt
+    const filteredPhase = data.plan?.phase ? this.filterInternalReferences(data.plan.phase) : 'Unknown';
+    prompt += `**Current Phase:** ${filteredPhase}\n`;
     prompt += `**Deviation Mode:** ${data.deviationMode} (${(threshold * 100).toFixed(0)}% threshold) — User-selected\n`;
     prompt += `**Current Bias:** ${(data.bias * 100).toFixed(0)}%\n\n`;
+    
+    if (data.deviationMode === 'strict') {
+      prompt += `**🚫 STRICT MODE ACTIVE:** Zero deviation tolerance. Only P0 tasks allowed.\n\n`;
+    }
     
     if (data.tasks) {
       const activeTasks = data.tasks.active.filter(t => !t.completed);
@@ -334,6 +533,73 @@ export class UnifiedPromptBuilder {
       prompt += `## 🔍 Context (Workspace State)\n\n`;
       prompt += `⚠️ Context.RL4 not found. Create one to track workspace state.\n\n`;
     }
+
+    // Section 3.5: Code Implementation State (REAL CODE ANALYSIS)
+    prompt += `## 💻 Code Implementation State (Real Analysis)\n\n`;
+    prompt += `**⚠️ CRITICAL:** This section shows what's ACTUALLY implemented in code, not just goals.\n\n`;
+    
+    if (data.codeState.implementationStatus.length > 0) {
+      prompt += `**Implementation Status vs Goals:**\n\n`;
+      data.codeState.implementationStatus.forEach((status, idx) => {
+        // Filter out internal RL4 development references from feature names
+        const filteredFeature = this.filterInternalReferences(status.feature);
+        
+        // Skip if feature is filtered to placeholder (internal RL4 reference)
+        if (filteredFeature === 'Initial Setup' || filteredFeature === 'Project goals to be defined') {
+          return; // Skip this status entry
+        }
+        
+        const emoji = status.status === 'implemented' ? '✅' : status.status === 'partial' ? '🟡' : '❌';
+        prompt += `${idx + 1}. ${emoji} **${filteredFeature}** — ${status.status.toUpperCase()} (${(status.confidence * 100).toFixed(0)}% confidence)\n`;
+        if (status.evidence.length > 0) {
+          prompt += `   - Evidence: ${status.evidence.join(', ')}\n`;
+        }
+        prompt += `\n`;
+      });
+      prompt += `\n`;
+    }
+
+    if (data.codeState.keyFiles.length > 0) {
+      prompt += `**Key Files Analyzed:**\n\n`;
+      data.codeState.keyFiles.slice(0, 5).forEach((file, idx) => {
+        prompt += `${idx + 1}. **${file.path}** (${(file.size / 1024).toFixed(1)} KB)\n`;
+        if (file.functions.length > 0) {
+          prompt += `   - Functions: ${file.functions.slice(0, 5).join(', ')}${file.functions.length > 5 ? '...' : ''}\n`;
+        }
+        if (file.classes.length > 0) {
+          prompt += `   - Classes: ${file.classes.slice(0, 3).join(', ')}${file.classes.length > 3 ? '...' : ''}\n`;
+        }
+        prompt += `\n`;
+      });
+      prompt += `\n`;
+    }
+
+    if (data.codeState.techStack.languages.length > 0 || data.codeState.techStack.frameworks.length > 0) {
+      prompt += `**Tech Stack Detected:**\n`;
+      if (data.codeState.techStack.languages.length > 0) {
+        prompt += `- Languages: ${data.codeState.techStack.languages.join(', ')}\n`;
+      }
+      if (data.codeState.techStack.frameworks.length > 0) {
+        prompt += `- Frameworks: ${data.codeState.techStack.frameworks.join(', ')}\n`;
+      }
+      prompt += `\n`;
+    }
+
+    if (data.codeState.structure.entryPoints.length > 0) {
+      prompt += `**Project Structure:**\n`;
+      prompt += `- Entry Points: ${data.codeState.structure.entryPoints.join(', ')}\n`;
+      if (data.codeState.structure.mainModules.length > 0) {
+        prompt += `- Main Modules: ${data.codeState.structure.mainModules.slice(0, 3).join(', ')}${data.codeState.structure.mainModules.length > 3 ? '...' : ''}\n`;
+      }
+      prompt += `\n`;
+    }
+
+    prompt += `**🚨 IMPORTANT FOR LLM AGENT:**\n`;
+    prompt += `- **ALWAYS check this section before suggesting implementations**\n`;
+    prompt += `- If a feature is marked "implemented", verify by reading the actual files listed\n`;
+    prompt += `- If a feature is "missing", you can suggest implementation\n`;
+    prompt += `- If a feature is "partial", identify what's missing and complete it\n`;
+    prompt += `- **DO NOT suggest features that are already implemented**\n\n`;
 
     // Section 4: Historical Summary (Compressed - 30 days in JSON)
     prompt += `## 📊 Historical Summary (Compressed)\n\n`;
@@ -488,7 +754,7 @@ export class UnifiedPromptBuilder {
     
     // KPI 2: Next Steps (Mode-Driven) - ENHANCED with ProjectContext
     prompt += `### 2. Next Steps (Mode-Driven: ${data.deviationMode})\n\n`;
-    prompt += this.formatModeInstructions(data.deviationMode, data.projectContext, data.tasks, data.plan);
+    prompt += this.formatModeInstructions(data.deviationMode, data.projectContext, data.tasks, data.plan, data.detectedProject);
     
     // KPI 3: Plan Drift
     prompt += `### 3. Plan Drift (Factual)\n`;
@@ -512,12 +778,25 @@ export class UnifiedPromptBuilder {
     prompt += `**NO speculation. Only observable risks.**\n\n`;
     
     prompt += `---\n\n`;
-    prompt += `Based on the above KPIs, provide:\n\n`;
-    
-    prompt += `1. **Analysis:**\n`;
-    prompt += `   - What is the current state vs Plan?\n`;
-    prompt += `   - Are we on track? Any blockers?\n`;
-    prompt += `   - What patterns do you see in timeline/file changes?\n\n`;
+    // In First Use mode, skip the direct update section and force the REQUIRED OUTPUT format
+    if (data.deviationMode !== 'firstUse') {
+      prompt += `Based on the above KPIs, provide:\n\n`;
+      prompt += `1. **Analysis:**\n`;
+      prompt += `   - What is the current state vs Plan?\n`;
+      prompt += `   - Are we on track? Any blockers?\n`;
+      prompt += `   - What patterns do you see in timeline/file changes?\n\n`;
+      prompt += `2. **Updates Required:**\n`;
+    } else {
+      prompt += `**🚨 CRITICAL FOR FIRST USE MODE:**\n\n`;
+      prompt += `**DO NOT update files directly. You MUST follow the "REQUIRED OUTPUT FORMAT" section above first.**\n\n`;
+      prompt += `**The format above (Step 1: Plan Files Read, Step 2: Conversation Analysis, Step 3: Merged Goals, Step 4: Proposed RL4 Files) is MANDATORY.**\n\n`;
+      prompt += `**🎯 MANDATORY RULE: If existing RL4 files contain "E3.3", "RL4 system", or "Single Context Snapshot System":**\n`;
+      prompt += `- These are **WRONG** — they track RL4 internals, not the project\n`;
+      prompt += `- You **MUST** replace them with REAL project goals from plan files/conversation\n`;
+      prompt += `- **DO NOT** propose keeping the RL4 template — always align on the real project\n\n`;
+      prompt += `**Only AFTER providing that analysis should you update the RL4 files.**\n\n`;
+      return prompt; // Early return for First Use mode - don't show update templates
+    }
     
     prompt += `2. **Updates Required:**\n`;
     prompt += `   Update these files in \`.reasoning_rl4/\`:\n\n`;
@@ -603,10 +882,11 @@ export class UnifiedPromptBuilder {
    * Format mode-specific instructions
    */
   private formatModeInstructions(
-    mode: 'strict' | 'flexible' | 'exploratory' | 'free',
+    mode: 'strict' | 'flexible' | 'exploratory' | 'free' | 'firstUse',
     projectContext: ProjectContext,
     tasks: TasksData | null,
-    plan: PlanData | null
+    plan: PlanData | null,
+    detectedProject?: { name: string; description?: string; structure?: string }
   ): string {
     switch (mode) {
       case 'strict':
@@ -617,6 +897,8 @@ export class UnifiedPromptBuilder {
         return this.formatExploratoryMode(projectContext, tasks);
       case 'free':
         return this.formatFreeMode(projectContext, plan);
+      case 'firstUse':
+        return this.formatFirstUseMode(detectedProject, projectContext);
       default:
         return this.formatFlexibleMode(tasks);
     }
@@ -972,6 +1254,234 @@ export class UnifiedPromptBuilder {
   }
 
   /**
+   * FIRST USE MODE: Deep project discovery
+   */
+  private formatFirstUseMode(
+    detectedProject?: { name: string; description?: string; structure?: string },
+    projectContext?: ProjectContext
+  ): string {
+    let section = `**🔍 FIRST USE MODE (Deep Analysis) — Complete Project Discovery**\n\n`;
+    
+    section += `**🎯 CRITICAL: RL4 is STANDALONE — tracks THIS WORKSPACE's PROJECT independently.**\n`;
+    section += `- Each workspace has its own \`.reasoning_rl4/\` directory\n`;
+    section += `- RL4 files (Plan.RL4, Tasks.RL4, Context.RL4) track **THIS PROJECT**, not RL4 internals\n`;
+    section += `- Ignore any mention of "RL4 system", "E3.3", "Single Context Snapshot System" — these are RL4 internals\n`;
+    section += `- Extract goals/tasks from the **PROJECT** (plan files, README, conversation), NOT from RL4 system\n\n`;
+    
+    section += `**Your role:** Deep Discovery Agent — Understand this project from zero.\n\n`;
+    
+    section += `**Analysis Complete:**\n`;
+    section += `- ✅ Project structure detected\n`;
+    section += `- ✅ Tech stack analyzed\n`;
+    section += `- ✅ Git history scanned\n`;
+    section += `- ✅ Goals inferred\n\n`;
+    
+    // Detect and list plan files found
+    const detectedPlanFiles = this.detectPlanFiles();
+    if (detectedPlanFiles.length > 0) {
+      section += `**📋 DETECTED PLAN FILES (MUST READ):**\n\n`;
+      section += `**⚠️ CRITICAL:** The following plan files were found in this workspace. **YOU MUST READ THEM** before generating RL4 files:\n\n`;
+      detectedPlanFiles.forEach((file, idx) => {
+        section += `${idx + 1}. **\`${file}\`** — Read this file to extract goals, tasks, and context\n`;
+      });
+      section += `\n`;
+      section += `**Action Required:**\n`;
+      section += `1. Read each file listed above\n`;
+      section += `2. Extract ALL goals, tasks, and decisions from these files\n`;
+      section += `3. Use this content as PRIMARY source for Plan.RL4, Tasks.RL4, and Context.RL4\n`;
+      section += `4. **DO NOT** copy the RL4 template — extract REAL project goals from detected files\n\n`;
+      section += `---\n\n`;
+    }
+    
+    section += `**🧠 CRITICAL: Conversation Context Analysis**\n\n`;
+    section += `**⚠️ MANDATORY STEP — DO NOT SKIP:**\n\n`;
+    section += `**You MUST analyze the ENTIRE conversation history in this chat session BEFORE generating any RL4 files.**\n\n`;
+    section += `**Step 1: Review Conversation (REQUIRED)**\n`;
+    section += `Scroll through the ENTIRE conversation and extract:\n`;
+    section += `- **Questions asked:** [List every question the user asked]\n`;
+    section += `- **Goals mentioned:** [List every goal/target discussed]\n`;
+    section += `- **Tasks discussed:** [List every task/action mentioned]\n`;
+    section += `- **Decisions made:** [List every decision taken]\n`;
+    section += `- **Problems identified:** [List every blocker/issue mentioned]\n`;
+    section += `- **Context shared:** [List any project context, requirements, constraints]\n\n`;
+    section += `**Step 2: Extract Actionable Items (REQUIRED)**\n`;
+    section += `From the conversation, create structured lists:\n`;
+    section += `- **Goals from conversation:** [List them with priority]\n`;
+    section += `- **Tasks from conversation:** [List them with [P0]/[P1] priority]\n`;
+    section += `- **Decisions from conversation:** [List them for ADRs.RL4]\n`;
+    section += `- **Blockers from conversation:** [List them for Context.RL4]\n\n`;
+    section += `**Step 3: Merge Sources (REQUIRED)**\n`;
+    section += `**🎯 CRITICAL: RL4 tracks THIS WORKSPACE's PROJECT, not the RL4 system itself.**\n\n`;
+    section += `Combine information from:\n`;
+    section += `1. **Detected plan files** (if any) — PRIMARY source (extract PROJECT goals/tasks)\n`;
+    section += `2. **Conversation history** — SECONDARY source (fills gaps with PROJECT context)\n`;
+    section += `3. **Project files** (README, package.json) — TERTIARY source (PROJECT documentation)\n`;
+    section += `4. **Git history** — CONTEXT source (PROJECT commits, not RL4 internals)\n\n`;
+    section += `**⚠️ IGNORE:** Any mention of "RL4 system", "E3.3", "Single Context Snapshot System" — these are RL4 internals, NOT the project.\n\n`;
+    section += `**Step 4: Generate REAL RL4 Files (REQUIRED)**\n`;
+    section += `**⚠️ CRITICAL:** Do NOT copy the RL4 template. Extract REAL project goals:\n`;
+    section += `- If plan file says "Build authentication" → Plan.RL4 goal = "Build authentication"\n`;
+    section += `- If conversation says "Add user dashboard" → Tasks.RL4 = "[P0] Add user dashboard"\n`;
+    section += `- If README says "React app" → Context.RL4 = "Tech stack: React"\n\n`;
+    section += `**Example (Good):**\n`;
+    section += `User said: "I want to add authentication to the T7 Rewards System"\n`;
+    section += `Plan file says: "Integrate Shotgun billetterie"\n`;
+    section += `→ Plan.RL4 goal = "Add authentication to T7 Rewards System and integrate Shotgun billetterie"\n`;
+    section += `→ Tasks.RL4 = "[P0] Setup authentication", "[P0] Integrate Shotgun API"\n`;
+    section += `→ Context.RL4 = "Project: T7 Rewards System, Tech: HTML/CSS/JS, Status: Mockup complet"\n\n`;
+    section += `**Example (Bad — DO NOT DO THIS):**\n`;
+    section += `→ Plan.RL4 goal = "Simplify RL4, eliminate fake data" (this is the RL4 template, not the project!)\n`;
+    section += `→ Plan.RL4 phase = "E3.3 - Single Context Snapshot System" (this is RL4 internals, not the project!)\n`;
+    section += `→ Tasks.RL4 = "[P0] Test agent feedback loop" (this is RL4 system task, not project task!)\n\n`;
+    section += `**🎯 REMINDER: RL4 is STANDALONE — each workspace tracks its OWN project independently.**\n\n`;
+    
+    if (detectedProject) {
+      section += `**Project Statistics:**\n`;
+      section += `- **Name**: ${detectedProject.name}\n`;
+      if (detectedProject.description) {
+        section += `- **Description**: ${detectedProject.description}\n`;
+      }
+      if (detectedProject.structure) {
+        section += `- **Structure**: ${detectedProject.structure}\n`;
+      }
+      if (projectContext) {
+        section += `- **Languages**: ${projectContext.stackDetected.join(', ') || 'Unknown'}\n`;
+        section += `- **Maturity**: ${projectContext.maturity} (${projectContext.totalCycles} cycles, ${projectContext.projectAge} days)\n`;
+      }
+      section += `\n`;
+    }
+    
+    section += `---\n\n`;
+    
+    section += `**🎯 Recommended Initial Actions**\n\n`;
+    
+    section += `**1. Project Onboarding Checklist:**\n`;
+    section += `- [ ] Review project structure\n`;
+    section += `- [ ] Understand tech stack choices\n`;
+    section += `- [ ] Identify entry points (main files)\n`;
+    section += `- [ ] Review recent commits for patterns\n`;
+    section += `- [ ] Check for documentation (README, docs/)\n\n`;
+    
+    section += `**2. Development Environment Setup:**\n`;
+    section += `- [ ] Install dependencies (\`npm install\` / \`yarn install\`)\n`;
+    section += `- [ ] Check required Node.js version\n`;
+    section += `- [ ] Verify build scripts work\n`;
+    section += `- [ ] Test dev server startup\n`;
+    section += `- [ ] Run existing tests (if any)\n\n`;
+    
+    section += `**3. Context Understanding:**\n`;
+    section += `- [ ] Read through main application files\n`;
+    section += `- [ ] Understand data flow\n`;
+    section += `- [ ] Identify key modules/components\n`;
+    section += `- [ ] Map dependencies between files\n`;
+    section += `- [ ] Note architectural patterns\n\n`;
+    
+    section += `**4. Quick Wins (First Session):**\n`;
+    section += `- [ ] Add missing documentation (if needed)\n`;
+    section += `- [ ] Setup linter/formatter (if missing)\n`;
+    section += `- [ ] Add basic tests (if none exist)\n`;
+    section += `- [ ] Improve README with setup instructions\n`;
+    section += `- [ ] Add .editorconfig for consistency\n\n`;
+    
+    section += `---\n\n`;
+    
+    section += `**💡 Next Steps**\n\n`;
+    section += `Based on detected project context AND conversation history:\n`;
+    section += `1. **Summarize Conversation**: Create a summary of everything discussed in this chat\n`;
+    section += `2. **Extract Goals/Tasks**: Pull out all goals, tasks, and decisions from conversation\n`;
+    section += `3. **Generate RL4 Files**: Create/update Plan.RL4, Tasks.RL4, Context.RL4 from:\n`;
+    section += `   - Conversation context (primary source)\n`;
+    section += `   - Detected project files (Plan.md, Tasks.md, README.md)\n`;
+    section += `   - Git history (commits, branches)\n`;
+    section += `   - Code structure (files, patterns)\n\n`;
+    section += `4. **Propose Initial State**: Show user the generated RL4 files and ask for validation\n\n`;
+    section += `**🚨 CRITICAL: REQUIRED OUTPUT FORMAT — DO NOT SKIP THIS SECTION**\n\n`;
+    section += `**⚠️ BEFORE updating any RL4 files, you MUST provide this analysis in the EXACT format below:**\n\n`;
+    section += `**Step 1: Read Detected Plan Files (MANDATORY)**\n`;
+    section += `For each file listed in "DETECTED PLAN FILES" above:\n`;
+    section += `- Read the file content\n`;
+    section += `- Extract ALL goals, tasks, and decisions\n`;
+    section += `- List them in your response\n\n`;
+    section += `**Step 2: Analyze Conversation (MANDATORY)**\n`;
+    section += `Scroll through the ENTIRE conversation and extract:\n`;
+    section += `- Every question asked\n`;
+    section += `- Every goal mentioned\n`;
+    section += `- Every task discussed\n`;
+    section += `- Every decision made\n\n`;
+    section += `**Step 3: Provide Analysis in This EXACT Format (MANDATORY):**\n\n`;
+    section += `\`\`\`markdown\n`;
+    section += `## 🔍 First Use Analysis — REQUIRED FORMAT\n\n`;
+    section += `### Step 1: Plan Files Read\n`;
+    section += `**Files read:**\n`;
+    section += `- [ ] \`.cursor/plans/shotgun-rew-78c1ac21.plan.md\` (or list all detected files)\n\n`;
+    section += `**Content extracted from plan files:**\n`;
+    section += `- Goal 1: [extract from plan file]\n`;
+    section += `- Goal 2: [extract from plan file]\n`;
+    section += `- Task 1: [extract from plan file]\n`;
+    section += `- Task 2: [extract from plan file]\n`;
+    section += `- Decision 1: [extract from plan file]\n\n`;
+    section += `### Step 2: Conversation Analysis\n`;
+    section += `**Conversation Summary (Last 10-15 minutes):**\n`;
+    section += `[Summarize EVERYTHING discussed: questions, goals, tasks, decisions, blockers]\n\n`;
+    section += `**Goals Extracted from Conversation:**\n`;
+    section += `1. [Goal 1 from conversation]\n`;
+    section += `2. [Goal 2 from conversation]\n`;
+    section += `...\n\n`;
+    section += `**Tasks Extracted from Conversation:**\n`;
+    section += `- [P0] [Task 1 from conversation]\n`;
+    section += `- [P1] [Task 2 from conversation]\n`;
+    section += `...\n\n`;
+    section += `**Decisions Extracted from Conversation:**\n`;
+    section += `- [Decision 1]\n`;
+    section += `- [Decision 2]\n`;
+    section += `...\n\n`;
+    section += `### Step 3: Merged Goals (Plan Files + Conversation)\n`;
+    section += `**Combined goals (PRIMARY = plan files, SECONDARY = conversation):**\n`;
+    section += `1. [Goal from plan file OR conversation]\n`;
+    section += `2. [Goal from plan file OR conversation]\n`;
+    section += `...\n\n`;
+    section += `### Step 4: Proposed RL4 Files (REAL PROJECT GOALS, NOT TEMPLATE)\n`;
+    section += `**⚠️ CRITICAL: These MUST contain REAL project goals, NOT the RL4 template!**\n\n`;
+    section += `**🎯 MANDATORY: RL4 is a STANDALONE tool that tracks THIS WORKSPACE's project independently.**\n`;
+    section += `- RL4 files (Plan.RL4, Tasks.RL4, Context.RL4) **MUST** track **THIS WORKSPACE's project**\n`;
+    section += `- **NEVER** track the RL4 system itself (E3.3, "Single Context Snapshot System", etc.)\n`;
+    section += `- Each workspace has its own independent RL4 tracking\n`;
+    section += `- Extract goals/tasks from the **PROJECT** (plan files, conversation, README), not from RL4 internals\n\n`;
+    section += `**🚨 IF YOU SEE EXISTING RL4 FILES WITH "E3.3" OR "RL4 system" GOALS:**\n`;
+    section += `- These are **WRONG** — they track RL4 internals, not the project\n`;
+    section += `- You **MUST** replace them with REAL project goals from plan files/conversation\n`;
+    section += `- **DO NOT** propose "Option A: Keep RL4 template" — this is incorrect\n`;
+    section += `- **ALWAYS** choose "Option B: Align RL4 on real project" — this is the correct approach\n\n`;
+    section += `**Proposed Plan.RL4:**\n`;
+    section += `\`\`\`markdown\n`;
+    section += `## Phase\n`;
+    section += `[Phase from plan file OR conversation, NOT "E3.3 - Single Context Snapshot System"]\n\n`;
+    section += `## Goal\n`;
+    section += `[REAL project goal from plan file OR conversation, NOT "Simplify RL4, eliminate fake data"]\n`;
+    section += `\`\`\`\n\n`;
+    section += `**Proposed Tasks.RL4:**\n`;
+    section += `\`\`\`markdown\n`;
+    section += `## Active (P0)\n`;
+    section += `- [ ] [P0] [Task from plan file OR conversation]\n`;
+    section += `- [ ] [P0] [Task from plan file OR conversation]\n`;
+    section += `\`\`\`\n\n`;
+    section += `**Proposed Context.RL4:**\n`;
+    section += `[Generate Context.RL4 with initial KPIs based on current state]\n\n`;
+    section += `**Validation Required:**\n`;
+    section += `Please review the generated RL4 files above. Should I create/update them?\n`;
+    section += `\`\`\`\n\n`;
+    section += `**🚨 REMINDER: If you skip this format and go directly to updating files, you will copy the RL4 template instead of extracting real project goals!**\n\n`;
+    section += `**This snapshot will improve as you:**\n`;
+    section += `- Make more commits\n`;
+    section += `- Update README/TODO files\n`;
+    section += `- Generate more snapshots\n`;
+    section += `- Let RL4 learn from your patterns\n`;
+    section += `- **Continue conversations (I'll remember and extract context)**\n\n`;
+    
+    return section;
+  }
+
+  /**
    * Helper: Get opportunity number based on detected gaps
    */
   private getOpportunityNumber(context: ProjectContext): number {
@@ -981,6 +1491,63 @@ export class UnifiedPromptBuilder {
     if (!context.hasCI) count++;
     if (!context.hasLinter) count++;
     return count;
+  }
+
+  /**
+   * Filter out internal RL4 development references (E3.3, etc.) from user-visible content
+   * This ensures production-ready prompts without internal development logs
+   */
+  private filterInternalReferences(text: string): string {
+    if (!text) return text;
+    
+    // Replace internal development phase references with generic placeholder
+    let filtered = text
+      .replace(/E3\.3\s*-\s*Single Context Snapshot System/gi, 'Initial Setup')
+      .replace(/E3\.3/gi, '')
+      .replace(/Phase\s+E3\.3/gi, 'Initial Setup')
+      .replace(/Simplify RL4, eliminate fake data, create agent feedback loop/gi, 'Project goals to be defined')
+      .replace(/Test agent feedback loop/gi, 'Project tasks to be defined')
+      .replace(/Create Plan\/Tasks\/Context\.RL4 structure/gi, 'Project setup')
+      .replace(/1 button UI/gi, '') // Remove RL4 internal success criteria
+      .replace(/Agent feedback loop functional/gi, '') // Remove RL4 internal success criteria
+      .replace(/No fake data/gi, '') // Remove RL4 internal success criteria
+      .trim();
+    
+    // If result is empty or only whitespace, return generic placeholder
+    if (!filtered || filtered.length === 0) {
+      return 'Initial Setup';
+    }
+    
+    return filtered;
+  }
+
+  /**
+   * Detect plan files in workspace (plan.md, .cursor/plans/*.plan.md, etc.)
+   */
+  private detectPlanFiles(): string[] {
+    const planFiles: string[] = [];
+    
+    // Check root-level plan files
+    const rootPlanFiles = ['plan.md', 'Plan.md', 'TODO.md', 'ROADMAP.md', 'GOALS.md', 'OBJECTIVES.md'];
+    for (const file of rootPlanFiles) {
+      const filePath = path.join(this.workspaceRoot, file);
+      if (fs.existsSync(filePath)) {
+        planFiles.push(file);
+      }
+    }
+    
+    // Check .cursor/plans/*.plan.md
+    const cursorPlansDir = path.join(this.workspaceRoot, '.cursor', 'plans');
+    if (fs.existsSync(cursorPlansDir)) {
+      try {
+        const files = fs.readdirSync(cursorPlansDir)
+          .filter(f => f.endsWith('.plan.md'))
+          .map(f => `.cursor/plans/${f}`);
+        planFiles.push(...files);
+      } catch {}
+    }
+    
+    return planFiles;
   }
 
   /**
