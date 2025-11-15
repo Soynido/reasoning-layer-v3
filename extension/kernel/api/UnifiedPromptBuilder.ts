@@ -660,6 +660,12 @@ export class UnifiedPromptBuilder {
     } else {
       prompt += `## 🔍 ADR Detection Signals\n\n`;
       prompt += `- No potential ADRs detected in last 24h\n\n`;
+      prompt += `**💡 Note:** Even without automatic signals, you should consider creating ADRs for:\n`;
+      prompt += `- Architectural decisions made during planning/design\n`;
+      prompt += `- Technology choices (frameworks, libraries, tools)\n`;
+      prompt += `- Design patterns adopted\n`;
+      prompt += `- Project structure decisions\n`;
+      prompt += `- Any decision that affects future development\n\n`;
     }
 
     // Section 6: Timeline Analysis (Blind Spot Data)
@@ -849,23 +855,41 @@ export class UnifiedPromptBuilder {
     prompt += `   [Your analysis and recommendations]\n`;
     prompt += `   \`\`\`\n\n`;
 
-    prompt += `3. **ADRs (if decisions made):**\n`;
-    prompt += `   If any significant decision was made, propose new ADR in \`.reasoning_rl4/ADRs.RL4\`:\n\n`;
+    prompt += `3. **ADRs (Architecture Decision Records):**\n`;
+    prompt += `   **CRITICAL:** You MUST evaluate if any architectural decisions were made, even if not detected automatically.\n\n`;
+    prompt += `   **When to create an ADR:**\n`;
+    prompt += `   - ✅ Technology choices (frameworks, libraries, tools)\n`;
+    prompt += `   - ✅ Design patterns adopted\n`;
+    prompt += `   - ✅ Project structure decisions\n`;
+    prompt += `   - ✅ Architectural changes (even small ones)\n`;
+    prompt += `   - ✅ Decisions that affect future development\n`;
+    prompt += `   - ✅ Trade-offs made between alternatives\n`;
+    prompt += `   - ✅ First-time setup decisions (if this is a new project)\n\n`;
+    prompt += `   **If ANY decision was made (even minor), create ADR in \`.reasoning_rl4/ADRs.RL4\`:**\n\n`;
     prompt += `   \`\`\`markdown\n`;
     prompt += `   ## ADR-XXX: [DECISION_TITLE]\n`;
     prompt += `   **Status**: proposed\n`;
     prompt += `   **Date**: ${new Date().toISOString().split('T')[0]}\n`;
     prompt += `   **Author**: Agent LLM\n\n`;
     prompt += `   ### Context\n`;
-    prompt += `   [WHY_THIS_DECISION]\n\n`;
+    prompt += `   [WHY_THIS_DECISION - What problem or need triggered this decision?]\n\n`;
     prompt += `   ### Decision\n`;
-    prompt += `   [WHAT_WAS_DECIDED]\n\n`;
+    prompt += `   [WHAT_WAS_DECIDED - What was chosen and why?]\n\n`;
     prompt += `   ### Consequences\n`;
     prompt += `   **Positive:**\n`;
     prompt += `   - [BENEFIT_1]\n\n`;
     prompt += `   **Negative:**\n`;
-    prompt += `   - [RISK_1]\n`;
+    prompt += `   - [RISK_1]\n\n`;
+    prompt += `   **Risks:**\n`;
+    prompt += `   - [POTENTIAL_RISK_1]\n\n`;
+    prompt += `   **Alternatives Considered:**\n`;
+    prompt += `   - [ALTERNATIVE_1 - Why it was rejected]\n`;
     prompt += `   \`\`\`\n\n`;
+    prompt += `   **💡 Pro Tip:** Even if no automatic signals were detected, review the current state:\n`;
+    prompt += `   - What technologies are being used? (Check Code Implementation State section)\n`;
+    prompt += `   - What patterns are visible? (Check Cognitive Patterns section)\n`;
+    prompt += `   - What decisions were made in Plan/Tasks? (Check Plan section)\n`;
+    prompt += `   - If this is a new project, document initial setup decisions.\n\n`;
 
     prompt += `4. **Confidence/Bias Calculation:**\n`;
     prompt += `   - **Confidence** = Alignment between Plan and Reality (0.0-1.0)\n`;

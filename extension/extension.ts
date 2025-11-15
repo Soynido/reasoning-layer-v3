@@ -21,6 +21,9 @@ import { AdaptivePromptBuilder } from './kernel/api/AdaptivePromptBuilder';
 import { ADRParser } from './kernel/api/ADRParser';
 import { PlanTasksContextParser } from './kernel/api/PlanTasksContextParser';
 import { FirstBootstrapEngine } from './kernel/bootstrap/FirstBootstrapEngine';
+import { GitHubFineGrainedManager } from './core/integrations/GitHubFineGrainedManager';
+import { CommitContextCollector } from './kernel/api/CommitContextCollector';
+import { CommitPromptGenerator } from './kernel/api/CommitPromptGenerator';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -300,6 +303,73 @@ export async function activate(context: vscode.ExtensionContext) {
         const adrParser = new ADRParser(rl4Path);
         const planParser = new PlanTasksContextParser(rl4Path);
         
+        // Initialize ADRs.RL4 template if it doesn't exist
+        const adrsPath = path.join(rl4Path, 'ADRs.RL4');
+        if (!fs.existsSync(adrsPath)) {
+            try {
+                // Ensure .reasoning_rl4 directory exists
+                if (!fs.existsSync(rl4Path)) {
+                    fs.mkdirSync(rl4Path, { recursive: true });
+                }
+                
+                // Create template ADRs.RL4 file
+                const template = `# ADRs (Architecture Decision Records)
+
+This file contains Architecture Decision Records (ADRs) for this project.
+
+## Format
+
+Each ADR follows this structure:
+
+\`\`\`markdown
+## ADR-XXX: [Title]
+
+**Status**: proposed | accepted | rejected | deprecated | superseded
+**Date**: YYYY-MM-DD
+**Author**: [Author name]
+
+### Context
+
+[Describe the context and problem that led to this decision]
+
+### Decision
+
+[Describe the decision made]
+
+### Consequences
+
+**Positive:**
+- [List positive consequences]
+
+**Negative:**
+- [List negative consequences]
+
+**Risks:**
+- [List potential risks]
+
+**Alternatives Considered:**
+- [List alternatives that were considered]
+\`\`\`
+
+## How to Use
+
+1. When the LLM (agent) proposes an ADR, add it to this file
+2. RL4 will automatically detect the change and parse it
+3. The ADR will be added to the ledger (\`.reasoning_rl4/ledger/adrs.jsonl\`)
+4. Future prompts will include this ADR in the context
+
+---
+
+_This file is managed by RL4. Add ADRs here as they are proposed by the agent._
+`;
+                
+                fs.writeFileSync(adrsPath, template, 'utf-8');
+                logger.system('📜 Created ADRs.RL4 template', '📜');
+            } catch (error) {
+                logger.warning(`Failed to create ADRs.RL4 template: ${error}`);
+            }
+        }
+        
         // Helper: Send Context.RL4 to WebView for initial KPI load
         const sendContextToWebView = async () => {
             if (webviewPanel) {
@@ -322,6 +392,26 @@ export async function activate(context: vscode.ExtensionContext) {
         
         // Wait 500ms for WebView to be ready, then send initial Context.RL4
         setTimeout(sendContextToWebView, 500);
+        
+        // Send initial GitHub status to WebView
+        setTimeout(async () => {
+            if (!webviewPanel) return;
+            try {
+                const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                const status = await ghManager.checkConnection();
+                
+                webviewPanel.webview.postMessage({
+                    type: 'githubStatus',
+                    payload: {
+                        connected: status.ok,
+                        repo: status.repo,
+                        reason: status.reason
+                    }
+                });
+            } catch (error) {
+                logger!.warning(`Failed to check initial GitHub status: ${error}`);
+            }
+        }, 600);
 
         // Initialize default Plan/Tasks/Context files if needed
         await promptBuilder.initializeDefaults();
@@ -362,19 +452,253 @@ export async function activate(context: vscode.ExtensionContext) {
                                 logger!.warning('openFile: fileName missing');
                                 break;
                             }
-                            
+
                             const filePath = path.join(rl4Path, fileName);
                             const fileUri = vscode.Uri.file(filePath);
-                            
+
                             // Open file in editor
                             const document = await vscode.workspace.openTextDocument(fileUri);
                             await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
-                            
+
                             logger!.system(`📂 Opened ${fileName} in editor`, '📂');
                         } catch (error) {
                             logger!.error(`Failed to open file: ${error}`);
                             vscode.window.showErrorMessage(`Failed to open ${message.fileName}: ${error}`);
                         }
+                        break;
+                    
+                    case 'connectGitHub':
+                        try {
+                            logger!.system('🔗 Starting GitHub integration setup...', '🔗');
+                            const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                            await ghManager.setupIntegration();
+                            
+                            // Check status after setup
+                            const status = await ghManager.checkConnection();
+                            webviewPanel!.webview.postMessage({
+                                type: 'githubConnected',
+                                payload: status
+                            });
+                            
+                            // Also send updated status
+                            webviewPanel!.webview.postMessage({
+                                type: 'githubStatus',
+                                payload: {
+                                    connected: status.ok,
+                                    repo: status.repo,
+                                    reason: status.reason
+                                }
+                            });
+                            
+                            logger!.system(`✅ GitHub integration setup completed`, '✅');
+                        } catch (error) {
+                            logger!.error(`Failed to setup GitHub integration: ${error}`);
+                            webviewPanel!.webview.postMessage({
+                                type: 'githubError',
+                                payload: error instanceof Error ? error.message : 'Unknown error'
+                            });
+                        }
+                        break;
+                    
+                    case 'checkGitHubStatus':
+                        try {
+                            const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                            const status = await ghManager.checkConnection();
+                            
+                            webviewPanel!.webview.postMessage({
+                                type: 'githubStatus',
+                                payload: {
+                                    connected: status.ok,
+                                    repo: status.repo,
+                                    reason: status.reason
+                                }
+                            });
+                        } catch (error) {
+                            logger!.error(`Failed to check GitHub status: ${error}`);
+                            webviewPanel!.webview.postMessage({
+                                type: 'githubStatus',
+                                payload: {
+                                    connected: false,
+                                    reason: 'error'
+                                }
+                            });
+                        }
+                        break;
+                    
+                    case 'generateCommitPrompt':
+                        try {
+                            logger!.system('📝 Collecting commit context...', '📝');
+                            
+                            const collector = new CommitContextCollector(workspaceRoot, kernel?.execPool);
+                            const context = await collector.collectContext();
+                            
+                            const promptGenerator = new CommitPromptGenerator();
+                            const prompt = promptGenerator.generatePrompt(context);
+                            
+                            // Copy to clipboard
+                            await vscode.env.clipboard.writeText(prompt);
+                            
+                            webviewPanel!.webview.postMessage({
+                                type: 'commitPromptGenerated',
+                                payload: prompt
+                            });
+                            
+                            logger!.system(`✅ Commit prompt generated (${prompt.length} chars) and copied to clipboard`, '✅');
+                        } catch (error) {
+                            logger!.error(`Failed to generate commit prompt: ${error}`);
+                            webviewPanel!.webview.postMessage({
+                                type: 'commitError',
+                                payload: error instanceof Error ? error.message : 'Failed to generate prompt'
+                            });
+                        }
+                        break;
+                    
+                    case 'submitCommitCommand':
+                        // User pasted command from LLM - show it for validation
+                        try {
+                            const command = message.command;
+                            if (!command) {
+                                logger!.warning('submitCommitCommand: command missing');
+                                break;
+                            }
+                            
+                            webviewPanel!.webview.postMessage({
+                                type: 'commitCommandReceived',
+                                payload: command
+                            });
+                            
+                            logger!.system('📋 Commit command received from LLM, waiting for validation', '📋');
+                        } catch (error) {
+                            logger!.error(`Failed to submit commit command: ${error}`);
+                            webviewPanel!.webview.postMessage({
+                                type: 'commitError',
+                                payload: error instanceof Error ? error.message : 'Failed to submit command'
+                            });
+                        }
+                        break;
+                    
+                    case 'executeCommitCommand':
+                        try {
+                            const command = message.command;
+                            if (!command) {
+                                logger!.warning('executeCommitCommand: command missing');
+                                break;
+                            }
+                            
+                            logger!.system('🚀 Executing Git workflow...', '🚀');
+                            logger!.system(`Command: ${command.substring(0, 150)}...`, '📋');
+                            
+                            // Execute via ExecPool
+                            if (kernel?.execPool) {
+                                // Split commands by && and execute separately for better error handling
+                                const commands = command.split(' && ').map((c: string) => c.trim()).filter((c: string) => c);
+                                
+                                logger!.system(`📋 Executing ${commands.length} workflow steps...`, '📋');
+                                
+                                let lastOutput = '';
+                                let lastError = '';
+                                
+                                // Helper function to extract step name from command
+                                const getStepName = (cmd: string): string => {
+                                    if (cmd.includes('git checkout -b')) return 'Create branch';
+                                    if (cmd.includes('git add')) return 'Stage changes';
+                                    if (cmd.includes('git commit')) return 'Commit changes';
+                                    if (cmd.includes('git push')) return 'Push branch';
+                                    if (cmd.includes('gh pr create')) return 'Create PR';
+                                    return 'Unknown step';
+                                };
+                                
+                                for (let i = 0; i < commands.length; i++) {
+                                    const cmd = commands[i];
+                                    const stepName = getStepName(cmd);
+                                    
+                                    logger!.system(`📋 Step ${i + 1}/${commands.length}: ${stepName}...`, '📋');
+                                    
+                                    const shellCommand = process.platform === 'win32' 
+                                        ? `cmd /c "${cmd.replace(/"/g, '\\"')}"`
+                                        : `/bin/sh -c ${JSON.stringify(cmd)}`;
+                                    
+                                    const result = await kernel.execPool.run(shellCommand, { 
+                                        cwd: workspaceRoot,
+                                        timeout: 30000 // 30s timeout per step
+                                    });
+                                    
+                                    lastOutput = result.stdout;
+                                    lastError = result.stderr || '';
+                                    
+                                    // Check if step failed (excluding warnings and info messages)
+                                    // Git/RL3/RL4 may output info messages to stderr that are not errors
+                                    const isInfoMessage = lastError && (
+                                        lastError.includes('Warning:') || 
+                                        lastError.includes('warning:') ||
+                                        lastError.includes('Switched to') ||
+                                        lastError.includes('remote:') ||
+                                        lastError.includes('Already on') ||
+                                        lastError.includes('branch') ||
+                                        lastError.includes('RL3:') ||
+                                        lastError.includes('RL4:') ||
+                                        lastError.includes('Capturing') ||
+                                        lastError.includes('🎧') ||
+                                        lastError.includes('✅') ||
+                                        lastError.includes('📋') ||
+                                        lastError.includes('🚀')
+                                    );
+                                    
+                                    const hasError = result.timedOut || (
+                                        lastError && 
+                                        !isInfoMessage &&
+                                        lastError.trim().length > 0 &&
+                                        // Real errors usually contain words like "error", "fatal", "failed"
+                                        (lastError.toLowerCase().includes('error') ||
+                                         lastError.toLowerCase().includes('fatal') ||
+                                         lastError.toLowerCase().includes('failed') ||
+                                         lastError.toLowerCase().includes('denied') ||
+                                         lastError.toLowerCase().includes('permission'))
+                                    );
+                                    
+                                    if (hasError) {
+                                        const errorMsg = result.timedOut 
+                                            ? `Step ${i + 1} (${stepName}) timed out after 30s` 
+                                            : `Step ${i + 1} (${stepName}) failed: ${lastError}`;
+                                        logger!.error(`❌ ${errorMsg}`);
+                                        throw new Error(errorMsg);
+                                    }
+                                    
+                                    logger!.system(`✅ Step ${i + 1}/${commands.length} completed: ${stepName}`, '✅');
+                                }
+                                
+                                // All steps completed successfully
+                                webviewPanel!.webview.postMessage({
+                                    type: 'commitExecuted',
+                                    payload: lastOutput || 'Workflow completed successfully'
+                                });
+                                
+                                logger!.system('✅ Git workflow completed successfully!', '✅');
+                                
+                                // Refresh GitHub status
+                                const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                                const status = await ghManager.checkConnection();
+                                webviewPanel!.webview.postMessage({
+                                    type: 'githubStatus',
+                                    payload: {
+                                        connected: status.ok,
+                                        repo: status.repo,
+                                        reason: status.reason
+                                    }
+                                });
+                            } else {
+                                throw new Error('ExecPool not available');
+                            }
+                        } catch (error) {
+                            logger!.error(`Failed to execute commit command: ${error}`);
+                            webviewPanel!.webview.postMessage({
+                                type: 'commitError',
+                                payload: error instanceof Error ? error.message : 'Failed to execute command'
+                            });
+                        }
+                        break;
+                    
+                    default:
                         break;
                 }
             },
@@ -605,6 +929,26 @@ export async function activate(context: vscode.ExtensionContext) {
                     // Send initial Context.RL4 to WebView after a delay
                     setTimeout(sendContextToWebViewRecreated, 500);
                     
+                    // Send initial GitHub status to WebView
+                    setTimeout(async () => {
+                        if (!webviewPanel) return;
+                        try {
+                            const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                            const status = await ghManager.checkConnection();
+                            
+                            webviewPanel.webview.postMessage({
+                                type: 'githubStatus',
+                                payload: {
+                                    connected: status.ok,
+                                    repo: status.repo,
+                                    reason: status.reason
+                                }
+                            });
+                        } catch (error) {
+                            logger!.warning(`Failed to check initial GitHub status: ${error}`);
+                        }
+                    }, 600);
+                    
                     webviewPanel.webview.onDidReceiveMessage(
                         async (message) => {
                             console.log('[RL4 Extension] Received message from WebView:', message.type);
@@ -649,6 +993,173 @@ export async function activate(context: vscode.ExtensionContext) {
                                     } catch (error) {
                                         logger!.error(`Failed to open file: ${error}`);
                                         vscode.window.showErrorMessage(`Failed to open ${message.fileName}: ${error}`);
+                                    }
+                                    break;
+                                
+                                case 'connectGitHub':
+                                    try {
+                                        logger!.system('🔗 Starting GitHub integration setup...', '🔗');
+                                        const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                                        await ghManager.setupIntegration();
+                                        
+                                        // Check status after setup
+                                        const status = await ghManager.checkConnection();
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'githubConnected',
+                                            payload: status
+                                        });
+                                        
+                                        // Also send updated status
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'githubStatus',
+                                            payload: {
+                                                connected: status.ok,
+                                                repo: status.repo,
+                                                reason: status.reason
+                                            }
+                                        });
+                                        
+                                        logger!.system(`✅ GitHub integration setup completed`, '✅');
+                                    } catch (error) {
+                                        logger!.error(`Failed to setup GitHub integration: ${error}`);
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'githubError',
+                                            payload: error instanceof Error ? error.message : 'Unknown error'
+                                        });
+                                    }
+                                    break;
+                                
+                                case 'checkGitHubStatus':
+                                    try {
+                                        const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                                        const status = await ghManager.checkConnection();
+                                        
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'githubStatus',
+                                            payload: {
+                                                connected: status.ok,
+                                                repo: status.repo,
+                                                reason: status.reason
+                                            }
+                                        });
+                                    } catch (error) {
+                                        logger!.error(`Failed to check GitHub status: ${error}`);
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'githubStatus',
+                                            payload: {
+                                                connected: false,
+                                                reason: 'error'
+                                            }
+                                        });
+                                    }
+                                    break;
+                                
+                                case 'generateCommitPrompt':
+                                    try {
+                                        logger!.system('📝 Collecting commit context...', '📝');
+                                        
+                                        const collector = new CommitContextCollector(workspaceRoot, kernel?.execPool);
+                                        const context = await collector.collectContext();
+                                        
+                                        const promptGenerator = new CommitPromptGenerator();
+                                        const prompt = promptGenerator.generatePrompt(context);
+                                        
+                                        // Copy to clipboard
+                                        await vscode.env.clipboard.writeText(prompt);
+                                        
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'commitPromptGenerated',
+                                            payload: prompt
+                                        });
+                                        
+                                        logger!.system(`✅ Commit prompt generated (${prompt.length} chars) and copied to clipboard`, '✅');
+                                    } catch (error) {
+                                        logger!.error(`Failed to generate commit prompt: ${error}`);
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'commitError',
+                                            payload: error instanceof Error ? error.message : 'Failed to generate prompt'
+                                        });
+                                    }
+                                    break;
+                                
+                                case 'submitCommitCommand':
+                                    // User pasted command from LLM - show it for validation
+                                    try {
+                                        const command = message.command;
+                                        if (!command) {
+                                            logger!.warning('submitCommitCommand: command missing');
+                                            break;
+                                        }
+                                        
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'commitCommandReceived',
+                                            payload: command
+                                        });
+                                        
+                                        logger!.system('📋 Commit command received from LLM, waiting for validation', '📋');
+                                    } catch (error) {
+                                        logger!.error(`Failed to submit commit command: ${error}`);
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'commitError',
+                                            payload: error instanceof Error ? error.message : 'Failed to submit command'
+                                        });
+                                    }
+                                    break;
+                                
+                                case 'executeCommitCommand':
+                                    try {
+                                        const command = message.command;
+                                        if (!command) {
+                                            logger!.warning('executeCommitCommand: command missing');
+                                            break;
+                                        }
+                                        
+                                        logger!.system('🚀 Executing GH CLI command...', '🚀');
+                                        logger!.system(`Command: ${command.substring(0, 100)}...`, '📋');
+                                        
+                                        // Execute via ExecPool
+                                        if (kernel?.execPool) {
+                                            // For shell commands with pipes/redirects, use shell execution
+                                            const shellCommand = process.platform === 'win32' 
+                                                ? `cmd /c "${command}"`
+                                                : `/bin/sh -c "${command.replace(/"/g, '\\"')}"`;
+                                            
+                                            const result = await kernel.execPool.run(shellCommand, { 
+                                                cwd: workspaceRoot
+                                            });
+                                            
+                                            // Check success: no stderr (or only warnings) and not timed out
+                                            if (!result.timedOut && (!result.stderr || result.stderr.trim().length === 0)) {
+                                                webviewPanel!.webview.postMessage({
+                                                    type: 'commitExecuted',
+                                                    payload: result.stdout
+                                                });
+                                                
+                                                logger!.system('✅ Commit created successfully!', '✅');
+                                                
+                                                // Refresh GitHub status
+                                                const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                                                const status = await ghManager.checkConnection();
+                                                webviewPanel!.webview.postMessage({
+                                                    type: 'githubStatus',
+                                                    payload: {
+                                                        connected: status.ok,
+                                                        repo: status.repo,
+                                                        reason: status.reason
+                                                    }
+                                                });
+                                            } else {
+                                                throw new Error(result.stderr || (result.timedOut ? 'Command timed out' : 'Command failed'));
+                                            }
+                                        } else {
+                                            throw new Error('ExecPool not available');
+                                        }
+                                    } catch (error) {
+                                        logger!.error(`Failed to execute commit command: ${error}`);
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'commitError',
+                                            payload: error instanceof Error ? error.message : 'Failed to execute command'
+                                        });
                                     }
                                     break;
                             }

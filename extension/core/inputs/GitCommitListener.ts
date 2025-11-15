@@ -90,14 +90,14 @@ export class GitCommitListener {
     private async installGitHook(): Promise<void> {
         const hookPath = path.join(this.gitDir, 'hooks', 'post-commit');
         const hookContent = `#!/bin/sh
-# Reasoning Layer V3 - Commit Listener Hook
+# Reasoning Layer RL4 - Commit Listener Hook
 # Auto-installed by GitCommitListener
 
-# Trigger RL3 commit capture
-echo "🎧 RL3: Capturing commit..."
+# Trigger RL4 commit capture
+echo "🎧 RL4: Capturing commit..."
 
 # Touch a marker file to trigger polling
-touch "${this.gitDir}/.rl3-commit-marker"
+touch "${this.gitDir}/.rl4-commit-marker"
 
 exit 0
 `;
@@ -134,7 +134,7 @@ exit 0
 
         try {
             // Check for marker file from hook
-            const markerPath = path.join(this.gitDir, '.rl3-commit-marker');
+            const markerPath = path.join(this.gitDir, '.rl4-commit-marker');
             if (fs.existsSync(markerPath)) {
                 fs.unlinkSync(markerPath);
                 await this.onCommitDetected();
