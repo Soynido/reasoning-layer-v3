@@ -421,9 +421,8 @@ export class CognitiveScheduler {
             const correlationPhase = await this.runPhase('correlation', async () => {
                 const engine = new CorrelationEngine(this.workspaceRoot);
                 const correlations = await engine.analyze();
-                if (correlations.length === 0) {
-                    this.logger.warning('[DEBUG] No correlations generated - check traces/ directory');
-                }
+                // No correlations is normal for new workspaces or workspaces with limited activity
+                // CorrelationEngine already logs internally if needed
                 return { correlationsFound: correlations.length, correlations };
             });
             result.phases.push(correlationPhase);

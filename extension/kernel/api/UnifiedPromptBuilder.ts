@@ -26,6 +26,8 @@ import { BiasCalculator, BiasReport } from './BiasCalculator';
 import { ADRSignalEnricher, EnrichedCommit } from './ADRSignalEnricher';
 import { ProjectAnalyzer, ProjectContext } from './ProjectAnalyzer';
 import { ProjectDetector } from '../detection/ProjectDetector';
+import { PromptOptimizer } from './PromptOptimizer';
+import { AnomalyDetector, WorkspaceContext } from './AnomalyDetector';
 import { CognitiveLogger, SnapshotDataSummary, LLMAnalysisMetrics, Insight } from '../CognitiveLogger';
 import { CodeStateAnalyzer, CodeState } from './CodeStateAnalyzer';
 
@@ -41,6 +43,8 @@ export class UnifiedPromptBuilder {
   private projectAnalyzer: ProjectAnalyzer;
   private codeStateAnalyzer: CodeStateAnalyzer;
   private cognitiveLogger: CognitiveLogger | null;
+  private promptOptimizer: PromptOptimizer;
+  private anomalyDetector: AnomalyDetector;
 
   constructor(rl4Path: string, cognitiveLogger?: CognitiveLogger) {
     this.rl4Path = rl4Path;
@@ -54,13 +58,28 @@ export class UnifiedPromptBuilder {
     this.projectAnalyzer = new ProjectAnalyzer(rl4Path);
     this.codeStateAnalyzer = new CodeStateAnalyzer(this.workspaceRoot);
     this.cognitiveLogger = cognitiveLogger || null;
+    this.promptOptimizer = new PromptOptimizer(this.workspaceRoot);
+    this.anomalyDetector = new AnomalyDetector(this.workspaceRoot);
   }
 
   /**
    * Generate unified context snapshot with user-selected deviation mode
    * @param deviationMode - User's perception angle (strict/flexible/exploratory/free/firstUse)
+   * @returns Prompt with metadata (anomalies, compression metrics)
    */
-  async generate(deviationMode: 'strict' | 'flexible' | 'exploratory' | 'free' | 'firstUse' = 'flexible'): Promise<string> {
+  async generate(deviationMode: 'strict' | 'flexible' | 'exploratory' | 'free' | 'firstUse' = 'flexible'): Promise<{
+    prompt: string;
+    metadata: {
+      anomalies: any[];
+      compression: {
+        originalSize: number;
+        optimizedSize: number;
+        reductionPercent: number;
+        mode: string;
+      };
+    };
+  }> {
+    try {
     const now = new Date();
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
     const period: TimelinePeriod = { from: twoHoursAgo, to: now };
@@ -122,6 +141,11 @@ export class UnifiedPromptBuilder {
     const gitHistory = this.blindSpotLoader.loadGitHistory(10);
     const healthTrends = this.blindSpotLoader.loadHealthTrends(period);
     const adrs = this.blindSpotLoader.loadADRs(5);
+
+    // Load engine-generated data (patterns, correlations, forecasts) for LLM optimization
+    const enginePatterns = this.loadEnginePatterns();
+    const engineCorrelations = this.loadEngineCorrelations();
+    const engineForecasts = this.loadEngineForecasts();
 
     // Get workspace reality for confidence calculation
     const workspaceReality: WorkspaceData = {
@@ -195,8 +219,28 @@ export class UnifiedPromptBuilder {
       }
     }
 
+    // Detect anomalies before building prompt
+    const workspaceContext: WorkspaceContext = {
+      recentCommits: gitHistory.length,
+      fileChanges: filePatterns ? Object.keys(filePatterns).length : 0,
+      patterns: enginePatterns,
+      forecasts: engineForecasts,
+      correlations: engineCorrelations,
+      adrs: adrs,
+      cycles: timeline.length,
+      health: {
+        memoryMB: healthTrends[healthTrends.length - 1]?.memoryMB || 0,
+        eventLoopLag: healthTrends[healthTrends.length - 1]?.eventLoopLagP50 || 0
+      },
+      bias: bias,
+      planDrift: biasReport.total,
+      cognitiveLoad: 0 // Will be calculated by LLM
+    };
+    
+    const anomalies = await this.anomalyDetector.detectAnomalies(workspaceContext);
+
     // Build prompt with user-selected deviation mode
-    const prompt = this.formatPrompt({
+    let prompt = this.formatPrompt({
       plan,
       tasks,
       context,
@@ -214,17 +258,65 @@ export class UnifiedPromptBuilder {
       deviationMode,  // User choice from UI
       projectContext,  // Project analysis for intelligent modes
       detectedProject,  // Detected project name/context
-      codeState  // Actual code implementation state
+      codeState,  // Actual code implementation state
+      enginePatterns,  // Patterns from PatternLearningEngine (preliminary)
+      engineCorrelations,  // Correlations from CorrelationEngine (preliminary)
+      engineForecasts,  // Forecasts from ForecastEngine (preliminary)
+      anomalies  // Anomalies detected
     });
     
-    // Phase 5: Log snapshot generated (after prompt generation)
+    // Store original size before optimization
+    const originalSize = prompt.length;
+    
+    // Optimize prompt (compress intelligently)
+    prompt = await this.promptOptimizer.optimize(prompt, deviationMode);
+    
+    // Calculate compression metrics
+    const optimizedSize = prompt.length;
+    const reductionPercent = originalSize > 0 
+      ? ((originalSize - optimizedSize) / originalSize) * 100 
+      : 0;
+    
+    // Phase 5: Log snapshot generated (after prompt generation and optimization)
     if (this.cognitiveLogger) {
       // Count sections in prompt (approximate: count of ## headers)
       const sections = (prompt.match(/^##\s+/gm) || []).length;
       this.cognitiveLogger.logSnapshotGenerated(prompt.length, sections);
     }
     
-    return prompt;
+    // Return prompt with metadata
+    return {
+      prompt,
+      metadata: {
+        anomalies: anomalies || [],
+        compression: {
+          originalSize,
+          optimizedSize,
+          reductionPercent,
+          mode: deviationMode
+        }
+      }
+    };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
+      console.error('[UnifiedPromptBuilder] Error generating snapshot:', errorMessage);
+      if (errorStack) {
+        console.error('[UnifiedPromptBuilder] Stack trace:', errorStack.substring(0, 1000));
+      }
+      
+      // Log to cognitive logger if available
+      if (this.cognitiveLogger) {
+        this.cognitiveLogger.getChannel().appendLine(`❌ Snapshot generation failed: ${errorMessage}`);
+        if (errorStack) {
+          this.cognitiveLogger.getChannel().appendLine(`Stack: ${errorStack.substring(0, 500)}`);
+        }
+      }
+      
+      // Re-throw with more context
+      throw new Error(`Failed to generate snapshot (mode: ${deviationMode}): ${errorMessage}`);
+    }
   }
 
   /**
@@ -249,6 +341,10 @@ export class UnifiedPromptBuilder {
     projectContext: ProjectContext;
     detectedProject?: { name: string; description?: string; structure?: string };
     codeState: CodeState;
+    enginePatterns: any[];
+    engineCorrelations: any[];
+    engineForecasts: any[];
+    anomalies?: any[];
   }): string {
     // Map deviation mode to threshold
     const thresholdMap: Record<string, number> = {
@@ -282,6 +378,41 @@ export class UnifiedPromptBuilder {
     prompt += `1. **READ \`.reasoning_rl4/Plan.RL4\`** → Check \`deviation_mode: ${data.deviationMode}\`\n`;
     prompt += `2. **READ \`.reasoning_rl4/Tasks.RL4\`** → List active P0 tasks\n`;
     prompt += `3. **READ \`.reasoning_rl4/Context.RL4\`** → Check current bias: ${(data.bias * 100).toFixed(0)}%\n\n`;
+
+    // NEW SECTION: Chat Conversation Memory
+    prompt += `## 💬 Chat Conversation Memory — PRIMARY CONTEXT SOURCE\n\n`;
+    prompt += `**🎯 CRITICAL INSTRUCTION FOR LLM:**\n\n`;
+    prompt += `Before reading ANY section below, **FIRST consult the chat conversation history** in your current context window.\n\n`;
+    prompt += `**Why?** The chat contains:\n`;
+    prompt += `- ✅ **Real-time user intent** (what the user wants RIGHT NOW)\n`;
+    prompt += `- ✅ **Recent decisions** (what was just discussed and agreed)\n`;
+    prompt += `- ✅ **Corrections & clarifications** (user feedback on your proposals)\n`;
+    prompt += `- ✅ **Active blockers** (problems the user is currently facing)\n`;
+    prompt += `- ✅ **Context updates** (changes since the last snapshot was generated)\n\n`;
+    prompt += `**Prioritization Hierarchy:**\n`;
+    prompt += `1. 🥇 **Chat conversation** (most recent, highest priority)\n`;
+    prompt += `2. 🥈 **Tasks.RL4** (active tasks, tactical TODOs)\n`;
+    prompt += `3. 🥉 **Plan.RL4** (strategic vision, long-term)\n`;
+    prompt += `4. 📊 **Snapshot data below** (historical context, blind spots)\n\n`;
+    prompt += `**Example Workflow:**\n`;
+    prompt += `\`\`\`\n`;
+    prompt += `User in chat: "Le snapshot est trop générique, enrichis-le"\n`;
+    prompt += `\n`;
+    prompt += `❌ BAD RESPONSE (ignoring chat):\n`;
+    prompt += `  → Read Tasks.RL4 → See "Commit 102 fichiers" as P0\n`;
+    prompt += `  → Respond: "I'll commit the files now"\n`;
+    prompt += `  → WRONG: User wanted snapshot enrichment, not commit\n`;
+    prompt += `\n`;
+    prompt += `✅ GOOD RESPONSE (chat-first):\n`;
+    prompt += `  → Read chat → User wants snapshot enrichment\n`;
+    prompt += `  → Check if enrichment is in Tasks.RL4 (NO)\n`;
+    prompt += `  → Check deviation_mode: strict (0% threshold)\n`;
+    prompt += `  → Respond: "⛔ STRICT MODE: Enrichment not in P0 tasks.\n`;
+    prompt += `               Options: a) Reject b) Add to backlog c) Switch to Flexible"\n`;
+    prompt += `\`\`\`\n\n`;
+    prompt += `**💡 Key Insight:**\n`;
+    prompt += `This snapshot was generated at **${now.toISOString()}**. Any conversation AFTER this timestamp contains MORE RECENT context than the data below. Always prioritize chat over snapshot data when there's a conflict.\n\n`;
+    prompt += `---\n\n`;
     
     // Mode-specific critical rules
     if (data.deviationMode === 'strict') {
@@ -739,6 +870,110 @@ export class UnifiedPromptBuilder {
       prompt += `- Uptime: ${Math.round(latestHealth.uptime / 3600)}h\n\n`;
     }
 
+    // Section: Engine-Generated Data (Preliminary - To Be Optimized by LLM)
+    if (data.enginePatterns.length > 0 || data.engineCorrelations.length > 0 || data.engineForecasts.length > 0) {
+      prompt += `---\n\n`;
+      prompt += `## 🤖 Engine-Generated Data (Preliminary - Optimize via LLM)\n\n`;
+      prompt += `**⚠️ IMPORTANT:** The following data was generated by deterministic algorithms (PatternLearningEngine, CorrelationEngine, ForecastEngine).\n`;
+      prompt += `These are **preliminary suggestions** based on heuristics and mathematical calculations.\n`;
+      prompt += `**Your task:** Analyze this data in the context of the project and improve/enrich it with semantic understanding.\n\n`;
+      
+      if (data.enginePatterns.length > 0) {
+        prompt += `### 📊 Patterns Detected (${data.enginePatterns.length} patterns)\n\n`;
+        prompt += `**Preliminary patterns from PatternLearningEngine:**\n\n`;
+        data.enginePatterns.slice(0, 5).forEach((pattern, idx) => {
+          prompt += `${idx + 1}. **${pattern.pattern_id || pattern.id || `pattern-${idx}`}**\n`;
+          prompt += `   - Pattern: "${pattern.pattern || pattern.description || 'N/A'}"\n`;
+          prompt += `   - Confidence: ${((pattern.confidence || 0) * 100).toFixed(0)}%\n`;
+          prompt += `   - Impact: ${pattern.impact || 'unknown'}\n`;
+          prompt += `   - Tags: ${(pattern.tags || []).join(', ') || 'none'}\n`;
+          prompt += `   - Frequency: ${pattern.frequency || pattern.occurrences || 0}\n\n`;
+        });
+        prompt += `**💡 LLM Optimization Task:**\n`;
+        prompt += `- Review each pattern in the context of the project (${data.detectedProject?.name || 'this project'})\n`;
+        prompt += `- Improve pattern descriptions with semantic understanding\n`;
+        prompt += `- Adjust confidence scores based on actual project context\n`;
+        prompt += `- Identify missing patterns that algorithms couldn't detect\n`;
+        prompt += `- Suggest pattern evolution trends based on project history\n\n`;
+      }
+      
+      if (data.engineCorrelations.length > 0) {
+        prompt += `### 🔗 Correlations Found (${data.engineCorrelations.length} correlations)\n\n`;
+        prompt += `**Preliminary correlations from CorrelationEngine (cosine similarity):**\n\n`;
+        data.engineCorrelations.slice(0, 5).forEach((corr, idx) => {
+          prompt += `${idx + 1}. **${corr.id || `corr-${idx}`}**\n`;
+          prompt += `   - Pattern: ${corr.pattern_id || 'unknown'}\n`;
+          prompt += `   - Event: ${corr.event_id || 'unknown'}\n`;
+          prompt += `   - Score: ${((corr.correlation_score || 0) * 100).toFixed(0)}% (mathematical)\n`;
+          prompt += `   - Direction: ${corr.direction || 'unknown'}\n`;
+          prompt += `   - Tags: ${(corr.tags || []).join(', ') || 'none'}\n\n`;
+        });
+        prompt += `**💡 LLM Optimization Task:**\n`;
+        prompt += `- Validate correlations with semantic understanding (not just tag matching)\n`;
+        prompt += `- Identify causal relationships that algorithms missed\n`;
+        prompt += `- Adjust correlation scores based on actual project context\n`;
+        prompt += `- Discover hidden connections between events and patterns\n\n`;
+      }
+      
+      if (data.engineForecasts.length > 0) {
+        prompt += `### 🔮 Forecasts Generated (${data.engineForecasts.length} forecasts)\n\n`;
+        prompt += `**Preliminary forecasts from ForecastEngine (extrapolation):**\n\n`;
+        data.engineForecasts.slice(0, 5).forEach((forecast, idx) => {
+          prompt += `${idx + 1}. **${forecast.id || `forecast-${idx}`}**\n`;
+          prompt += `   - Prediction: "${forecast.predicted_decision || forecast.decision || 'N/A'}"\n`;
+          prompt += `   - Confidence: ${((forecast.confidence || 0) * 100).toFixed(0)}% (extrapolated)\n`;
+          prompt += `   - Type: ${forecast.decision_type || 'unknown'}\n`;
+          prompt += `   - Timeframe: ${forecast.timeframe || 'unknown'}\n`;
+          prompt += `   - Related Patterns: ${(forecast.related_patterns || []).join(', ') || 'none'}\n\n`;
+        });
+        prompt += `**💡 LLM Optimization Task:**\n`;
+        prompt += `- Improve predictions with contextual understanding\n`;
+        prompt += `- Adjust confidence scores based on project reality\n`;
+        prompt += `- Identify missing forecasts that algorithms couldn't predict\n`;
+        prompt += `- Suggest actionable next steps based on forecasts\n\n`;
+      }
+      
+      prompt += `**🎯 Your Output:**\n`;
+      prompt += `In your response, you can:\n`;
+      prompt += `1. **Keep** patterns/correlations/forecasts that are accurate\n`;
+      prompt += `2. **Improve** them with better descriptions and adjusted confidence scores\n`;
+      prompt += `3. **Add** new patterns/correlations/forecasts based on semantic analysis\n`;
+      prompt += `4. **Remove** patterns/correlations/forecasts that don't make sense in this project context\n`;
+      prompt += `5. **Update** the files \`patterns.json\`, \`correlations.json\`, \`forecasts.json\` if you make improvements\n\n`;
+    }
+
+    // Section: Anomalies Detected (Proactive Detection)
+    if (data.anomalies && data.anomalies.length > 0) {
+      prompt += `---\n\n`;
+      prompt += `## 🚨 Anomalies Detected (Proactive Detection)\n\n`;
+      prompt += `**⚠️ IMPORTANT:** The following anomalies were detected by analyzing the workspace context.\n`;
+      prompt += `These are potential issues that require attention.\n\n`;
+      
+      data.anomalies.forEach((anomaly, idx) => {
+        const severityEmoji = anomaly.severity === 'critical' ? '🔴' : 
+                             anomaly.severity === 'high' ? '🟠' : 
+                             anomaly.severity === 'medium' ? '🟡' : '🟢';
+        
+        prompt += `${idx + 1}. ${severityEmoji} **${anomaly.type.replace(/_/g, ' ').toUpperCase()}** (${anomaly.severity})\n`;
+        prompt += `   - Description: ${anomaly.description}\n`;
+        if (anomaly.context.metric) {
+          prompt += `   - Metric: ${anomaly.context.metric} = ${anomaly.context.value}`;
+          if (anomaly.context.expected) {
+            prompt += ` (expected: ${anomaly.context.expected})`;
+          }
+          prompt += `\n`;
+        }
+        prompt += `   - Recommendation: ${anomaly.recommendation}\n\n`;
+      });
+      
+      prompt += `**💡 LLM Analysis Task:**\n`;
+      prompt += `- Review each anomaly in the context of the project\n`;
+      prompt += `- Determine if these are real issues or false positives\n`;
+      prompt += `- Add critical anomalies to Context.RL4 under "Risks" section\n`;
+      prompt += `- Suggest actionable steps to address high/critical severity anomalies\n`;
+      prompt += `- If false positives, note them for future anomaly detection improvement\n\n`;
+    }
+
     // Footer: Agent Instructions
     prompt += `---\n\n`;
     prompt += `## 🎯 Agent Instructions\n\n`;
@@ -786,11 +1021,11 @@ export class UnifiedPromptBuilder {
     prompt += `---\n\n`;
     // In First Use mode, skip the direct update section and force the REQUIRED OUTPUT format
     if (data.deviationMode !== 'firstUse') {
-      prompt += `Based on the above KPIs, provide:\n\n`;
-      prompt += `1. **Analysis:**\n`;
-      prompt += `   - What is the current state vs Plan?\n`;
-      prompt += `   - Are we on track? Any blockers?\n`;
-      prompt += `   - What patterns do you see in timeline/file changes?\n\n`;
+    prompt += `Based on the above KPIs, provide:\n\n`;
+    prompt += `1. **Analysis:**\n`;
+    prompt += `   - What is the current state vs Plan?\n`;
+    prompt += `   - Are we on track? Any blockers?\n`;
+    prompt += `   - What patterns do you see in timeline/file changes?\n\n`;
       prompt += `2. **Updates Required:**\n`;
     } else {
       prompt += `**🚨 CRITICAL FOR FIRST USE MODE:**\n\n`;
@@ -1130,6 +1365,33 @@ export class UnifiedPromptBuilder {
     section += `Total bias if all: [X]% | Recommended: [Which to accept]\n`;
     section += `\`\`\`\n\n`;
     
+    // Proposal protocol (non-engageant): ne pas modifier Tasks.RL4 sans validation
+    section += `**🧩 RL4 Proposal Protocol (DO NOT edit Tasks.RL4 directly):**\n\n`;
+    section += `You MUST output a non-committal proposal block for tasks. Use this exact format:\n\n`;
+    section += `\`\`\`json\n`;
+    section += `{\n`;
+    section += `  "RL4_PROPOSAL": {\n`;
+    section += `    "suggestedTasks": [\n`;
+    section += `      {\n`;
+    section += `        "id": "prop-001",\n`;
+    section += `        "title": "Setup CI with GitHub Actions",\n`;
+    section += `        "why": "Quality and automation improvement based on hotspots and missing CI",\n`;
+    section += `        "what": ["Create workflow file", "Configure node versions", "Cache deps"],\n`;
+    section += `        "effort": "6h",\n`;
+    section += `        "roi": 8,\n`;
+    section += `        "risk": "low",\n`;
+    section += `        "bias": 5,\n`;
+    section += `        "deps": [],\n`;
+    section += `        "scope": "repo",\n`;
+    section += `        "possibleDuplicateOf": "external-<taskId-if-any>"\n`;
+    section += `      }\n`;
+    section += `    ],\n`;
+    section += `    "planContextUpdates": "Optional markdown proposed for Plan/Context (safe to apply)"\n`;
+    section += `  }\n`;
+    section += `}\n`;
+    section += `\`\`\`\n\n`;
+    section += `After the user validates decisions in the Dev tab, you will receive RL4_DECISION_REQUEST and MUST respond with RL4_TASKS_PATCH (see Free Mode block below for the exact schema).\n\n`;
+    
     return section;
   }
 
@@ -1273,6 +1535,77 @@ export class UnifiedPromptBuilder {
     section += `- Challenge assumptions\n`;
     section += `- Be bold but practical\n`;
     section += `- Inspire action\n\n`;
+    
+    // Proposal-first workflow: tasks are proposed, not applied
+    section += `---\n\n`;
+    section += `**🧩 RL4 Proposal-First Workflow (DO NOT edit Tasks.RL4 directly):**\n\n`;
+    section += `1) Output a proposal block (RL4_PROPOSAL) with suggested tasks and optional Plan/Context markdown updates.\n`;
+    section += `2) Wait for user decisions (accept P0/P1, backlog P2+, reject, or link to external task).\n`;
+    section += `3) Only after decisions, output RL4_TASKS_PATCH with precise changes to apply to Tasks.RL4.\n\n`;
+    
+    section += `Use these exact schemas:\n\n`;
+    
+    // RL4_PROPOSAL (non-engageant)
+    section += `\`\`\`json\n`;
+    section += `{\n`;
+    section += `  "RL4_PROPOSAL": {\n`;
+    section += `    "suggestedTasks": [\n`;
+    section += `      {\n`;
+    section += `        "id": "prop-001",\n`;
+    section += `        "title": "Transform mockup to SaaS foundation (Next.js + PostgreSQL)",\n`;
+    section += `        "why": "High ROI transformation aligned with vision 2.0",\n`;
+    section += `        "what": ["Init Next.js TS", "Design multi-tenant db", "Auth baseline"],\n`;
+    section += `        "effort": "2w",\n`;
+    section += `        "roi": 10,\n`;
+    section += `        "risk": "medium",\n`;
+    section += `        "bias": 20,\n`;
+    section += `        "deps": [],\n`;
+    section += `        "scope": "platform",\n`;
+    section += `        "possibleDuplicateOf": null\n`;
+    section += `      }\n`;
+    section += `    ],\n`;
+    section += `    "planContextUpdates": "Optional markdown proposed for Plan/Context (safe to apply)"\n`;
+    section += `  }\n`;
+    section += `}\n`;
+    section += `\`\`\`\n\n`;
+    
+    // RL4_DECISION_REQUEST (fourni par RL4 après choix utilisateur) → votre réponse doit être un PATCH
+    section += `RL4 will send back a decision payload like:\n`;
+    section += `\`\`\`json\n`;
+    section += `{\n`;
+    section += `  "RL4_DECISION_REQUEST": {\n`;
+    section += `    "decisions": [\n`;
+    section += `      { "id": "prop-001", "action": "accept", "priority": "P0" },\n`;
+    section += `      { "id": "prop-002", "action": "backlog", "priority": "P2" },\n`;
+    section += `      { "id": "prop-003", "action": "reject" }\n`;
+    section += `    ]\n`;
+    section += `  }\n`;
+    section += `}\n`;
+    section += `\`\`\`\n\n`;
+    
+    // RL4_TASKS_PATCH (engageant) — à produire seulement après décisions
+    section += `You MUST then respond with an apply-ready patch block (do not exceed bias threshold without explicit note):\n`;
+    section += `\`\`\`json\n`;
+    section += `{\n`;
+    section += `  "RL4_TASKS_PATCH": {\n`;
+    section += `    "applyTo": "Tasks.RL4",\n`;
+    section += `    "bias_total": 25,\n`;
+    section += `    "changes": [\n`;
+    section += `      {\n`;
+    section += `        "op": "add",\n`;
+    section += `        "origin": "rl4",\n`;
+    section += `        "priority": "P0",\n`;
+    section += `        "title": "Setup SaaS foundation (Next.js + PostgreSQL)",\n`;
+    section += `        "why": "Vision 2.0 — scalable platform",\n`;
+    section += `        "steps": ["Init Next.js TS", "DB schema", "Auth baseline"],\n`;
+    section += `        "linked_to": null\n`;
+    section += `      }\n`;
+    section += `    ]\n`;
+    section += `  }\n`;
+    section += `}\n`;
+    section += `\`\`\`\n\n`;
+    
+    section += `If any suggested task matches an external plan task, set "possibleDuplicateOf" in RL4_PROPOSAL and prefer linking rather than duplicating.\n`;
     
     return section;
   }
@@ -1601,6 +1934,90 @@ export class UnifiedPromptBuilder {
       const defaultContext = this.planParser['generateDefaultContext']();
       this.planParser.saveContext(defaultContext);
       console.log('[UnifiedPromptBuilder] ✅ Created default Context.RL4');
+    }
+  }
+
+  /**
+   * Load patterns generated by PatternLearningEngine
+   * These are preliminary patterns based on heuristics - LLM will optimize them
+   */
+  private loadEnginePatterns(): any[] {
+    try {
+      const patternsPath = path.join(this.rl4Path, 'patterns.json');
+      if (!fs.existsSync(patternsPath)) {
+        return [];
+      }
+      
+      const content = fs.readFileSync(patternsPath, 'utf-8');
+      const parsed = JSON.parse(content);
+      
+      // Handle both array and object with patterns property
+      if (Array.isArray(parsed)) {
+        return parsed;
+      } else if (parsed.patterns && Array.isArray(parsed.patterns)) {
+        return parsed.patterns;
+      }
+      
+      return [];
+    } catch (error) {
+      console.warn('[UnifiedPromptBuilder] Failed to load patterns:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Load correlations generated by CorrelationEngine
+   * These are preliminary correlations based on cosine similarity - LLM will optimize them
+   */
+  private loadEngineCorrelations(): any[] {
+    try {
+      const correlationsPath = path.join(this.rl4Path, 'correlations.json');
+      if (!fs.existsSync(correlationsPath)) {
+        return [];
+      }
+      
+      const content = fs.readFileSync(correlationsPath, 'utf-8');
+      const parsed = JSON.parse(content);
+      
+      // Handle both array and object with correlations property
+      if (Array.isArray(parsed)) {
+        return parsed;
+      } else if (parsed.correlations && Array.isArray(parsed.correlations)) {
+        return parsed.correlations;
+      }
+      
+      return [];
+    } catch (error) {
+      console.warn('[UnifiedPromptBuilder] Failed to load correlations:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Load forecasts generated by ForecastEngine
+   * These are preliminary forecasts based on extrapolation - LLM will optimize them
+   */
+  private loadEngineForecasts(): any[] {
+    try {
+      const forecastsPath = path.join(this.rl4Path, 'forecasts.json');
+      if (!fs.existsSync(forecastsPath)) {
+        return [];
+      }
+      
+      const content = fs.readFileSync(forecastsPath, 'utf-8');
+      const parsed = JSON.parse(content);
+      
+      // Handle both array and object with forecasts property
+      if (Array.isArray(parsed)) {
+        return parsed;
+      } else if (parsed.forecasts && Array.isArray(parsed.forecasts)) {
+        return parsed.forecasts;
+      }
+      
+      return [];
+    } catch (error) {
+      console.warn('[UnifiedPromptBuilder] Failed to load forecasts:', error);
+      return [];
     }
   }
 }

@@ -1,15 +1,12 @@
-/**
- * RL4 WebView UI — Smart UI with LLM-Validated KPIs
- * Phase E4: Transform "data display" into "actionable insights"
- */
-
 import { useState, useEffect } from 'react';
 import './App.css';
 import { 
   CognitiveLoadCard, 
   NextStepsCard, 
   PlanDriftCard, 
-  RisksCard 
+  RisksCard,
+  AnomaliesCard,
+  type Anomaly
 } from './components';
 import { 
   parseContextRL4, 
@@ -63,6 +60,31 @@ const FileLink = ({ fileName }: { fileName: string }) => {
 };
 
 export default function App() {
+  // Tabs and Dev proposals state
+  const [activeTab, setActiveTab] = useState<'control' | 'dev' | 'insights' | 'about'>('control');
+  const [devBadge, setDevBadge] = useState<{ newCount: number; changedCount: number }>({ newCount: 0, changedCount: 0 });
+  const [proposals, setProposals] = useState<Array<{
+    id: string;
+    title: string;
+    why?: string;
+    effort?: string;
+    roi?: number;
+    risk?: string;
+    bias?: number;
+    deps?: string[];
+    scope?: string;
+    possibleDuplicateOf?: string | null;
+  }>>([]);
+  const [patchPreview, setPatchPreview] = useState<any | null>(null);
+  const [taskVerifications, setTaskVerifications] = useState<Array<{
+    taskId: string;
+    verified: boolean;
+    verifiedAt?: string;
+    matchedConditions: string[];
+    matchedEvents: any[];
+    confidence: 'low' | 'medium' | 'high';
+    suggestion: string;
+  }>>([]);
   const [prompt, setPrompt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -83,6 +105,15 @@ export default function App() {
   const [commitCommand, setCommitCommand] = useState<string | null>(null);
   const [commitWhy, setCommitWhy] = useState<string | null>(null);
   const [commitPreview, setCommitPreview] = useState<{ title?: string; body?: string } | null>(null);
+  
+  // Snapshot metadata state
+  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
+  const [compressionMetrics, setCompressionMetrics] = useState<{
+    originalSize: number;
+    optimizedSize: number;
+    reductionPercent: number;
+    mode: string;
+  } | null>(null);
 
   // Listen for messages from extension
   useEffect(() => {
@@ -91,6 +122,33 @@ export default function App() {
       console.log('[RL4 WebView] Received message:', message.type);
       
       switch (message.type) {
+        case 'proposalsUpdated':
+          // payload: { suggestedTasks: [...], counts?: { newCount, changedCount } }
+          setProposals(Array.isArray(message.payload?.suggestedTasks) ? message.payload.suggestedTasks : []);
+          if (message.payload?.counts) {
+            setDevBadge({
+              newCount: message.payload.counts.newCount ?? 0,
+              changedCount: message.payload.counts.changedCount ?? 0
+            });
+          } else {
+            setDevBadge({ newCount: message.payload?.suggestedTasks?.length ?? 0, changedCount: 0 });
+          }
+          break;
+        
+        case 'taskLogChanged':
+          // payload: { newCount, changedCount }
+          if (message.payload) {
+            setDevBadge({
+              newCount: message.payload.newCount ?? devBadge.newCount,
+              changedCount: message.payload.changedCount ?? devBadge.changedCount
+            });
+          }
+          break;
+        case 'patchPreview':
+          setPatchPreview(message.payload || null);
+          setFeedback('🧪 Patch preview ready');
+          setTimeout(() => setFeedback(null), 2000);
+          break;
         case 'snapshotGenerated':
           console.log('[RL4 WebView] Snapshot received, length:', message.payload?.length);
           setPrompt(message.payload);
@@ -114,6 +172,38 @@ export default function App() {
           setLoading(false);
           setFeedback('❌ Error generating snapshot');
           setTimeout(() => setFeedback(null), 3000);
+          break;
+          
+        case 'snapshotMetadata':
+          console.log('[RL4 WebView] Snapshot metadata received:', message.payload);
+          if (message.payload) {
+            const anomalies = message.payload.anomalies || [];
+            const compression = message.payload.compression || null;
+            console.log(`[RL4 WebView] Setting ${anomalies.length} anomalies, compression: ${compression ? compression.reductionPercent.toFixed(1) + '%' : 'null'}`);
+            setAnomalies(anomalies);
+            setCompressionMetrics(compression);
+          } else {
+            console.warn('[RL4 WebView] snapshotMetadata received but payload is empty');
+          }
+          break;
+          
+        case 'taskVerificationResults':
+          console.log('[RL4 WebView] Task verification results received:', message.payload);
+          if (message.payload && message.payload.results) {
+            setTaskVerifications(message.payload.results || []);
+            setFeedback(`✅ ${message.payload.results.length} task(s) verified`);
+            setTimeout(() => setFeedback(null), 3000);
+          }
+          break;
+
+        case 'taskMarkedDone':
+          console.log('[RL4 WebView] Task marked as done:', message.payload);
+          if (message.payload && message.payload.taskId) {
+            // Remove the verification for this task since it's now done
+            setTaskVerifications(prev => prev.filter(v => v.taskId !== message.payload.taskId));
+            setFeedback(`✅ Task ${message.payload.taskId} marked as done`);
+            setTimeout(() => setFeedback(null), 3000);
+          }
           break;
           
         case 'kpisUpdated':
@@ -281,6 +371,16 @@ export default function App() {
     }
   };
 
+  const handleMarkTaskDone = (taskId: string) => {
+    if (window.vscode) {
+      window.vscode.postMessage({
+        type: 'markTaskDone',
+        taskId
+      });
+      setFeedback(`⏳ Marking task ${taskId} as done...`);
+    }
+  };
+
 
   return (
     <div className="rl4-layout">
@@ -297,10 +397,96 @@ export default function App() {
 
       {/* Main Content */}
       <main className="rl4-main">
+        {/* Tabs: Control / Dev / Insights / About */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+          <button
+            onClick={() => setActiveTab('control')}
+            className={`tab-button ${activeTab === 'control' ? 'active' : ''}`}
+            style={{
+              padding: '6px 10px',
+              border: '1px solid var(--vscode-input-border)',
+              backgroundColor: activeTab === 'control' ? 'var(--vscode-input-background)' : 'transparent',
+              color: 'var(--vscode-foreground)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '12px'
+            }}
+          >
+            🛠️ Control
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('dev');
+              // acknowledge new items when opening
+              setDevBadge(prev => ({ ...prev, newCount: 0 }));
+            }}
+            className={`tab-button ${activeTab === 'dev' ? 'active' : ''}`}
+            style={{
+              padding: '6px 10px',
+              border: '1px solid var(--vscode-input-border)',
+              backgroundColor: activeTab === 'dev' ? 'var(--vscode-input-background)' : 'transparent',
+              color: 'var(--vscode-foreground)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              position: 'relative'
+            }}
+          >
+            👨‍💻 Dev
+            {(devBadge.newCount > 0 || devBadge.changedCount > 0) && (
+              <span
+                title="New proposals / Changes"
+                style={{
+                  marginLeft: '8px',
+                  background: '#d32f2f',
+                  color: 'white',
+                  borderRadius: '10px',
+                  padding: '0 6px',
+                  fontSize: '10px',
+                  lineHeight: '16px'
+                }}
+              >
+                {devBadge.newCount + devBadge.changedCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('insights')}
+            className={`tab-button ${activeTab === 'insights' ? 'active' : ''}`}
+            style={{
+              padding: '6px 10px',
+              border: '1px solid var(--vscode-input-border)',
+              backgroundColor: activeTab === 'insights' ? 'var(--vscode-input-background)' : 'transparent',
+              color: 'var(--vscode-foreground)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '12px'
+            }}
+          >
+            📊 Insights
+          </button>
+          <button
+            onClick={() => setActiveTab('about')}
+            className={`tab-button ${activeTab === 'about' ? 'active' : ''}`}
+            style={{
+              padding: '6px 10px',
+              border: '1px solid var(--vscode-input-border)',
+              backgroundColor: activeTab === 'about' ? 'var(--vscode-input-background)' : 'transparent',
+              color: 'var(--vscode-foreground)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '12px'
+            }}
+          >
+            ℹ️ About
+          </button>
+        </div>
+
+        {activeTab === 'control' && (
         <div className="rl4-hero">
           {/* Deviation Mode Selector */}
           <div className="deviation-mode-selector">
-            <label htmlFor="deviation-mode">🎯 Perception Angle:</label>
+            <label htmlFor="deviation-mode">🎯 Calibrate your coding Agent:</label>
             <select 
               id="deviation-mode"
               value={deviationMode}
@@ -309,14 +495,14 @@ export default function App() {
               className={deviationMode === 'firstUse' ? 'first-use-mode' : ''}
             >
               <optgroup label="Standard Modes">
-                <option value="strict">🔴 Strict (0%) — P0 only</option>
-                <option value="flexible">🟡 Flexible (25%) — P0+P1 OK</option>
-                <option value="exploratory">🟢 Exploratory (50%) — New ideas welcome</option>
-                <option value="free">⚪ Free (100%) — Creative mode</option>
+                <option value="strict">🔴 Strict — Focus on existing plan only</option>
+                <option value="flexible">🟡 Flexible — Allow small improvements</option>
+                <option value="exploratory">🟢 Exploratory — Welcome new ideas</option>
+                <option value="free">⚪ Free — Creative mode, no constraints</option>
               </optgroup>
               <optgroup label="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━">
                 <option value="firstUse">
-                  🔍 First Use — Analyze project history (~5s)
+                  🔍 First Use — Deep project analysis (~5s)
                 </option>
               </optgroup>
             </select>
@@ -570,17 +756,196 @@ export default function App() {
           <div className="rl4-instructions">
             <p><strong>How it works:</strong></p>
             <ol>
-              <li>Click button → Prompt generated & copied</li>
-              <li>Paste in Cursor/Claude → Agent analyzes</li>
-              <li>Agent updates <FileLink fileName="Plan.RL4" />, <FileLink fileName="Tasks.RL4" />, <FileLink fileName="Context.RL4" />, <FileLink fileName="ADRs.RL4" /></li>
-              <li>RL4 detects changes → Updates internal state</li>
-              <li>Next snapshot includes your updates ✅</li>
+              <li><strong>Generate</strong> → Click button, prompt is generated & copied to clipboard</li>
+              <li><strong>Analyze</strong> → Paste in your AI agent (Cursor/Claude), it analyzes your project context</li>
+              <li><strong>Update</strong> → Agent updates <FileLink fileName="Plan.RL4" />, <FileLink fileName="Tasks.RL4" />, <FileLink fileName="Context.RL4" />, <FileLink fileName="ADRs.RL4" /></li>
+              <li><strong>Sync</strong> → RL4 automatically detects changes and updates its internal state</li>
+              <li><strong>Iterate</strong> → Next snapshot includes all your updates, creating a feedback loop ✅</li>
             </ol>
           </div>
         </div>
+        )}
 
-        {/* KPI Dashboard */}
-        {showKPIs && (
+        {activeTab === 'dev' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h2>🧩 Proposed Tasks (LLM)</h2>
+              <div style={{ fontSize: '12px', color: 'var(--vscode-descriptionForeground)' }}>
+                New: {devBadge.newCount} · Changes: {devBadge.changedCount}
+              </div>
+            </div>
+            <div style={{ border: '1px solid var(--vscode-input-border)', borderRadius: '4px' }}>
+              {proposals.length === 0 ? (
+                <div style={{ padding: '12px', fontSize: '12px', color: 'var(--vscode-descriptionForeground)' }}>
+                  No proposals yet. Generate a snapshot in Exploratory/Free mode and paste the agent response.
+                </div>
+              ) : (
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                  {proposals.map(item => (
+                    <li key={item.id} style={{ padding: '10px 12px', borderTop: '1px solid var(--vscode-input-border)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '13px', fontWeight: 600 }}>{item.title}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--vscode-descriptionForeground)', marginTop: '4px' }}>
+                            {item.why}
+                          </div>
+                          <div style={{ fontSize: '10px', marginTop: '6px', display: 'flex', gap: '10px', color: 'var(--vscode-descriptionForeground)' }}>
+                            {item.effort && <span>Effort: {item.effort}</span>}
+                            {typeof item.roi === 'number' && <span>ROI: {item.roi}/10</span>}
+                            {item.risk && <span>Risk: {item.risk}</span>}
+                            {typeof item.bias === 'number' && <span>Bias: +{item.bias}%</span>}
+                            {item.scope && <span>Scope: {item.scope}</span>}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            title="Accepter en P0"
+                            onClick={() => window.vscode?.postMessage({ type: 'submitDecisions', decisions: [{ id: item.id, action: 'accept', priority: 'P0' }] })}
+                            style={{ padding: '6px 8px', fontSize: '11px', background: '#2e7d32', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
+                          >
+                            ✅ Accept (P0)
+                          </button>
+                          <button
+                            title="Accepter en P1"
+                            onClick={() => window.vscode?.postMessage({ type: 'submitDecisions', decisions: [{ id: item.id, action: 'accept', priority: 'P1' }] })}
+                            style={{ padding: '6px 8px', fontSize: '11px', background: '#388e3c', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
+                          >
+                            ✅ Accept (P1)
+                          </button>
+                          <button
+                            title="Backlog (P2+)"
+                            onClick={() => window.vscode?.postMessage({ type: 'submitDecisions', decisions: [{ id: item.id, action: 'backlog', priority: 'P2' }] })}
+                            style={{ padding: '6px 8px', fontSize: '11px', background: 'var(--vscode-button-secondaryBackground)', color: 'var(--vscode-button-foreground)', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
+                          >
+                            📦 Backlog
+                          </button>
+                          <button
+                            title="Rejeter"
+                            onClick={() => window.vscode?.postMessage({ type: 'submitDecisions', decisions: [{ id: item.id, action: 'reject' }] })}
+                            style={{ padding: '6px 8px', fontSize: '11px', background: '#9e9e9e', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
+                          >
+                            🗑️ Reject
+                          </button>
+                        </div>
+                      </div>
+                      {item.possibleDuplicateOf && (
+                        <div style={{ marginTop: '6px', fontSize: '10px', color: '#ffb300' }}>
+                          ⚠️ Possible duplicate of external task: {item.possibleDuplicateOf}
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            
+            {/* Task Verification Results */}
+            {taskVerifications.length > 0 && (
+              <div>
+                <h3 style={{ margin: '8px 0' }}>✅ Verified Tasks (RL4)</h3>
+                <div style={{ border: '1px solid var(--vscode-input-border)', borderRadius: '4px' }}>
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                    {taskVerifications.map(verification => (
+                      <li key={verification.taskId} style={{ padding: '10px 12px', borderTop: '1px solid var(--vscode-input-border)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '13px', fontWeight: 600 }}>
+                              Task #{verification.taskId}
+                              <span 
+                                style={{ 
+                                  marginLeft: '8px',
+                                  padding: '2px 6px',
+                                  fontSize: '10px',
+                                  borderRadius: '3px',
+                                  background: verification.confidence === 'high' ? '#2e7d32' : verification.confidence === 'medium' ? '#ff9800' : '#757575',
+                                  color: 'white'
+                                }}
+                              >
+                                {verification.confidence.toUpperCase()}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--vscode-descriptionForeground)', marginTop: '4px' }}>
+                              {verification.suggestion}
+                            </div>
+                            <div style={{ fontSize: '10px', marginTop: '6px', color: 'var(--vscode-descriptionForeground)' }}>
+                              ✅ Matched: {verification.matchedConditions.length} condition(s)
+                              {verification.verifiedAt && (
+                                <span style={{ marginLeft: '10px' }}>
+                                  🕐 {new Date(verification.verifiedAt).toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                            {verification.matchedConditions.length > 0 && (
+                              <div style={{ fontSize: '10px', marginTop: '4px', color: 'var(--vscode-descriptionForeground)' }}>
+                                <details>
+                                  <summary style={{ cursor: 'pointer' }}>📋 Conditions</summary>
+                                  <ul style={{ marginTop: '4px', paddingLeft: '20px' }}>
+                                    {verification.matchedConditions.map((cond, idx) => (
+                                      <li key={idx}>{cond}</li>
+                                    ))}
+                                  </ul>
+                                </details>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <button
+                              onClick={() => handleMarkTaskDone(verification.taskId)}
+                              style={{ 
+                                padding: '6px 10px', 
+                                fontSize: '11px', 
+                                background: '#2e7d32', 
+                                color: 'white', 
+                                border: 'none', 
+                                borderRadius: '3px', 
+                                cursor: 'pointer' 
+                              }}
+                              title="Mark this task as done in Tasks.RL4"
+                            >
+                              ✅ Mark as Done
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+            
+            <div>
+              <h3 style={{ margin: '8px 0' }}>🧪 Patch Preview</h3>
+              {patchPreview ? (
+                <div style={{ border: '1px solid var(--vscode-input-border)', borderRadius: '4px', padding: '10px' }}>
+                  <pre style={{ fontSize: '11px', whiteSpace: 'pre-wrap', margin: 0 }}>
+                    {JSON.stringify(patchPreview, null, 2)}
+                  </pre>
+                  <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => window.vscode?.postMessage({ type: 'applyPatch', patch: patchPreview })}
+                      style={{ padding: '6px 10px', background: 'var(--vscode-button-background)', color: 'var(--vscode-button-foreground)', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '12px' }}
+                    >
+                      ✅ Apply Patch
+                    </button>
+                    <button
+                      onClick={() => setPatchPreview(null)}
+                      style={{ padding: '6px 10px', background: 'var(--vscode-button-secondaryBackground)', color: 'var(--vscode-button-foreground)', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '12px' }}
+                    >
+                      ❌ Discard
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ fontSize: '12px', color: 'var(--vscode-descriptionForeground)' }}>
+                  Generated after your decisions. A `RL4_TASKS_PATCH` preview will appear here before applying.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* KPI Dashboard (Insights tab) */}
+        {activeTab === 'insights' && showKPIs && (
           <div className="kpi-dashboard">
             <div className="kpi-dashboard-header">
               <h2>📊 Workspace Insights</h2>
@@ -617,53 +982,40 @@ export default function App() {
                 <RisksCard risks={risks.risks} />
               )}
             </div>
+            
+            {/* Anomalies Card */}
+            {anomalies.length > 0 && (
+              <div style={{ marginTop: '20px' }}>
+                <AnomaliesCard anomalies={anomalies} />
+              </div>
+            )}
           </div>
         )}
 
-        {/* Prompt Preview */}
-        {prompt && (
-          <div className="prompt-preview">
-            <div className="prompt-header">
-              <h3>📋 Context Snapshot</h3>
-              <span className="prompt-length">{prompt.length} characters</span>
+        {/* About Tab */}
+        {activeTab === 'about' && (
+          <div className="info-cards">
+            <div className="info-card">
+              <h4>🎯 What RL4 Does</h4>
+              <p>Automatically collects your workspace activity, system health, file patterns, git history, and architectural decisions.</p>
             </div>
             
-            <pre className="prompt-content">
-              {prompt.substring(0, 1500)}
-              {prompt.length > 1500 && '\n\n... (full prompt copied to clipboard)'}
-            </pre>
-
-            <button 
-              onClick={() => {
-                navigator.clipboard.writeText(prompt).then(() => {
-                  setFeedback('✅ Copied again!');
-                  setTimeout(() => setFeedback(null), 2000);
-                });
-              }}
-              className="copy-again-button"
-            >
-              📋 Copy Again
-            </button>
+            <div className="info-card">
+              <h4>🔍 What You Get</h4>
+              <p>A complete context snapshot: your project plan, active tasks, timeline, blind spot data, and decision history — all in one prompt.</p>
+            </div>
+            
+            <div className="info-card">
+              <h4>🔄 Feedback Loop</h4>
+              <p>Your AI agent updates the RL4 files → RL4 automatically parses changes → Next snapshot reflects all updates, creating a continuous learning cycle.</p>
+            </div>
+            
+            <div className="info-card">
+              <h4>📁 RL4 Files</h4>
+              <p>All context is stored in <FileLink fileName="Plan.RL4" />, <FileLink fileName="Tasks.RL4" />, <FileLink fileName="Context.RL4" />, and <FileLink fileName="ADRs.RL4" /> — human-readable and AI-friendly.</p>
+            </div>
           </div>
         )}
-
-        {/* Info Cards */}
-        <div className="info-cards">
-          <div className="info-card">
-            <h4>🎯 What RL4 Does</h4>
-            <p>Collects workspace activity, system health, file patterns, git history, and ADRs.</p>
-          </div>
-          
-          <div className="info-card">
-            <h4>🔍 What You Get</h4>
-            <p>Complete context: Plan + Tasks + Timeline + Blind Spot Data + Decision History.</p>
-          </div>
-          
-          <div className="info-card">
-            <h4>🔄 Feedback Loop</h4>
-            <p>Agent updates <FileLink fileName="Plan.RL4" />, <FileLink fileName="Tasks.RL4" />, <FileLink fileName="Context.RL4" />, <FileLink fileName="ADRs.RL4" /> → RL4 parses → Next snapshot reflects changes.</p>
-          </div>
-        </div>
       </main>
 
       {/* Footer */}

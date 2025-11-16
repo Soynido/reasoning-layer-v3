@@ -79,7 +79,9 @@ export class AdaptivePromptBuilder {
             mappedMode = 'flexible'; // Map standard/focused to flexible
         }
 
-        return await unifiedBuilder.generate(mappedMode);
+        // UnifiedPromptBuilder.generate() now returns { prompt, metadata }
+        const result = await unifiedBuilder.generate(mappedMode);
+        return result.prompt; // Extract prompt string for compatibility
     }
 
     /**

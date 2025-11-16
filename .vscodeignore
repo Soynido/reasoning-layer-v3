@@ -5,6 +5,10 @@
 .claude/**
 node_modules/**
 test-project/**
+extension_DISABLED/**
+out_DISABLED/**
+repo_reference/**
+extension-builds_DISABLED/**
 
 # Source files (only compiled JS needed)
 *.ts

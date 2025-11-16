@@ -172,11 +172,13 @@ export class FileChangeWatcher {
             /dist\//,
             /build\//,
             /\.reasoning\//,
+            /\.reasoning_rl4\//,  // ✅ FIX: Ignore RL4 runtime data to prevent infinite loops
             /\.cache\//,
             /coverage\//,
             /\.map$/,
             /\.tmp$/,
             /\.log$/,
+            /\.jsonl$/,  // ✅ FIX: Ignore structured logs to prevent infinite loops
             /\.lock$/
         ];
     }

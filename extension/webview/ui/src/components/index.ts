@@ -7,4 +7,5 @@ export { CognitiveLoadCard } from './CognitiveLoadCard';
 export { NextStepsCard } from './NextStepsCard';
 export { PlanDriftCard } from './PlanDriftCard';
 export { RisksCard } from './RisksCard';
-
+export { AnomaliesCard } from './AnomaliesCard';
+export type { Anomaly } from './AnomaliesCard';

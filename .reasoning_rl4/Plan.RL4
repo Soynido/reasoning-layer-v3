@@ -1,170 +1,367 @@
 ---
-version: 2.1
-original_version: 1.0
-baseline_date: 2025-11-12T16:35:00.000Z
-baseline_archived: .reasoning_rl4/baselines/Plan.RL4.v1.0.archived
-updated: 2025-11-14T14:16:35.770Z
-confidence: 1.00
-bias: 0.66
-baseline_saved: true
-deviation_mode: strict
-commit: (pending)
-vsix: reasoning-layer-rl4-3.4.0.vsix
-snapshot_validated: true
-milestone: E4 — Workspace Insights UI (Production-Ready)
+version: 3.1
+updated: '2025-11-16T06:45:00.000Z'
+confidence: 1.0
+deviation_mode: flexible
 ---
 
-# RL4 Strategic Plan — BASELINE v2.0
+# Plan — Strategic Vision
 
 ## Phase
-E4 - Workspace Insights UI (Production-Ready)
+✅ E3.4 - COMPLETED | Phase E4 - Pattern Learning & Optimization (Next)
 
-## Goal
-Deliver a marketplace-ready VS Code extension that provides developers with actionable workspace insights through LLM-validated KPI cards, eliminating the "Et alors ? C'est grave ?" problem.
+## Goal (E3.4 - COMPLETED ✅)
+**OBJECTIF FINAL ATTEINT** — Workflow Dev Tab complet avec :
+1. ✅ **Auto-parsing des propositions LLM** (parse `RL4_PROPOSAL` depuis presse-papiers)
+2. ✅ **Terminal RL4 enrichi** (logs structurés via prompts, pas API)
+3. ✅ **Task Verification** (lecture `terminal-events.jsonl` + matching `@rl4:id`)
+4. ✅ **Status "Verified by RL4"** (affichage dans Dev Tab)
+5. ✅ **Terminal Patterns Learning** (auto-learning dans terminal-patterns.json)
+6. ✅ **PromptOptimizer** (compression intelligente des prompts)
+7. ✅ **AnomalyDetector** (détection proactive d'anomalies)
 
 ## Timeline
-- Phase E3.3: ✅ COMPLETE (2025-11-12)
-- Phase E4 Start: 2025-11-12 (15:30)
-- Target: 2025-11-16 (4 days)
-- Current: Day 1/4 (92% confidence)
-- Status: 🟡 Momentum good, deviation alert active (58% > 25%)
+Start: 2025-11-16 00:00:00
+Completed: 2025-11-16 06:45:00
+**Duration**: 6h 45min 🎉
 
-**Phase E3.3 Objectives (COMPLETE):**
-1. ✅ Simplify UI to 1 button ("Generate Context Snapshot")
-2. ✅ Eliminate fake/static data (patterns, forecasts, goals)
-3. ✅ Establish agent feedback loop (prompt → agent → .RL4 files → RL4 parses)
-4. ✅ Create persistent state files (Plan/Tasks/Context/ADRs.RL4)
-5. ✅ Historical compression (30 days → 2KB JSON)
-6. ✅ ADR auto-detection (commit scoring)
-7. ✅ Deviation Guard (baseline tracking)
+## Success Criteria (ALL ✅)
+- ✅ PromptOptimizer.ts avec 4 modes compression (strict/flexible/exploratory/free)
+- ✅ AnomalyDetector.ts avec détection 5 types (sudden_change, regression, unusual_activity, bias_spike, plan_drift)
+- ✅ UnifiedPromptBuilder.ts retourne { prompt, metadata: { anomalies, compression } }
+- ✅ SnapshotReminder avec timer 30min + auto-suggest mode
+- ✅ Terminal RL4 command avec AppendOnlyWriter vers terminal-events.jsonl
+- ✅ Workflow LLM proposals: proposals.json → submitDecisions → applyPatch
+- ✅ WebView 4 tabs (Control/Dev/Insights/About) avec gestion anomalies + compression metrics
+- ✅ TasksRL4Parser pour extraire @rl4:id / @rl4:completeWhen
+- ✅ TaskVerificationEngine avec vérification périodique 10s + confidence calculation
+- ✅ Dev Tab UI "Verified by RL4" avec badges + "Mark as Done"
+- ✅ TerminalPatternsLearner avec auto-learning + suggest completeWhen + detect anomalies
+- ✅ Extension compilée (717 KiB) + webview (307.85 KiB)
 
-**Phase E4 Objectives (COMPLETE ✅):**
-1. [x] UI-Driven Deviation Mode (ADR-009) ✅ DONE — User chooses perception angle
-2. [x] Smart UI Components (ADR-006) ✅ DONE — 4 KPI cards functional
-3. [x] Real-time .RL4 file refresh (FileWatchers → UI update) ✅ DONE — Context.RL4 watched
+## Architecture Dev Tab (État Final)
 
-**Phase E5 Objectives (95% COMPLETE — Marketplace Ready):**
-1. [x] Create new GitHub repo "RL4 Official" (clean slate) ✅ https://github.com/Soynido/rl4-official
-2. [x] Clean codebase (UI + backend only, remove dev artifacts) ✅ 108 files (vs 11,238)
-3. [x] Marketplace README (How/Why/Who/What — universal clarity) ✅ 3,500 words
-4. [ ] Screenshots and demo assets ⏳ User action required (Issue #2)
-5. [x] Optimize for public understanding (code comments, docs) ✅ Tracked in Issue #1
-6. [ ] VS Code Marketplace submission ⏳ After screenshots
+### **Workflow Complet**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. User génère snapshot (Exploratory/Free mode)                │
+│ 2. LLM retourne propositions avec RL4_PROPOSAL {...}           │
+│ 3. User: "Parse LLM Response" → clipboard lu automatiquement   │
+│ 4. RL4: Parse JSON → Écrit proposals.json                      │
+│ 5. Badge Dev Tab: "3 nouvelles propositions"                   │
+│ 6. User ouvre Dev Tab → Voit 3 propositions                    │
+│ 7. User accepte 2 (P0), rejette 1                              │
+│ 8. Patch preview généré (bias check: 15% < 25% ✅)             │
+│ 9. User valide → 2 tâches ajoutées à Tasks.RL4                │
+│    Format: - [ ] [P0] Task title @rl4:id=task-001              │
+│ 10. User exécute dans RL4 Terminal:                            │
+│     echo '# RL4_TASK_START id=task-001 command="npm test"'     │
+│     npm test                                                    │
+│     echo '# RL4_TASK_RESULT id=task-001 status=success'        │
+│ 11. RL4: Détecte terminal-events.jsonl → Matche @rl4:id        │
+│ 12. Dev Tab: Badge "✅ Verified by RL4" apparaît sur la tâche  │
+│ 13. Prochain snapshot: Tâche marquée comme complétée           │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-**Phase E6 Objectives (50% COMPLETE — Post-Marketplace UX):**
-1. [x] Dual-Mode Onboarding (Existing workspace vs New workspace) ✅ DONE — 4 modules, 865 lines
-2. [x] Quick Setup Wizard (3 questions for first-time users) ✅ DONE — Integrated in NewWorkspaceOnboarding
-3. [x] narrative() method added to CognitiveLogger ✅ DONE — Storytelling support
-4. [ ] Cognitive Narrative Logs (Transform technical logs into storytelling) ⏳ IN PROGRESS
-5. [ ] Emotional Intelligence (React to user behavior: bursts, gaps, commits) ⏳ PLANNED
-6. [ ] 5-Minute Insights (Contextual reflections and suggestions) ⏳ PLANNED
-7. [ ] Log Mode Configuration (Narrative/Minimal/Verbose/Silent) ⏳ PLANNED
+### **Composants à Implémenter**
 
-**Milestones Achieved (Day 1):**
-- ✅ UnifiedPromptBuilder.ts created (generates single prompt)
-- ✅ BlindSpotDataLoader.ts (loads real timeline/git/health)
-- ✅ ADRParser.ts (parses agent-proposed ADRs)
-- ✅ PlanTasksContextParser.ts (reads/validates .RL4 files)
-- ✅ FileWatchers integrated (monitors .RL4 changes)
-- ✅ ADR-005 parser regex fixed (ADR-XXX: format)
-- ✅ HistorySummarizer.ts (30 days → 2KB JSON compression)
-- ✅ BiasCalculator.ts (deviation detection from baseline)
-- ✅ ADRSignalEnricher.ts (auto-detect ADRs from commits)
-- ✅ Deviation Guard integrated (STRICT mode active)
-- ✅ ADR-005, ADR-006, ADR-007 documented
-- ✅ Stable commit: 140406e
-- ✅ Extension installed: v2.7.0-adr-detection
+#### **1. LLM Response Parser (extension.ts)**
+```typescript
+case 'parseLLMResponse':
+  // Lit clipboard
+  const clipboardText = await vscode.env.clipboard.readText();
+  
+  // Cherche RL4_PROPOSAL (supporte JSON fenced ou raw)
+  const match = clipboardText.match(/RL4_PROPOSAL["\s:]*({[\s\S]*?})/);
+  if (match) {
+    const proposals = JSON.parse(match[1]);
+    fs.writeFileSync(proposalsPath, JSON.stringify(proposals, null, 2));
+    webviewPanel.postMessage({ type: 'proposalsParsed', count: proposals.suggestedTasks.length });
+  }
+```
 
-**Success Criteria:**
-- [x] UI reduced to single action
-- [x] Prompt generation functional
-- [x] Real-time data only (cycles, commits, health)
-- [x] Agent can update Plan/Tasks/Context.RL4
-- [x] RL4 detects changes and re-parses (FileWatchers active)
-- [x] Confidence/Bias metrics calculated (92% / 58%)
+#### **2. Terminal Helper Scripts**
+- **scripts/rl4-log.js** : Helper Node.js pour écrire dans terminal-events.jsonl
+- **scripts/rl4-log.sh** : Helper Bash pour marqueurs RL4_TASK_*
 
-**⚠️ Deviation Status:**
-- **Baseline:** Plan.RL4 v1.0 (saved in .baseline/)
-- **Current:** Plan.RL4 v2.0 (58% drift from baseline)
-- **Threshold:** Flexible mode = 25% (EXCEEDED by 33 points)
-- **Decision Required:** User must choose:
-  - Accept drift → Update baseline to v2.0 (reset bias to 0%)
-  - Recalibrate → Remove non-essential E4 features
-  - Continue → Acknowledge 58%, proceed with P1 only
+#### **3. TaskVerificationEngine (kernel/api/TaskVerificationEngine.ts)**
+```typescript
+class TaskVerificationEngine {
+  // Lit terminal-events.jsonl
+  loadTerminalEvents(since?: Date): TerminalEvent[]
+  
+  // Lit Tasks.RL4 et extrait @rl4:id / @rl4:completeWhen
+  parseTaskMetadata(tasksFile: string): TaskMetadata[]
+  
+  // Matche events avec tâches
+  verifyTasks(tasks, events): TaskVerification[]
+  
+  // Retourne { taskId, verified: boolean, lastEvent, duration }
+}
+```
 
-## Phase Evolution Tracking
+#### **4. Extended Tasks.RL4 Parser**
+Support nouveau format :
+```markdown
+- [ ] [P0] Add unit tests @rl4:id=task-001 @rl4:completeWhen="exitCode=0"
+```
 
-### Phase E3.3 → E4.1 Transition (2025-11-12)
+#### **5. Dev Tab UI Enhancement**
+Affichage enrichi :
+```tsx
+{item.verified && (
+  <span style={{ color: '#4caf50', fontSize: '10px' }}>
+    ✅ Verified by RL4 ({item.verifiedAt})
+  </span>
+)}
+```
 
-**ADDED:**
-- `UnifiedPromptBuilder.ts` (Single context snapshot generator)
-- `HistorySummarizer.ts` (30 days → 2KB JSON compression)
-- `BiasCalculator.ts` (Deviation tracking from baseline)
-- `ADRSignalEnricher.ts` (Auto-detect ADRs from commits)
-- `ADRParser.ts` (Parse ADRs.RL4 → adrs.jsonl)
-- `PlanTasksContextParser.ts` (Parse Plan/Tasks/Context.RL4)
-- `BlindSpotDataLoader.ts` (Load timeline/git/health)
-- `.reasoning_rl4/Plan.RL4` (Strategic intent persistence)
-- `.reasoning_rl4/Tasks.RL4` (Tactical TODOs persistence)
-- `.reasoning_rl4/Context.RL4` (Operational state persistence)
-- `.reasoning_rl4/ADRs.RL4` (Agent-proposed ADRs)
-- `.reasoning_rl4/.baseline/Plan.RL4.v1.0` (Immutable baseline for bias calc)
-- FileWatchers for Plan/Tasks/Context/ADRs.RL4
-- UI-Driven Deviation Mode selector (🔴/🟡/🟢/⚪)
-- Dynamic threshold system (0%/25%/50%/100%)
-- Mode-specific agent instructions in prompt
+## Vision Long-Term
 
-**MODIFIED:**
-- WebView UI: 4 tabs (Now/Before/Next/Restore) → 1 button + mode selector
-- `extension.ts`: Message handler now accepts `deviationMode` param
-- `UnifiedPromptBuilder.generate()`: Signature changed (+deviationMode param)
-- Prompt header: Now displays user-selected deviation mode
-- Bias calculation: Now uses dynamic threshold (not static config)
-- Deviation Guard section: Adapts rules based on chosen mode
-- Confidence metric: 71% → 97% (increased trust in system)
+Transformer RL4 en système auto-apprenant où :
+- **Prompts enrichissent les logs** (via marqueurs RL4_TASK_*)
+- **Kernel sniffe les fichiers** (pas d'API VS Code)
+- **Patterns émergent** (terminal-patterns.json)
+- **Vérification automatique** (Dev Tab temps réel)
+- **Feedback loop complet** (LLM → Tasks → Terminal → Logs → Verification → Snapshot)
 
-**REMOVED:**
-- Static patterns.json, forecasts.json, goals.json (fake data)
-- 4-tab UI system (Now/Before/Next/Restore)
-- Legacy `snapshotInterval` (auto-push every 10s)
-- Legacy message types (updateNow, updateBefore, etc.)
-- Static `deviation_mode` in kernel_config.json (now UI-driven)
-- Global threshold config (now per-snapshot)
-- PromptBridge separate prompts (unified into single snapshot)
+## Architecture Globale (Rappel)
 
-**WHY:**
-- User insight 1: "Patterns never change, seems fake" → Removed fake data
-- User insight 2: "Too many buttons, unclear workflow" → 1 button UI
-- User insight 3: "How do I update RL4 state?" → .RL4 feedback loop
-- User insight 4: "Le threshold est une préférence USER" → UI-driven mode
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     CONTROL TAB                             │
+│  - Generate Snapshot (deviation modes)                     │
+│  - GitHub Integration                                       │
+│  - Commit with WHY                                          │
+│  - Parse LLM Response 🆕                                    │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│                      DEV TAB                                │
+│  - Proposed Tasks (from proposals.json)                    │
+│  - Accept/Reject buttons                                   │
+│  - Patch Preview                                            │
+│  - Apply Patch → Tasks.RL4                                  │
+│  - Task Status: "✅ Verified by RL4" 🆕                     │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   RL4 TERMINAL 🆕                           │
+│  - Terminal dédié pour dev                                 │
+│  - Marqueurs: # RL4_TASK_START / # RL4_TASK_RESULT         │
+│  - Scripts helper: rl4-log.js / rl4-log.sh                 │
+│  - Logs → .reasoning_rl4/terminal-events.jsonl             │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│              TASK VERIFICATION ENGINE 🆕                    │
+│  - Lit terminal-events.jsonl                               │
+│  - Parse @rl4:id dans Tasks.RL4                            │
+│  - Matche events avec tâches                               │
+│  - Retourne verified: true/false                           │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│                  INSIGHTS TAB                               │
+│  - KPIs Dashboard                                           │
+│  - Anomalies Card                                           │
+│  - Task Completion Rate 🆕                                  │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### Phase E4.1 → E4.2 Transition (In Progress)
+## Dépendances Techniques
 
-**ADDED:**
-- Mermaid diagrams to all ADRs (ADR-005 to ADR-009)
-- `.reasoning_rl4/ADR_TEMPLATE.md` (Template for future ADRs)
-- Phase Evolution Tracking section in Plan.RL4 (this section)
+- ✅ `proposals.json` watcher (déjà implémenté)
+- ✅ `submitDecisions` handler (déjà implémenté)
+- ✅ `applyPatch` handler (déjà implémenté)
+- ✅ Bias Guard (déjà implémenté)
+- ✅ Ledger logging (déjà implémenté)
+- 🆕 `parseLLMResponse` handler (à implémenter)
+- 🆕 `TaskVerificationEngine` (à implémenter)
+- 🆕 Parser `@rl4:id` dans Tasks.RL4 (à implémenter)
+- 🆕 Scripts helper terminal (à implémenter)
+- 🆕 UI badge "Verified by RL4" (à implémenter)
+- 🆕 **Auto-completion UI** (bouton "Mark as Done" quand verified)
+- 🆕 **Ad-hoc tracker** (`ad-hoc-actions.jsonl` + UI proposals)
+- 🆕 **Pattern learning** (`terminal-patterns.json` + suggestions)
 
-**FIXED:**
-- Mermaid syntax errors (removed dots from labels: `.RL4` → `RL4`, `.jsonl` → `jsonl`)
-- All diagrams now render correctly in Markdown viewers
+## Auto-Completion Workflow 🚀
 
-**PLANNED (E4.2):**
-- Smart UI Components (NextStepsCard, ConfidenceGauge, etc.)
-- Real-time .RL4 file refresh in UI
-- Interactive ADR timeline visualization
+### Principe
+**RL4 ne modifie JAMAIS Tasks.RL4 automatiquement**. Il propose uniquement.
 
-**Next Phase (E4): Smart UI with LLM-Validated KPIs**
-- Rationale: See ADR-006 (2025-11-12)
-- Problem: Raw stats meaningless without context ("Et alors ? C'est grave ?")
-- Solution: UI displays LLM insights, not raw data
-- Architecture: Kernel (dumb) → Prompt (compress) → LLM (validate) → .RL4 (persist) → UI (smart display)
-- Components:
-  - NextStepsCard (Tasks.RL4 → P0 tasks)
-  - ConfidenceGauge (Plan.RL4 → 71% metric)
-  - BlockersAlert (Tasks.RL4 → blockers)
-  - CognitiveLoadMeter (Context.RL4 → observations)
-  - TimelineChart (HistorySummary → trends)
-  - DecisionHistory (ADRs.RL4 → ADR timeline)
-- Constraint: Single CTA remains ("Generate Context Snapshot")
-- Success: User knows WHAT TO DO, not just "what happened"
+### Workflow
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Task dans Tasks.RL4:                                    │
+│    - [ ] [P0] All tests passing @rl4:id=task-001           │
+│                 @rl4:completeWhen="npm test exitCode=0"    │
+│                                                             │
+│ 2. User exécute dans RL4 Terminal:                         │
+│    echo '# RL4_TASK_START id=task-001 command="npm test"'  │
+│    npm test                                                 │
+│    echo '# RL4_TASK_RESULT id=task-001 status=success      │
+│          exitCode=0'                                        │
+│                                                             │
+│ 3. TaskVerificationEngine:                                 │
+│    - Lit terminal-events.jsonl                             │
+│    - Matche id=task-001                                    │
+│    - Vérifie: exitCode=0 && status=success ✅              │
+│    - Marque: verified=true (en mémoire)                    │
+│                                                             │
+│ 4. Dev Tab affiche:                                        │
+│    [P0] All tests passing                                  │
+│    ✅ Verified by RL4 (2025-11-16T05:15:00Z)               │
+│    [Mark as Done] ← Bouton apparaît                        │
+│                                                             │
+│ 5. User clique "Mark as Done":                             │
+│    - extension.ts reçoit { type: 'markTaskDone',           │
+│                             taskId: 'task-001' }           │
+│    - Lit Tasks.RL4                                         │
+│    - Remplace:                                             │
+│      - [ ] [P0] All tests passing...                       │
+│      + [x] [P0] All tests passing (verified 2025-11-16)    │
+│    - Log dans decisions.jsonl:                             │
+│      { event: 'task_completed', taskId: 'task-001',        │
+│        trigger: 'terminal', verified: true }               │
+│                                                             │
+│ 6. Prochain snapshot:                                      │
+│    LLM voit tâche cochée + timestamp vérification          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Règle Stricte
+- ❌ **Jamais d'auto-mark** sans validation user
+- ✅ **Toujours proposer** "Mark as Done" quand verified
+- ✅ **Toujours logger** dans decisions.jsonl avec source (terminal/manual)
+
+## Ad-Hoc Actions Workflow 🔧
+
+### Problème
+User demande: "Refactor cette fonction vite fait" → Pas dans Tasks.RL4
+
+### Solution
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. LLM (moi) détecte: action non liée à Tasks.RL4          │
+│                                                             │
+│ 2. Dans RL4 Terminal, j'ajoute marqueur:                   │
+│    echo '# RL4_ACTION adhoc=true description="Refactor     │
+│           UserService.getProfile" files="UserService.ts"'  │
+│    (refactor code...)                                       │
+│    echo '# RL4_ACTION_RESULT adhoc-001 status=success'     │
+│                                                             │
+│ 3. Kernel écrit dans ad-hoc-actions.jsonl:                 │
+│    { type: 'adhoc', id: 'adhoc-001', timestamp: '...',     │
+│      description: 'Refactor UserService.getProfile',       │
+│      files: ['UserService.ts'], status: 'success' }        │
+│                                                             │
+│ 4. Au prochain snapshot:                                   │
+│    Prompt inclut section "Ad-hoc actions (last 24h)":      │
+│    - Refactor UserService.getProfile (adhoc-001)           │
+│    - Fix typo in README (adhoc-002)                        │
+│                                                             │
+│ 5. LLM analyse et peut proposer dans RL4_PROPOSAL:         │
+│    { id: 'from-adhoc-001', title: 'Document refactored     │
+│      UserService', why: 'Refactored but no doc', ... }     │
+│                                                             │
+│ 6. User voit proposition dans Dev Tab:                     │
+│    💡 Suggested from activity:                             │
+│    "Document refactored UserService"                       │
+│    [Accept P1] [Backlog] [Ignore]                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Bénéfices
+- ✅ Aucune incohérence (ad-hoc ≠ tasks officielles)
+- ✅ Traçabilité complète (toutes actions loggées)
+- ✅ Feedback loop (ad-hoc → proposals → tasks)
+- ✅ Pas de pollution Tasks.RL4 (seulement si user accepte)
+
+## Terminal Patterns Learning 🧠
+
+### Objectif
+RL4 apprend, par workspace, quelles commandes valident quelles tâches.
+
+### Mécanisme
+```json
+// .reasoning_rl4/terminal-patterns.json
+{
+  "learned_at": "2025-11-16T05:00:00.000Z",
+  "workspace_id": "rl4-official",
+  "patterns": {
+    "task-001": {
+      "taskTitle": "All tests passing",
+      "typicalCommands": ["npm test", "npm run test:unit"],
+      "successRate": 0.95,
+      "avgDuration": 5200,
+      "lastRun": "2025-11-16T05:15:00.000Z",
+      "runsCount": 23
+    },
+    "task-002": {
+      "taskTitle": "Build passes",
+      "typicalCommands": ["npm run build", "webpack --config prod"],
+      "successRate": 1.0,
+      "avgDuration": 12000,
+      "lastRun": "2025-11-16T04:30:00.000Z",
+      "runsCount": 12
+    }
+  },
+  "commandClassification": {
+    "npm test": "Debug",
+    "npm run dev": "Implementation",
+    "npm run build": "Validation",
+    "docker-compose up": "Setup"
+  }
+}
+```
+
+### Utilisation
+
+#### 1. Auto-suggestion `@rl4:completeWhen`
+Quand user ajoute nouvelle task sans `@rl4:completeWhen`:
+```markdown
+User ajoute: - [ ] [P0] E2E tests passing
+
+RL4 suggère (Dev Tab):
+💡 This task looks like testing
+   Suggested: @rl4:completeWhen="npm run test:e2e exitCode=0"
+   (Based on learned pattern from task-001)
+   [Apply] [Edit] [Ignore]
+```
+
+#### 2. Phase Classification Améliorée
+Snapshot prompt enrichi:
+```
+Recent terminal activity (last 2h):
+- npm test (15 runs, 93% success) → Debug phase likely
+- npm run dev (running continuously) → Implementation active
+- Last build: 45min ago
+
+Learned patterns suggest: Current phase = Debug
+```
+
+#### 3. Anomaly Detection
+```
+⚠️ Unusual: 'npm test' failed 5 times in a row (usual success rate: 95%)
+   Possible regression? Consider checking:
+   - Recent commits (last 2h)
+   - Dependencies changes
+```
+
+### Learning Process
+1. **Capture**: Chaque commande terminal → terminal-events.jsonl
+2. **Aggregate**: Toutes les 30min, TaskVerificationEngine agrège:
+   - Commandes par task-id
+   - Success rates
+   - Durées moyennes
+3. **Update**: terminal-patterns.json mis à jour
+4. **Suggest**: Suggestions remontent dans Dev Tab
+5. **Feedback**: User accepte/rejette → Affine learning
+
+### Privacy & Control
+- ✅ 100% local (pas de cloud)
+- ✅ Par workspace (pas de data cross-workspace)
+- ✅ User peut reset: `rm .reasoning_rl4/terminal-patterns.json`
+- ✅ Suggestions jamais forcées (toujours boutons Accept/Ignore)
