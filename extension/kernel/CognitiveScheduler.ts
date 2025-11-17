@@ -345,6 +345,27 @@ export class CognitiveScheduler {
     }
     
     /**
+     * Dispose all event listeners (CRITICAL for memory leak prevention)
+     */
+    disposeAll(): void {
+        try {
+            // Dispose IDE activity listener (cleans VS Code event listeners)
+            if (this.ideActivityListener) {
+                this.ideActivityListener.dispose();
+                this.logger.system('✅ IDEActivityListener disposed', '✅');
+            }
+            
+            // Dispose build metrics listener (cleans VS Code event listeners)
+            if (this.buildMetricsListener) {
+                this.buildMetricsListener.dispose();
+                this.logger.system('✅ BuildMetricsListener disposed', '✅');
+            }
+        } catch (e) {
+            this.logger.error(`Error disposing listeners: ${e}`);
+        }
+    }
+    
+    /**
      * Log helper (uses outputChannel if available, fallback to console)
      */
     private log(message: string): void {

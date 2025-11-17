@@ -1,12 +1,295 @@
 ---
-version: 3.1
-updated: '2025-11-16T09:00:00.000Z'
-bias: 0
+version: 3.6
+updated: '2025-11-17T14:50:00.000Z'
+bias: 30.61
 ---
 
 # Tasks — Tactical TODOs
 
 ## Active (P0) — URGENT
+
+### 🔴 SPRINT E4.1: Memory Safety — CRITICAL FIX (4h45min estimated)
+
+**⚠️ BUG CRITIQUE:** Extension-host 770 MB + Renderer 1.2 GB → Memory leaks
+**✅ PARTIAL FIX:** `retainContextWhenHidden: false` appliqué (libère ~1 GB renderer)
+**🎯 OBJECTIF:** -97% RAM (770 MB → 200 MB projection)
+
+#### **Completed (1/14 tasks)**
+- [x] [P0] Corriger retainContextWhenHidden dans extension.ts @rl4:id=fix-retain-context @rl4:verified="2025-11-16T16:10:00Z"
+  - ✅ Changé `retainContextWhenHidden: true` → `false` (2 occurrences)
+  - ✅ Gain: -1 GB RAM quand dashboard fermé
+  - ✅ Fix workspace freeze
+
+#### **Phase 0: Memory Monitoring (2h)** 🔴 CRITICAL
+- [x] [P0] Créer MemoryMonitor.ts @rl4:id=memory-monitor @rl4:verified="2025-11-17T13:10:00Z"
+  - Classe MemoryMonitor avec méthodes: snapshot(), logIfHigh(threshold), getMetrics()
+  - Fonction `snapshot()`: Retourne heapUsed, heapTotal, external, deltaFromBaseline
+  - Fonction `logIfHigh(threshold)`: Alerte si RAM > threshold MB
+  - Baseline au démarrage + snapshots périodiques
+  - Location: extension/kernel/MemoryMonitor.ts
+
+- [x] [P0] Intégrer MemoryMonitor dans extension.ts @rl4:id=memory-integration @rl4:verified="2025-11-17T13:10:00Z"
+  - Instancier au démarrage extension
+  - Log snapshots toutes les 5 min (setInterval)
+  - Stocker dans context.subscriptions pour cleanup
+  - Dependencies: MemoryMonitor.ts doit exister
+
+#### **Phase 1: Disposables VS Code (45min)** 🔴 CRITICAL
+- [x] [P0] Corriger IDEActivityListener.ts @rl4:id=fix-ide-listener @rl4:verified="2025-11-17T13:15:00Z"
+  - Ajouter field `private disposables: vscode.Disposable[] = []`
+  - Stocker tous les `vscode.window.onDid*` listeners dans disposables array
+  - Méthode `dispose()`: Cleanup tous les disposables
+  - Impact: -60% croissance extension-host (event listeners leak fix)
+
+- [x] [P0] Corriger BuildMetricsListener.ts @rl4:id=fix-build-listener @rl4:verified="2025-11-17T13:20:00Z"
+  - Même pattern que IDEActivityListener
+  - Stocker disposables + méthode dispose() propre
+  - Impact: -60% croissance extension-host
+
+- [x] [P0] Appeler dispose() dans deactivate() @rl4:id=call-dispose @rl4:verified="2025-11-17T13:25:00Z"
+  - Ajouter appels dispose() dans extension.ts deactivate()
+  - Ordre: Disposer listeners → Disposer scheduler → Shutdown kernel
+  - Dependencies: fix-ide-listener et fix-build-listener doivent être complétés
+
+#### **Phase 2: ExecPool Buffer Management (45min)** 🔴 CRITICAL
+- [x] [P0] Limiter buffers dans ExecPool.ts @rl4:id=execpool-buffers @rl4:verified="2025-11-17T13:30:00Z"
+  - Sanitize stdout/stderr à 1 KB max
+  - Forcer libération mémoire: `result.stdout = ''` après sanitize
+  - Impact: -40% croissance extension-host (buffer accumulation fix)
+
+- [x] [P0] Rotation git_pool.jsonl @rl4:id=rotate-git-pool @rl4:verified="2025-11-17T13:30:00Z"
+  - Fonction `rotateLogIfNeeded()`: Rotation après 5000 lignes
+  - Renommer en `git_pool-{timestamp}.jsonl`
+  - Compresser en .gz (non bloquant)
+  - Impact: Maintient fichier logs sous contrôle
+
+#### **Phase 3: Console.log Production Mode (30min)** 🟡 MEDIUM
+- [x] [P0] Créer webview/ui/src/utils/logger.ts @rl4:id=webview-logger @rl4:verified="2025-11-17T13:34:00Z"
+  - Class WebViewLogger avec rotation (max 100 logs)
+  - Méthodes: log(), error(), warn()
+  - Production mode: Rotation automatique, pas de console.log natif
+  - Impact: -70% croissance renderer
+
+- [x] [P0] Remplacer console.log dans App.tsx @rl4:id=replace-console-log @rl4:verified="2025-11-17T13:34:00Z"
+  - Import logger from './utils/logger'
+  - Remplacer tous les console.log par logger.log
+  - Garder console.error pour erreurs critiques
+  - Dependencies: webview-logger doit exister
+
+#### **Phase 4: JSONL Rotation (30min)** 🟢 LOW
+- [x] [P0] Ajouter rotation dans AppendOnlyWriter.ts @rl4:id=jsonl-rotation @rl4:verified="2025-11-17T13:35:00Z"
+  - Fonction `rotateIfNeeded()`: Check > 10K lignes
+  - Archiver en `{filename}-{timestamp}.jsonl`
+  - Compresser .gz en background (async)
+  - Impact: Maintient JSONL files < 10K lignes (long-term)
+
+#### **Phase 5: Memory Watchdog (15min)** 🟢 LOW
+- [x] [P0] Créer MemoryWatchdog.ts @rl4:id=memory-watchdog @rl4:verified="2025-11-17T13:38:00Z"
+  - Check RAM toutes les minutes via MemoryMonitor
+  - Alert VS Code notification si > 500 MB
+  - Log metrics pour debugging
+  - Dependencies: MemoryMonitor.ts doit exister
+
+- [x] [P0] Activer dans extension.ts @rl4:id=activate-watchdog @rl4:verified="2025-11-17T13:38:00Z"
+  - Instancier MemoryWatchdog au démarrage
+  - Start monitoring avec threshold 500 MB
+  - Stocker dans context.subscriptions
+  - Dependencies: memory-watchdog doit exister
+
+---
+
+### ✅ E4.1 — Memory Safety (Completed)
+
+**Sprint complété:** 2025-11-17T14:50  
+**Fichiers modifiés:** 6 (IDEActivityListener, BuildMetricsListener, extension, ExecPool, AppendOnlyWriter, App.tsx)  
+**Fichiers créés:** 3 (MemoryMonitor.ts, MemoryWatchdog.ts, logger.ts)  
+**Lignes ajoutées:** ~423  
+**Bias incrémenté:** 30.61%  
+**Extension version:** v3.5.11  
+**Status:** ✅ DONE
+
+---
+
+### 🎯 SPRINT PRODUCTION-READY MODE: P0 Core (6h estimated) — READY
+
+**✅ UNBLOCKED:** Sprint E4.1 Memory Safety complété (2025-11-17T14:50)
+
+#### **Phase 1: Core Analysis Engine (4h)** 🔴 NEW
+- [ ] [P0] Créer ProductionReadyAnalyzer.ts
+  - Analyse état kernel: HealthMonitor, MemoryMonitor, CognitiveScheduler
+  - Analyse JSONL files: Taille, dernière modification, rotation active
+  - Analyse timers/watchers: Count actifs, disposables status
+  - Retourne ProductionReadinessReport { healthScore, memoryScore, jsonlScore, timersScore, overallScore, criticalIssues[], recommendations[] }
+  - Calcul score 0-100% basé sur thresholds simples
+  - @rl4:id=prod-analyzer-minimal @rl4:completeWhen="file exists: extension/kernel/cognitive/ProductionReadyAnalyzer.ts"
+
+- [ ] [P0] Créer ProductionReadySnapshotBuilder.ts
+  - Génère snapshot spécial "Production-Ready" (format texte Markdown)
+  - Sections: 1) Overall Score, 2) Critical Issues, 3) Metrics Summary, 4) Recommendations
+  - Appelle ProductionReadyAnalyzer pour collecter données
+  - Format output: Markdown structuré copiable dans clipboard
+  - Pas d'UI complexe, juste texte
+  - @rl4:id=prod-snapshot-minimal @rl4:completeWhen="file exists: extension/kernel/cognitive/ProductionReadySnapshotBuilder.ts"
+
+- [ ] [P0] Créer HardeningEngine.ts (version minimale)
+  - Interface HardeningRecommendation { id, category, severity, description, rationale }
+  - Méthode analyzeWorkspace(): Détecte issues basiques (memory > 500MB, JSONL > 10K lignes, timers > 20)
+  - Méthode generateRecommendations(): Retourne liste d'actions recommandées (texte uniquement, pas d'exécution)
+  - Catégories: memory, jsonl_size, timers_count, watchers_count
+  - Pas d'executor à ce stade, juste analyse + recommandations
+  - @rl4:id=hardening-engine-minimal @rl4:completeWhen="file exists: extension/kernel/cognitive/HardeningEngine.ts"
+
+#### **Phase 2: Command & UI Integration (2h)** 🟡 NEW
+- [ ] [P0] Ajouter commande "Generate Production-Ready Snapshot"
+  - Handler dans extension.ts: reasoning.snapshot.productionReady
+  - Appelle ProductionReadySnapshotBuilder.generate()
+  - Copie résultat dans clipboard automatiquement
+  - Affiche notification VS Code: "Production-Ready Snapshot copied (Score: X%)"
+  - Pas de webview à ce stade, juste commande
+  - @rl4:id=prod-command-minimal @rl4:completeWhen="grep -n 'reasoning.snapshot.productionReady' extension/extension.ts"
+
+- [ ] [P0] Ajouter bouton "Production Check" dans Control Tab
+  - Positionner après "Generate Snapshot" (dans le Control Tab existant)
+  - Style: Orange/warning pour différenciation
+  - onClick: Appelle commande reasoning.snapshot.productionReady
+  - Tooltip: "Run production-readiness analysis"
+  - Pas de nouveau tab, juste bouton dans UI existante
+  - @rl4:id=prod-button-minimal @rl4:completeWhen="grep -n 'Production Check' extension/webview/ui/src/App.tsx"
+
+- [ ] [P0] Créer JSONL log pour tracking
+  - Fichier: .reasoning_rl4/production-checks.jsonl
+  - Format: { timestamp, overallScore, criticalIssuesCount, memoryMB, jsonlSizeKB, timersCount }
+  - Écrit automatiquement à chaque exécution de production check
+  - Permet historique des scores dans le temps
+  - @rl4:id=prod-log-minimal @rl4:completeWhen="grep -n 'production-checks.jsonl' extension/kernel/cognitive/ProductionReadySnapshotBuilder.ts"
+
+---
+
+### 🎯 SPRINT E5: Pattern Learning UI (6h estimated) — PAUSED
+
+**⚠️ BLOCKER:** Sprint E4.1 Memory Safety DOIT être complété AVANT
+
+#### **Phase 1: Terminal Patterns Display (2h)** 🔴 NEW
+- [ ] [P0] Créer onglet "Patterns" dans Insights Tab
+  - Lire `terminal-patterns.json` via message handler
+  - Afficher patterns appris (table format)
+  - Colonnes: Task Title, Runs, Success Rate, Avg Duration, Last Run, Suggested Condition
+  - @rl4:id=patterns-tab @rl4:completeWhen="grep -n 'Patterns.*Tab' webview/ui/src/App.tsx"
+
+- [ ] [P0] Créer `PatternsCard` component
+  - Props: `{ patterns: TaskPattern[] }`
+  - Card par pattern avec détails
+  - Success/Failure runs breakdown
+  - Duration histogram (visual)
+  - Command classification badge (setup/build/test/debug/deploy)
+  - @rl4:id=patterns-card @rl4:completeWhen="file exists: webview/ui/src/components/PatternsCard.tsx"
+
+- [ ] [P0] Créer section Anomalies dans Patterns Tab
+  - Lire anomalies depuis TerminalPatternsLearner
+  - Afficher success rate drops (>20%)
+  - Afficher unusual durations (>2σ)
+  - Afficher command changes détectés
+  - Color-coding par sévérité (red/orange/yellow)
+  - @rl4:id=patterns-anomalies @rl4:completeWhen="grep -n 'Pattern Anomalies' webview/ui/src/App.tsx"
+
+#### **Phase 2: Auto-Suggestions UI (2h)** 🟡 NEW
+- [ ] [P0] Détection tâches sans `@rl4:completeWhen`
+  - Scanner Tasks.RL4 dans TasksRL4Parser
+  - Matcher avec patterns existants (fuzzy matching 60%)
+  - Retourner suggestions avec confidence score
+  - @rl4:id=detect-missing-conditions @rl4:completeWhen="grep -n 'suggestForTask' kernel/cognitive/TerminalPatternsLearner.ts"
+
+- [ ] [P0] UI "Suggested Conditions" dans Dev Tab
+  - Section "💡 Suggestions" en haut du Dev Tab
+  - Afficher tâches sans conditions + suggestions
+  - Bouton "Apply Suggestion" par tâche
+  - Confidence badge (HIGH/MEDIUM/LOW)
+  - @rl4:id=suggestions-ui @rl4:completeWhen="grep -n 'Suggested Conditions' webview/ui/src/App.tsx"
+
+- [ ] [P0] Handler `applySuggestion` dans extension.ts
+  - Reçoit `{ taskId, suggestedCondition }`
+  - Met à jour Tasks.RL4 avec `@rl4:completeWhen`
+  - Log dans decisions.jsonl (type: 'suggestion_applied')
+  - Envoie message à WebView pour refresh
+  - @rl4:id=apply-suggestion-handler @rl4:completeWhen="grep -n 'case.*applySuggestion' extension/extension.ts"
+
+#### **Phase 3: Ad-Hoc Actions Tracker (2h)** 🟢 NEW
+- [ ] [P1] Créer `AdHocTracker.ts` component
+  - Fonction `trackAction(action, context)`
+  - Écrit dans `.reasoning_rl4/ad-hoc-actions.jsonl`
+  - Format: `{ timestamp, action, context, suggested: boolean }`
+  - Fonction `getSuggestions()` → Retourne actions à convertir
+  - @rl4:id=adhoc-tracker @rl4:completeWhen="file exists: extension/kernel/api/AdHocTracker.ts"
+
+- [ ] [P1] Support marqueur `# RL4_ACTION` dans scripts
+  - Détection dans helper scripts (rl4-log.sh)
+  - Nouvelle fonction `rl4_action(description)`
+  - Écrit dans ad-hoc-actions.jsonl
+  - @rl4:id=adhoc-marker @rl4:completeWhen="grep -n 'RL4_ACTION' scripts/rl4-log.sh"
+
+- [ ] [P1] Enrichir snapshot avec ad-hoc actions
+  - AdaptivePromptBuilder lit ad-hoc-actions.jsonl
+  - Section "Unplanned Actions" dans prompt
+  - Suggère conversion en tâches formelles
+  - @rl4:id=adhoc-snapshot @rl4:completeWhen="grep -n 'ad-hoc-actions' kernel/cognitive/AdaptivePromptBuilder.ts"
+
+- [ ] [P1] UI "Suggested from Activity" dans Dev Tab
+  - Section en bas du Dev Tab
+  - Badge "🔧 Ad-Hoc" sur proposals
+  - Bouton "Convert to Task" → Ajoute dans Tasks.RL4
+  - Liste des actions récentes non planifiées
+  - @rl4:id=adhoc-ui @rl4:completeWhen="grep -n 'Suggested from Activity' webview/ui/src/App.tsx"
+
+---
+
+### ✅ COMPLETED (Sprint E4 - Session du 16 Nov 2025)
+
+**Phase 1: Parse LLM Response (1h)** ✅ COMPLÉTÉ
+- [x] [P0] Implémenter handler `parseLLMResponse` dans extension.ts @rl4:id=parse-llm-handler @rl4:verified="2025-11-16T07:30:00Z"
+  - ✅ Lit clipboard: `vscode.env.clipboard.readText()`
+  - ✅ 4 patterns de parsing (fenced, RL4_PROPOSAL, raw JSON)
+  - ✅ Parse JSON et extrait `suggestedTasks[]`
+  - ✅ Écrit dans `.reasoning_rl4/proposals.json`
+  - ✅ Envoie messages `proposalsParsed` / `parseError` à WebView
+  - ✅ Feedback utilisateur via VS Code notifications
+
+- [x] [P0] Ajouter bouton "📋 Parse LLM Response" dans Control Tab @rl4:id=ui-parse-button @rl4:verified="2025-11-16T07:35:00Z"
+  - ✅ Positionné après "Generate Snapshot"
+  - ✅ onClick: `window.vscode.postMessage({ type: 'parseLLMResponse' })`
+  - ✅ Affiche feedback: "✅ X proposals parsed"
+  - ✅ Style: secondaryBackground (différenciation visuelle)
+
+- [x] [P0] Test workflow clipboard → proposals.json @rl4:id=test-parse-workflow @rl4:verified="manual"
+  - ✅ Workflow vérifié: Copy → Click → proposals.json updated → Dev Tab refresh
+
+**Phase 2: Helper Scripts Terminal (2h)** ✅ COMPLÉTÉ
+- [x] [P0] Créer `scripts/rl4-log.js` (Node.js helper) @rl4:id=helper-node @rl4:verified="2025-11-16T07:42:00Z"
+  - ✅ 162 lignes, 3.9K (executable)
+  - ✅ Functions: findWorkspaceRoot, appendEvent, main (start/end/custom)
+  - ✅ Usage: `node scripts/rl4-log.js start task-001 "npm test"`
+
+- [x] [P0] Créer `scripts/rl4-log.sh` (Bash helper) @rl4:id=helper-bash @rl4:verified="2025-11-16T07:43:00Z"
+  - ✅ 198 lignes, 4.3K (executable)
+  - ✅ 5 fonctions: rl4_task_start, rl4_task_result, rl4_file_created, rl4_git_commit, rl4_run
+  - ✅ Exports + helper message on load
+
+- [x] [P0] Créer README_RL4_TERMINAL.md @rl4:id=terminal-docs @rl4:verified="2025-11-16T07:44:00Z"
+  - ✅ 443 lignes, 9.3K (complete guide)
+  - ✅ Sections: What/How/Examples/FAQ/Troubleshooting (12 sections)
+
+**Phase 3: Documentation (1h)** ✅ COMPLÉTÉ
+- [x] [P0] Mettre à jour README.md @rl4:id=readme-update @rl4:verified="2025-11-16T07:50:00Z"
+  - ✅ Section "What's New in v3.5.8" ajoutée
+  - ✅ Section "Phase E3.4 Achievements" complète
+  - ✅ Section "Dev Tab Workflow" (5 étapes)
+  - ✅ Section "Terminal RL4 Usage" (quick start)
+
+- [x] [P0] Créer RELEASE_NOTES_v3.5.8.md @rl4:id=release-notes @rl4:verified="2025-11-16T07:55:00Z"
+  - ✅ Structure complète (features/tech/metrics)
+  - ✅ Getting Started workflow
+  - ✅ Known Issues + Roadmap
+
+---
 
 ### ✅ COMPLETED (Last 24h - Session du 16 Nov 2025)
 

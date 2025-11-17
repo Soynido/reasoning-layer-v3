@@ -9,6 +9,11 @@ import {
   type Anomaly
 } from './components';
 import { 
+  PatternsCard,
+  type TaskPattern,
+  type PatternAnomaly
+} from './components/PatternsCard';
+import { 
   parseContextRL4, 
   getMockKPIData,
   type CognitiveLoadData,
@@ -16,6 +21,7 @@ import {
   type PlanDriftData,
   type RisksData
 } from './utils/contextParser';
+import { logger } from './utils/logger'; // ✅ NEW: Memory-safe logger
 
 // Declare vscode API
 declare global {
@@ -115,11 +121,47 @@ export default function App() {
     mode: string;
   } | null>(null);
 
+  // Terminal Patterns state
+  const [patterns, setPatterns] = useState<TaskPattern[]>([]);
+  const [patternAnomalies, setPatternAnomalies] = useState<PatternAnomaly[]>([]);
+  const [insightsSubTab, setInsightsSubTab] = useState<'kpis' | 'patterns'>('kpis');
+
+  // Auto-Suggestions state
+  interface TaskSuggestion {
+    taskId: string;
+    taskTitle: string;
+    suggestedCondition: string;
+    confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+    reason: string;
+    matchedPattern?: {
+      taskId: string;
+      taskTitle?: string;
+      runsCount: number;
+      successRate: number;
+    };
+  }
+  const [suggestions, setSuggestions] = useState<TaskSuggestion[]>([]);
+
+  // Ad-Hoc Actions state
+  interface AdHocAction {
+    timestamp: string;
+    action: 'npm_install' | 'file_created' | 'git_commit' | 'terminal_command' | 'manual_marker';
+    command?: string;
+    file?: string;
+    commitMessage?: string;
+    marker?: string;
+    suggestedTask: string;
+    confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+    reason: string;
+    linkedTaskId?: string;
+  }
+  const [adHocActions, setAdHocActions] = useState<AdHocAction[]>([]);
+
   // Listen for messages from extension
   useEffect(() => {
     const messageHandler = (event: MessageEvent) => {
       const message = event.data;
-      console.log('[RL4 WebView] Received message:', message.type);
+      logger.log('[RL4 WebView] Received message:', message.type); // ✅ FIXED: Memory-safe logging
       
       switch (message.type) {
         case 'proposalsUpdated':
@@ -150,7 +192,7 @@ export default function App() {
           setTimeout(() => setFeedback(null), 2000);
           break;
         case 'snapshotGenerated':
-          console.log('[RL4 WebView] Snapshot received, length:', message.payload?.length);
+          logger.log('[RL4 WebView] Snapshot received, length:', message.payload?.length); // ✅ FIXED
           setPrompt(message.payload);
           setLoading(false);
           
@@ -175,20 +217,20 @@ export default function App() {
           break;
           
         case 'snapshotMetadata':
-          console.log('[RL4 WebView] Snapshot metadata received:', message.payload);
+          logger.log('[RL4 WebView] Snapshot metadata received:', message.payload); // ✅ FIXED
           if (message.payload) {
             const anomalies = message.payload.anomalies || [];
             const compression = message.payload.compression || null;
-            console.log(`[RL4 WebView] Setting ${anomalies.length} anomalies, compression: ${compression ? compression.reductionPercent.toFixed(1) + '%' : 'null'}`);
+            logger.log(`[RL4 WebView] Setting ${anomalies.length} anomalies, compression: ${compression ? compression.reductionPercent.toFixed(1) + '%' : 'null'}`); // ✅ FIXED
             setAnomalies(anomalies);
             setCompressionMetrics(compression);
           } else {
-            console.warn('[RL4 WebView] snapshotMetadata received but payload is empty');
+            logger.warn('[RL4 WebView] snapshotMetadata received but payload is empty'); // ✅ FIXED
           }
           break;
           
         case 'taskVerificationResults':
-          console.log('[RL4 WebView] Task verification results received:', message.payload);
+          logger.log('[RL4 WebView] Task verification results received:', message.payload); // ✅ FIXED
           if (message.payload && message.payload.results) {
             setTaskVerifications(message.payload.results || []);
             setFeedback(`✅ ${message.payload.results.length} task(s) verified`);
@@ -197,7 +239,7 @@ export default function App() {
           break;
 
         case 'taskMarkedDone':
-          console.log('[RL4 WebView] Task marked as done:', message.payload);
+          logger.log('[RL4 WebView] Task marked as done:', message.payload); // ✅ FIXED
           if (message.payload && message.payload.taskId) {
             // Remove the verification for this task since it's now done
             setTaskVerifications(prev => prev.filter(v => v.taskId !== message.payload.taskId));
@@ -206,8 +248,20 @@ export default function App() {
           }
           break;
           
+        case 'tasksLoaded':
+          logger.log('[RL4 WebView] Tasks.RL4 loaded'); // ✅ FIXED
+          // For now, just log it. In the future, we can parse and display active tasks
+          // in the Dev tab
+          break;
+          
+        case 'adrsLoaded':
+          logger.log('[RL4 WebView] ADRs.RL4 loaded'); // ✅ FIXED
+          // For now, just log it. In the future, we can parse and display ADRs
+          // in the Insights tab
+          break;
+          
         case 'kpisUpdated':
-          console.log('[RL4 WebView] KPIs updated:', message.payload);
+          logger.log('[RL4 WebView] KPIs updated:', message.payload); // ✅ FIXED
           if (message.payload) {
             const parsed = parseContextRL4(message.payload);
             setCognitiveLoad(parsed.cognitiveLoad);
@@ -221,7 +275,7 @@ export default function App() {
           break;
           
         case 'githubStatus':
-          console.log('[RL4 WebView] GitHub status:', message.payload);
+          logger.log('[RL4 WebView] GitHub status:', message.payload); // ✅ FIXED
           setGithubStatus(message.payload);
           break;
           
@@ -259,11 +313,59 @@ export default function App() {
           setCommitPreview(null);
           setTimeout(() => setFeedback(null), 3000);
           break;
+        
+        case 'patternsUpdated':
+          logger.log('[RL4 WebView] Patterns updated:', message.payload); // ✅ FIXED
+          if (message.payload) {
+            setPatterns(message.payload.patterns || []);
+            setPatternAnomalies(message.payload.anomalies || []);
+            setFeedback(`✅ ${message.payload.patterns?.length || 0} patterns loaded`);
+            setTimeout(() => setFeedback(null), 2000);
+          }
+          break;
+
+        case 'suggestionsUpdated':
+          logger.log('[RL4 WebView] Suggestions updated:', message.payload);
+          if (message.payload) {
+            setSuggestions(message.payload.suggestions || []);
+            if (message.payload.suggestions && message.payload.suggestions.length > 0) {
+              setFeedback(`💡 ${message.payload.suggestions.length} suggestions generated`);
+              setTimeout(() => setFeedback(null), 2000);
+            }
+          }
+          break;
+
+        case 'suggestionApplied':
+          logger.log('[RL4 WebView] Suggestion applied:', message.payload);
+          if (message.payload?.success) {
+            setFeedback(`✅ Suggestion applied for task ${message.payload.taskId}`);
+            setTimeout(() => setFeedback(null), 2000);
+            // Refresh suggestions after successful apply
+            if (window.vscode) {
+              window.vscode.postMessage({ type: 'requestSuggestions' });
+            }
+          } else {
+            setFeedback(`❌ Failed to apply suggestion: ${message.payload?.error || 'Unknown error'}`);
+            setTimeout(() => setFeedback(null), 3000);
+          }
+          break;
+
+        case 'adHocActionsUpdated':
+          logger.log('[RL4 WebView] Ad-hoc actions updated:', message.payload);
+          if (message.payload) {
+            setAdHocActions(message.payload.actions || []);
+            if (message.payload.actions && message.payload.actions.length > 0) {
+              setFeedback(`🔍 ${message.payload.actions.length} ad-hoc actions detected`);
+              setTimeout(() => setFeedback(null), 2000);
+            }
+          }
+          break;
           
         case 'commitError':
           setFeedback(`❌ Commit failed: ${message.payload || 'Unknown error'}`);
           setTimeout(() => setFeedback(null), 5000);
           break;
+          
       }
     };
 
@@ -286,7 +388,7 @@ export default function App() {
     setLoading(true);
     setFeedback(null);
     
-    console.log('[RL4 WebView] Requesting snapshot with mode:', deviationMode);
+    logger.log('[RL4 WebView] Requesting snapshot with mode:', deviationMode); // ✅ FIXED
     
     if (window.vscode) {
       window.vscode.postMessage({ 
@@ -299,7 +401,7 @@ export default function App() {
       setFeedback('❌ VS Code API unavailable');
     }
   };
-
+  
   // Connect GitHub handler
   const handleConnectGitHub = () => {
     if (window.vscode) {
@@ -419,6 +521,11 @@ export default function App() {
               setActiveTab('dev');
               // acknowledge new items when opening
               setDevBadge(prev => ({ ...prev, newCount: 0 }));
+              // Request suggestions and ad-hoc actions when Dev tab opens
+              if (window.vscode) {
+                window.vscode.postMessage({ type: 'requestSuggestions' });
+                window.vscode.postMessage({ type: 'requestAdHocActions' });
+              }
             }}
             className={`tab-button ${activeTab === 'dev' ? 'active' : ''}`}
             style={{
@@ -515,6 +622,7 @@ export default function App() {
           >
             {loading ? '⏳ Generating Snapshot...' : '📋 Generate Context Snapshot'}
           </button>
+          
 
           {feedback && (
             <div className={`feedback ${feedback.includes('✅') ? 'success' : 'error'}`}>
@@ -768,6 +876,248 @@ export default function App() {
 
         {activeTab === 'dev' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Auto-Suggestions Section */}
+            {suggestions.length > 0 && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <h2 style={{ margin: 0 }}>💡 Suggested Conditions</h2>
+                  <button
+                    onClick={() => {
+                      if (window.vscode) {
+                        window.vscode.postMessage({ type: 'requestSuggestions' });
+                      }
+                    }}
+                    style={{ 
+                      padding: '4px 8px', 
+                      fontSize: '11px', 
+                      background: 'var(--vscode-button-secondaryBackground)', 
+                      color: 'var(--vscode-button-foreground)', 
+                      border: 'none', 
+                      borderRadius: '3px', 
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    🔄 Refresh
+                  </button>
+                </div>
+                <div style={{ 
+                  border: '1px solid #ff9800', 
+                  borderRadius: '4px', 
+                  background: 'rgba(255, 152, 0, 0.1)' 
+                }}>
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                    {suggestions.map(suggestion => (
+                      <li 
+                        key={suggestion.taskId} 
+                        style={{ 
+                          padding: '10px 12px', 
+                          borderTop: '1px solid rgba(255, 152, 0, 0.3)',
+                          ':first-child': { borderTop: 'none' }
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '13px', fontWeight: 600 }}>
+                              {suggestion.taskTitle}
+                              <span 
+                                style={{ 
+                                  marginLeft: '8px',
+                                  padding: '2px 6px',
+                                  fontSize: '10px',
+                                  borderRadius: '3px',
+                                  background: suggestion.confidence === 'HIGH' ? '#2e7d32' : suggestion.confidence === 'MEDIUM' ? '#ff9800' : '#757575',
+                                  color: 'white'
+                                }}
+                              >
+                                {suggestion.confidence}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--vscode-descriptionForeground)', marginTop: '4px' }}>
+                              <strong>Suggested:</strong> <code style={{ 
+                                background: 'var(--vscode-textCodeBlock-background)', 
+                                padding: '2px 4px', 
+                                borderRadius: '2px',
+                                fontSize: '10px'
+                              }}>@rl4:completeWhen="{suggestion.suggestedCondition}"</code>
+                            </div>
+                            <div style={{ fontSize: '10px', color: 'var(--vscode-descriptionForeground)', marginTop: '4px' }}>
+                              {suggestion.reason}
+                            </div>
+                            {suggestion.matchedPattern && (
+                              <div style={{ fontSize: '10px', color: 'var(--vscode-descriptionForeground)', marginTop: '4px' }}>
+                                📊 Based on similar task: <em>{suggestion.matchedPattern.taskTitle || suggestion.matchedPattern.taskId}</em> ({suggestion.matchedPattern.runsCount} runs, {Math.round(suggestion.matchedPattern.successRate * 100)}% success)
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (window.vscode) {
+                                window.vscode.postMessage({ 
+                                  type: 'applySuggestion', 
+                                  payload: { 
+                                    taskId: suggestion.taskId, 
+                                    suggestedCondition: suggestion.suggestedCondition 
+                                  } 
+                                });
+                              }
+                            }}
+                            style={{ 
+                              padding: '6px 10px', 
+                              fontSize: '11px', 
+                              background: '#2e7d32', 
+                              color: 'white', 
+                              border: 'none', 
+                              borderRadius: '3px', 
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            ✅ Apply
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Ad-Hoc Actions Section (Suggested from Activity) */}
+            {adHocActions.length > 0 && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <h2 style={{ margin: 0 }}>🔍 Suggested from Activity</h2>
+                  <button
+                    onClick={() => {
+                      if (window.vscode) {
+                        window.vscode.postMessage({ type: 'requestAdHocActions' });
+                      }
+                    }}
+                    style={{ 
+                      padding: '4px 8px', 
+                      fontSize: '11px', 
+                      background: 'var(--vscode-button-secondaryBackground)', 
+                      color: 'var(--vscode-button-foreground)', 
+                      border: 'none', 
+                      borderRadius: '3px', 
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    🔄 Refresh
+                  </button>
+                </div>
+                <div style={{ 
+                  border: '1px solid #2196f3', 
+                  borderRadius: '4px', 
+                  background: 'rgba(33, 150, 243, 0.1)' 
+                }}>
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                    {adHocActions.slice(0, 10).map((action, index) => (
+                      <li 
+                        key={`${action.timestamp}-${index}`} 
+                        style={{ 
+                          padding: '10px 12px', 
+                          borderTop: index === 0 ? 'none' : '1px solid rgba(33, 150, 243, 0.3)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '13px', fontWeight: 600 }}>
+                              {action.suggestedTask}
+                              <span 
+                                style={{ 
+                                  marginLeft: '8px',
+                                  padding: '2px 6px',
+                                  fontSize: '10px',
+                                  borderRadius: '3px',
+                                  background: action.confidence === 'HIGH' ? '#2e7d32' : action.confidence === 'MEDIUM' ? '#ff9800' : '#757575',
+                                  color: 'white'
+                                }}
+                              >
+                                {action.confidence}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--vscode-descriptionForeground)', marginTop: '4px' }}>
+                              <strong>Type:</strong> {action.action.replace('_', ' ')} • <strong>Time:</strong> {new Date(action.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                            {action.command && (
+                              <div style={{ fontSize: '10px', color: 'var(--vscode-descriptionForeground)', marginTop: '4px' }}>
+                                <code style={{ 
+                                  background: 'var(--vscode-textCodeBlock-background)', 
+                                  padding: '2px 4px', 
+                                  borderRadius: '2px',
+                                  fontSize: '9px'
+                                }}>{action.command.substring(0, 80)}{action.command.length > 80 ? '...' : ''}</code>
+                              </div>
+                            )}
+                            {action.file && (
+                              <div style={{ fontSize: '10px', color: 'var(--vscode-descriptionForeground)', marginTop: '4px' }}>
+                                📄 File: <em>{action.file}</em>
+                              </div>
+                            )}
+                            {action.commitMessage && (
+                              <div style={{ fontSize: '10px', color: 'var(--vscode-descriptionForeground)', marginTop: '4px' }}>
+                                📝 Commit: <em>"{action.commitMessage.substring(0, 60)}{action.commitMessage.length > 60 ? '...' : ''}"</em>
+                              </div>
+                            )}
+                            <div style={{ fontSize: '10px', color: 'var(--vscode-descriptionForeground)', marginTop: '4px', fontStyle: 'italic' }}>
+                              {action.reason}
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <button
+                              onClick={() => {
+                                // TODO: Implement create task from ad-hoc action
+                                setFeedback('💡 Create task feature coming soon!');
+                                setTimeout(() => setFeedback(null), 2000);
+                              }}
+                              style={{ 
+                                padding: '4px 8px', 
+                                fontSize: '10px', 
+                                background: '#2e7d32', 
+                                color: 'white', 
+                                border: 'none', 
+                                borderRadius: '3px', 
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              ✅ Create Task
+                            </button>
+                            <button
+                              onClick={() => {
+                                // Remove from list
+                                setAdHocActions(prev => prev.filter((_, i) => i !== index));
+                                setFeedback('🗑️ Action ignored');
+                                setTimeout(() => setFeedback(null), 1500);
+                              }}
+                              style={{ 
+                                padding: '4px 8px', 
+                                fontSize: '10px', 
+                                background: '#9e9e9e', 
+                                color: 'white', 
+                                border: 'none', 
+                                borderRadius: '3px', 
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              🗑️ Ignore
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {adHocActions.length > 10 && (
+                  <div style={{ fontSize: '11px', color: 'var(--vscode-descriptionForeground)', marginTop: '8px', textAlign: 'center' }}>
+                    Showing 10 of {adHocActions.length} detected actions
+                  </div>
+                )}
+              </div>
+            )}
+
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h2>🧩 Proposed Tasks (LLM)</h2>
               <div style={{ fontSize: '12px', color: 'var(--vscode-descriptionForeground)' }}>
@@ -945,7 +1295,7 @@ export default function App() {
         )}
 
         {/* KPI Dashboard (Insights tab) */}
-        {activeTab === 'insights' && showKPIs && (
+        {activeTab === 'insights' && (
           <div className="kpi-dashboard">
             <div className="kpi-dashboard-header">
               <h2>📊 Workspace Insights</h2>
@@ -954,6 +1304,62 @@ export default function App() {
               </p>
             </div>
             
+            {/* Insights Sub-Tabs */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid var(--vscode-panel-border)', paddingBottom: '8px' }}>
+              <button
+                onClick={() => setInsightsSubTab('kpis')}
+                style={{
+                  padding: '8px 16px',
+                  background: insightsSubTab === 'kpis' ? 'var(--vscode-button-background)' : 'transparent',
+                  color: insightsSubTab === 'kpis' ? 'var(--vscode-button-foreground)' : 'var(--vscode-foreground)',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: insightsSubTab === 'kpis' ? '600' : 'normal'
+                }}
+              >
+                📊 KPIs
+              </button>
+              <button
+                onClick={() => {
+                  setInsightsSubTab('patterns');
+                  // Request patterns from extension
+                  if (window.vscode) {
+                    window.vscode.postMessage({ type: 'requestPatterns' });
+                  }
+                }}
+                style={{
+                  padding: '8px 16px',
+                  background: insightsSubTab === 'patterns' ? 'var(--vscode-button-background)' : 'transparent',
+                  color: insightsSubTab === 'patterns' ? 'var(--vscode-button-foreground)' : 'var(--vscode-foreground)',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: insightsSubTab === 'patterns' ? '600' : 'normal'
+                }}
+              >
+                🧠 Patterns
+                {patterns.length > 0 && (
+                  <span style={{ 
+                    marginLeft: '6px', 
+                    padding: '2px 6px', 
+                    background: 'var(--vscode-badge-background)', 
+                    color: 'var(--vscode-badge-foreground)', 
+                    borderRadius: '10px', 
+                    fontSize: '11px',
+                    fontWeight: '600'
+                  }}>
+                    {patterns.length}
+                  </span>
+                )}
+              </button>
+            </div>
+            
+            {/* KPIs Sub-Tab */}
+            {insightsSubTab === 'kpis' && showKPIs && (
+              <>
             <div className="kpi-grid">
               {cognitiveLoad && (
                 <CognitiveLoadCard 
@@ -982,31 +1388,41 @@ export default function App() {
                 <RisksCard risks={risks.risks} />
               )}
             </div>
-            
-            {/* Anomalies Card */}
-            {anomalies.length > 0 && (
-              <div style={{ marginTop: '20px' }}>
-                <AnomaliesCard anomalies={anomalies} />
-              </div>
+                
+                {/* Anomalies Card */}
+                {anomalies.length > 0 && (
+                  <div style={{ marginTop: '20px' }}>
+                    <AnomaliesCard anomalies={anomalies} />
+          </div>
+        )}
+              </>
+            )}
+
+            {/* Patterns Sub-Tab */}
+            {insightsSubTab === 'patterns' && (
+              <PatternsCard 
+                patterns={patterns} 
+                anomalies={patternAnomalies}
+              />
             )}
           </div>
         )}
 
         {/* About Tab */}
         {activeTab === 'about' && (
-          <div className="info-cards">
-            <div className="info-card">
-              <h4>🎯 What RL4 Does</h4>
+        <div className="info-cards">
+          <div className="info-card">
+            <h4>🎯 What RL4 Does</h4>
               <p>Automatically collects your workspace activity, system health, file patterns, git history, and architectural decisions.</p>
-            </div>
-            
-            <div className="info-card">
-              <h4>🔍 What You Get</h4>
+          </div>
+          
+          <div className="info-card">
+            <h4>🔍 What You Get</h4>
               <p>A complete context snapshot: your project plan, active tasks, timeline, blind spot data, and decision history — all in one prompt.</p>
-            </div>
-            
-            <div className="info-card">
-              <h4>🔄 Feedback Loop</h4>
+          </div>
+          
+          <div className="info-card">
+            <h4>🔄 Feedback Loop</h4>
               <p>Your AI agent updates the RL4 files → RL4 automatically parses changes → Next snapshot reflects all updates, creating a continuous learning cycle.</p>
             </div>
             

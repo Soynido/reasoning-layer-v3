@@ -1,7 +1,7 @@
 {
   "name": "reasoning-layer-rl4",
   "displayName": "Reasoning Layer RL4 (Kernel)",
-  "version": "3.5.8",
+  "version": "3.5.11",
   "publisher": "valentingaludec",
   "author": {
     "name": "Valentin Galudec",
@@ -80,6 +80,11 @@
       {
         "command": "rl4.toggleWebview",
         "title": "🖥️ Show Dashboard",
+        "category": "RL4 Kernel"
+      },
+      {
+        "command": "rl4.openTerminal",
+        "title": "🖥️ Open RL4 Terminal",
         "category": "RL4 Kernel"
       }
     ]

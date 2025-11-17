@@ -18,10 +18,19 @@ export class GitHubFineGrainedManager {
      * Public health check: determines if repo + valid fine-grained token are configured
      */
     public async checkConnection(): Promise<{ ok: boolean; reason?: string; repo?: string }> {
-        const repoSlug = this.getRepositorySlug();
+        // Try to get configured repo from token file first
+        const tokenData = this.getTokenData();
+        let repoSlug = tokenData?.repo || null;
+        
+        // Fallback to git detection if no token configured
+        if (!repoSlug) {
+            repoSlug = this.getRepositorySlug();
+        }
+        
         if (!repoSlug) {
             return { ok: false, reason: 'no_repo' };
         }
+        
         const token = this.getToken();
         if (!token) {
             return { ok: false, reason: 'missing_token', repo: repoSlug };
@@ -257,6 +266,27 @@ export class GitHubFineGrainedManager {
 
     /**
      * Get stored token
+     */
+    /**
+     * Get full token data (repo, token, scopes, etc.)
+     */
+    private getTokenData(): any | null {
+        try {
+            const tokenPath = path.join(this.workspaceRoot, '.reasoning', 'security', 'github.json');
+            if (!fs.existsSync(tokenPath)) {
+                return null;
+            }
+
+            const tokenData = JSON.parse(fs.readFileSync(tokenPath, 'utf-8'));
+            return tokenData || null;
+        } catch (error) {
+            console.error('Failed to read token data:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Get token only (for backward compatibility)
      */
     public getToken(): string | null {
         try {

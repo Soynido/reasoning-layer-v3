@@ -61,6 +61,8 @@ export class BuildMetricsListener {
     private outputChannel: vscode.OutputChannel | null = null;
     private taskStartTimes: Map<string, number> = new Map();
     private bundleFilePath: string;
+    private disposables: vscode.Disposable[] = []; // ✅ NEW: Track disposables
+    private bundleMonitorInterval: NodeJS.Timeout | null = null; // ✅ NEW: Track interval
     
     constructor(workspaceRoot: string, appendWriter?: AppendOnlyWriter, outputChannel?: vscode.OutputChannel) {
         this.workspaceRoot = workspaceRoot;
@@ -96,15 +98,20 @@ export class BuildMetricsListener {
             this.appendWriter = new AppendOnlyWriter(logPath);
         }
         
+        // ✅ FIXED: Store disposables
         // Monitor VS Code task execution
-        vscode.tasks.onDidStartTask(e => {
-            const taskName = e.execution.task.name;
-            this.taskStartTimes.set(taskName, Date.now());
-        });
+        this.disposables.push(
+            vscode.tasks.onDidStartTask(e => {
+                const taskName = e.execution.task.name;
+                this.taskStartTimes.set(taskName, Date.now());
+            })
+        );
         
-        vscode.tasks.onDidEndTask(async e => {
-            await this.handleTaskEnd(e);
-        });
+        this.disposables.push(
+            vscode.tasks.onDidEndTask(async e => {
+                await this.handleTaskEnd(e);
+            })
+        );
         
         // Also monitor bundle file changes (fallback for non-task builds)
         this.monitorBundleFile();
@@ -185,8 +192,9 @@ export class BuildMetricsListener {
         let lastSize = this.getBundleSize();
         let lastMtime = fs.statSync(this.bundleFilePath).mtimeMs;
         
+        // ✅ FIXED: Store interval for cleanup
         // Check every 30 seconds
-        setInterval(() => {
+        this.bundleMonitorInterval = setInterval(() => {
             try {
                 if (!fs.existsSync(this.bundleFilePath)) {
                     return;
@@ -242,11 +250,31 @@ export class BuildMetricsListener {
         
         this.isActive = false;
         
+        // ✅ FIXED: Dispose all event listeners
+        this.dispose();
+        
         if (this.appendWriter) {
             await this.appendWriter.flush();
         }
         
         simpleLogger.log('🔨 BuildMetricsListener stopped');
+    }
+    
+    /**
+     * ✅ NEW: Dispose all VS Code event listeners
+     */
+    public dispose(): void {
+        // Clear interval if exists
+        if (this.bundleMonitorInterval) {
+            clearInterval(this.bundleMonitorInterval);
+            this.bundleMonitorInterval = null;
+        }
+        
+        // Dispose all event listeners
+        this.disposables.forEach(d => d.dispose());
+        this.disposables = [];
+        
+        simpleLogger.log('🔨 BuildMetricsListener disposed (all listeners + timers cleaned)');
     }
     
     /**

@@ -51,6 +51,20 @@ export interface PatternAnomaly {
   recommendation: string;
 }
 
+export interface TaskSuggestion {
+  taskId: string;
+  taskTitle: string;
+  suggestedCondition: string;
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  reason: string;
+  matchedPattern?: {
+    taskId: string;
+    taskTitle?: string;
+    runsCount: number;
+    successRate: number;
+  };
+}
+
 export class TerminalPatternsLearner {
   private workspaceRoot: string;
   private patternsPath: string;
@@ -288,6 +302,52 @@ export class TerminalPatternsLearner {
   }
 
   /**
+   * Suggest for a specific task (returns structured data for UI)
+   */
+  suggestForTask(taskId: string, taskTitle: string): TaskSuggestion | null {
+    const suggestion = this.suggestCompleteWhen(taskTitle);
+    if (!suggestion) return null;
+
+    // Find matched pattern for confidence calculation
+    const matchedPattern = this.findSimilarPattern(taskTitle);
+    
+    let confidence: 'HIGH' | 'MEDIUM' | 'LOW' = 'LOW';
+    let reason = 'Heuristic-based suggestion';
+
+    if (matchedPattern && matchedPattern.completeWhen === suggestion) {
+      // Pattern-based suggestion (high confidence)
+      if (matchedPattern.runsCount >= 5 && matchedPattern.successRate > 0.85) {
+        confidence = 'HIGH';
+        reason = `Based on ${matchedPattern.runsCount} successful runs (${Math.round(matchedPattern.successRate * 100)}% success rate)`;
+      } else if (matchedPattern.runsCount >= 3) {
+        confidence = 'MEDIUM';
+        reason = `Based on ${matchedPattern.runsCount} runs (${Math.round(matchedPattern.successRate * 100)}% success rate)`;
+      }
+    } else {
+      // Heuristic-based suggestion
+      const lowerTitle = taskTitle.toLowerCase();
+      if (lowerTitle.includes('test') || lowerTitle.includes('build') || lowerTitle.includes('install')) {
+        confidence = 'MEDIUM';
+        reason = 'Common pattern detected in task title';
+      }
+    }
+
+    return {
+      taskId,
+      taskTitle,
+      suggestedCondition: suggestion,
+      confidence,
+      reason,
+      matchedPattern: matchedPattern ? {
+        taskId: matchedPattern.taskId,
+        taskTitle: matchedPattern.taskTitle,
+        runsCount: matchedPattern.runsCount,
+        successRate: matchedPattern.successRate
+      } : undefined
+    };
+  }
+
+  /**
    * Find similar pattern by fuzzy matching task title
    */
   private findSimilarPattern(taskTitle: string): TaskPattern | null {
@@ -464,6 +524,68 @@ export class TerminalPatternsLearner {
    */
   getPatterns(): TaskPattern[] {
     return Array.from(this.patterns.values());
+  }
+
+  /**
+   * Alias for getPatterns (for backward compatibility)
+   */
+  getAllPatterns(): TaskPattern[] {
+    return this.getPatterns();
+  }
+
+  /**
+   * Detect all anomalies across all patterns
+   */
+  detectAllAnomalies(): PatternAnomaly[] {
+    const allAnomalies: PatternAnomaly[] = [];
+    
+    // Load recent events for analysis
+    try {
+      const recentEvents = this.loadRecentEvents(100); // Last 100 events
+      
+      for (const [taskId, pattern] of this.patterns.entries()) {
+        if (pattern.runsCount < 3) continue; // Skip patterns with insufficient data
+        
+        const taskEvents = recentEvents.filter(e => e.taskId === taskId);
+        if (taskEvents.length === 0) continue;
+        
+        const anomalies = this.detectAnomalies(taskId, taskEvents);
+        allAnomalies.push(...anomalies);
+      }
+    } catch (error) {
+      console.error('[TerminalPatternsLearner] Failed to detect anomalies:', error);
+    }
+    
+    return allAnomalies;
+  }
+
+  /**
+   * Load recent terminal events
+   */
+  private loadRecentEvents(maxEvents: number = 100): TerminalEvent[] {
+    const events: TerminalEvent[] = [];
+    
+    try {
+      if (!fs.existsSync(this.terminalEventsPath)) {
+        return events;
+      }
+
+      const lines = fs.readFileSync(this.terminalEventsPath, 'utf-8').split('\n').filter(l => l.trim());
+      const recentLines = lines.slice(-maxEvents);
+
+      for (const line of recentLines) {
+        try {
+          const event = JSON.parse(line);
+          events.push(event);
+        } catch {
+          // Skip invalid lines
+        }
+      }
+    } catch (error) {
+      console.error('[TerminalPatternsLearner] Failed to load recent events:', error);
+    }
+
+    return events;
   }
 
   /**

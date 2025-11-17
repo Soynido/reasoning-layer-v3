@@ -80,6 +80,33 @@ export class TasksRL4Parser {
     }
 
     /**
+     * Find tasks without @rl4:completeWhen marker
+     */
+    public static findTasksWithoutCompleteWhen(tasks: TaskRL4Marker[]): TaskRL4Marker[] {
+        return tasks.filter(task => !task.completeWhen || task.completeWhen.length === 0);
+    }
+
+    /**
+     * Extract task title from rawText
+     */
+    public static extractTaskTitle(rawText: string): string {
+        // Match pattern: - [ ] [P0] Task title @rl4:id=...
+        const match = rawText.match(/^\s*-\s*\[\s*\]\s*\[P\d+\]\s*(.+?)(?:\s+@rl4:)/);
+        if (match) {
+            return match[1].trim();
+        }
+
+        // Fallback: extract first line
+        const firstLine = rawText.split('\n')[0].trim();
+        // Remove checkboxes and priority markers
+        return firstLine
+            .replace(/^\s*-\s*\[\s*\]\s*/, '')
+            .replace(/\[P\d+\]\s*/, '')
+            .replace(/@rl4:\w+.*$/, '')
+            .trim();
+    }
+
+    /**
      * Vérifie si une condition completeWhen est satisfaite par un événement terminal
      */
     public static checkCondition(condition: string, event: any): boolean {

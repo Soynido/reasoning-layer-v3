@@ -24,6 +24,11 @@ import { FirstBootstrapEngine } from './kernel/bootstrap/FirstBootstrapEngine';
 import { GitHubFineGrainedManager } from './core/integrations/GitHubFineGrainedManager';
 import { CommitContextCollector } from './kernel/api/CommitContextCollector';
 import { CommitPromptGenerator } from './kernel/api/CommitPromptGenerator';
+import { TerminalPatternsLearner } from './kernel/cognitive/TerminalPatternsLearner';
+import { TasksRL4Parser } from './kernel/cognitive/TasksRL4Parser';
+import { AdHocTracker } from './kernel/cognitive/AdHocTracker';
+import { MemoryMonitor } from './kernel/MemoryMonitor'; // ✅ NEW: Memory monitoring
+import { MemoryWatchdog } from './kernel/MemoryWatchdog'; // ✅ NEW: Memory watchdog
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -61,6 +66,50 @@ export async function activate(context: vscode.ExtensionContext) {
     logger.system('=== RL4 KERNEL — Cognitive Console ===', '🧠');
     logger.system(`Workspace: ${workspaceRoot}`, '📁');
     logger.system('=====================================', '═');
+    
+    // ✅ NEW: Initialize MemoryMonitor (E4.1 Phase 0)
+    const memoryMonitor = new MemoryMonitor();
+    logger.system(`📊 Memory Monitor initialized (baseline: ${memoryMonitor.getBaselineHeapUsage()} MB)`, '📊');
+    
+    // Log memory snapshots every 5 minutes
+    const memoryLoggingInterval = setInterval(() => {
+        const metrics = memoryMonitor.getMetrics();
+        if (logger) {
+            logger.system(
+                `Memory: ${metrics.current.heapUsed} MB (Δ${metrics.current.deltaFromBaseline >= 0 ? '+' : ''}${metrics.current.deltaFromBaseline} MB, ` +
+                `avg: ${metrics.averageHeapUsed} MB, peak: ${metrics.peakHeapUsed} MB)`,
+                '📊'
+            );
+        }
+        
+        // Check if memory is high
+        memoryMonitor.logIfHigh(500);
+    }, 5 * 60 * 1000); // 5 minutes
+    
+    // Store in subscriptions for cleanup
+    context.subscriptions.push({
+        dispose: () => {
+            clearInterval(memoryLoggingInterval);
+            if (logger) {
+                logger.system('📊 Memory Monitor disposed', '📊');
+            }
+        }
+    });
+    
+    // ✅ NEW: Initialize MemoryWatchdog (E4.1 Phase 5)
+    const memoryWatchdog = new MemoryWatchdog(logger);
+    memoryWatchdog.start(500); // Alert if > 500 MB
+    logger.system('🐕 Memory Watchdog started (threshold: 500 MB)', '🐕');
+    
+    // Store watchdog in subscriptions for cleanup
+    context.subscriptions.push({
+        dispose: () => {
+            memoryWatchdog.stop();
+            if (logger) {
+                logger.system('🐕 Memory Watchdog disposed', '🐕');
+            }
+        }
+    });
     
     // Load kernel configuration
     const kernelConfig = loadKernelConfig(workspaceRoot);
@@ -286,7 +335,7 @@ export async function activate(context: vscode.ExtensionContext) {
             { viewColumn: vscode.ViewColumn.Two, preserveFocus: true },
             {
                 enableScripts: true,
-                retainContextWhenHidden: true,
+                retainContextWhenHidden: false, // ✅ FIXED: Free memory when hidden (was causing 1.2 GB leak)
                 localResourceRoots: [
                     vscode.Uri.joinPath(context.extensionUri, 'extension', 'webview', 'ui', 'dist')
                 ]
@@ -390,8 +439,67 @@ _This file is managed by RL4. Add ADRs here as they are proposed by the agent._
             }
         };
         
-        // Wait 500ms for WebView to be ready, then send initial Context.RL4
-        setTimeout(sendContextToWebView, 500);
+        // Helper: Send all initial RL4 data to WebView
+        const sendInitialRL4Data = async () => {
+            if (!webviewPanel) return;
+            
+            const fs = await import('fs/promises');
+            
+            // 1. Send Context.RL4 (already done by sendContextToWebView)
+            await sendContextToWebView();
+            
+            // 2. Send proposals.json for Dev tab
+            try {
+                const proposalsPath = path.join(rl4Path, 'proposals.json');
+                const proposalsContent = await fs.readFile(proposalsPath, 'utf-8');
+                const proposals = JSON.parse(proposalsContent);
+                
+                webviewPanel.webview.postMessage({
+                    type: 'proposalsUpdated',
+                    payload: proposals.suggestedTasks || []
+                });
+                
+                logger!.system(`✅ Initial proposals sent to WebView (${proposals.suggestedTasks?.length || 0} tasks)`, '✅');
+            } catch (error) {
+                logger!.system(`⚠️ proposals.json not found or empty (will show empty state)`, '⚠️');
+            }
+            
+            // 3. Send Tasks.RL4 for Dev tab
+            try {
+                const tasksPath = path.join(rl4Path, 'Tasks.RL4');
+                const tasksContent = await fs.readFile(tasksPath, 'utf-8');
+                
+                webviewPanel.webview.postMessage({
+                    type: 'tasksLoaded',
+                    payload: tasksContent
+                });
+                
+                logger!.system('✅ Initial Tasks.RL4 sent to WebView', '✅');
+            } catch (error) {
+                logger!.system(`⚠️ Tasks.RL4 not found yet`, '⚠️');
+            }
+            
+            // 4. Send ADRs for Insights tab
+            try {
+                const adrsPath = path.join(rl4Path, 'ADRs.RL4');
+                const adrsContent = await fs.readFile(adrsPath, 'utf-8');
+                
+                webviewPanel.webview.postMessage({
+                    type: 'adrsLoaded',
+                    payload: adrsContent
+                });
+                
+                logger!.system('✅ Initial ADRs.RL4 sent to WebView', '✅');
+            } catch (error) {
+                logger!.system(`⚠️ ADRs.RL4 not found yet`, '⚠️');
+            }
+            
+            // 5. TODO: Send task verifications when TaskVerificationEngine is integrated
+            // For now, this is skipped as TaskVerificationEngine is not yet initialized in extension.ts
+        };
+        
+        // Wait 500ms for WebView to be ready, then send all initial RL4 data
+        setTimeout(sendInitialRL4Data, 500);
         
         // Send initial GitHub status to WebView
         setTimeout(async () => {
@@ -419,6 +527,43 @@ _This file is managed by RL4. Add ADRs here as they are proposed by the agent._
         // Initialize Cursor rules for RL4 strict mode enforcement
         ensureCursorRuleExists(workspaceRoot, logger);
 
+        // Add command to open RL4 Terminal
+        context.subscriptions.push(
+            vscode.commands.registerCommand('rl4.openTerminal', () => {
+                // Check if RL4 Terminal already exists
+                const existingTerminal = vscode.window.terminals.find(t => t.name === 'RL4 Terminal');
+                
+                if (existingTerminal) {
+                    // Reveal existing terminal
+                    existingTerminal.show();
+                    logger!.system('🖥️ RL4 Terminal revealed', '🖥️');
+                } else {
+                    // Create new RL4 Terminal
+                    const terminal = vscode.window.createTerminal({
+                        name: 'RL4 Terminal',
+                        cwd: workspaceRoot,
+                        env: {
+                            ...process.env,
+                            RL4_TERMINAL: '1'
+                        }
+                    });
+                    
+                    terminal.show();
+                    
+                    // Source the helper script if it exists
+                    const helperScript = path.join(workspaceRoot, 'scripts', 'rl4-log.sh');
+                    if (fs.existsSync(helperScript)) {
+                        terminal.sendText(`source ${helperScript}`);
+                        terminal.sendText('echo "✅ RL4 Terminal helper loaded"');
+                    } else {
+                        terminal.sendText('echo "⚠️ RL4 helper script not found at scripts/rl4-log.sh"');
+                    }
+                    
+                    logger!.system('🖥️ RL4 Terminal created', '🖥️');
+                }
+            })
+        );
+
         webviewPanel.webview.onDidReceiveMessage(
             async (message) => {
                 console.log('[RL4 Extension] Received message from WebView:', message.type);
@@ -441,6 +586,183 @@ _This file is managed by RL4. Add ADRs here as they are proposed by the agent._
                             webviewPanel!.webview.postMessage({
                                 type: 'error',
                                 payload: 'Failed to generate snapshot'
+                            });
+                        }
+                        break;
+                    
+
+                    case 'requestPatterns':
+                        try {
+                            logger!.system('📊 Loading terminal patterns...', '📊');
+                            
+                            // Load patterns from TerminalPatternsLearner
+                            const patternsLearner = new TerminalPatternsLearner(workspaceRoot);
+                            await patternsLearner.loadPatterns();
+                            
+                            const patterns = patternsLearner.getAllPatterns();
+                            const anomalies = patternsLearner.detectAllAnomalies();
+                            
+                            logger!.system(`✅ Loaded ${patterns.length} patterns, ${anomalies.length} anomalies`, '✅');
+                            
+                            // Send to WebView
+                            webviewPanel!.webview.postMessage({
+                                type: 'patternsUpdated',
+                                payload: {
+                                    patterns,
+                                    anomalies
+                                }
+                            });
+                        } catch (error) {
+                            const msg = `Failed to load patterns: ${error instanceof Error ? error.message : 'Unknown error'}`;
+                            logger!.error(msg);
+                            webviewPanel!.webview.postMessage({
+                                type: 'patternsUpdated',
+                                payload: {
+                                    patterns: [],
+                                    anomalies: []
+                                }
+                            });
+                        }
+                        break;
+
+                    case 'requestSuggestions':
+                        try {
+                            logger!.system('💡 Generating task suggestions...', '💡');
+                            
+                            // Read Tasks.RL4
+                            const tasksPath = path.join(workspaceRoot, '.reasoning_rl4', 'Tasks.RL4');
+                            if (!fs.existsSync(tasksPath)) {
+                                webviewPanel!.webview.postMessage({
+                                    type: 'suggestionsUpdated',
+                                    payload: { suggestions: [] }
+                                });
+                                break;
+                            }
+
+                            const tasksContent = fs.readFileSync(tasksPath, 'utf-8');
+                            const tasks = TasksRL4Parser.parse(tasksContent);
+                            
+                            // Find tasks without @rl4:completeWhen
+                            const tasksWithoutConditions = TasksRL4Parser.findTasksWithoutCompleteWhen(tasks);
+                            
+                            // Load patterns for suggestions
+                            const patternsLearner = new TerminalPatternsLearner(workspaceRoot);
+                            await patternsLearner.loadPatterns();
+                            
+                            // Generate suggestions
+                            const suggestions = tasksWithoutConditions
+                                .map(task => {
+                                    const title = TasksRL4Parser.extractTaskTitle(task.rawText);
+                                    return patternsLearner.suggestForTask(task.id, title);
+                                })
+                                .filter((s): s is NonNullable<typeof s> => s !== null);
+                            
+                            logger!.system(`✅ Generated ${suggestions.length} suggestions for ${tasksWithoutConditions.length} tasks`, '✅');
+                            
+                            // Send to WebView
+                            webviewPanel!.webview.postMessage({
+                                type: 'suggestionsUpdated',
+                                payload: { suggestions }
+                            });
+                        } catch (error) {
+                            const msg = `Failed to generate suggestions: ${error instanceof Error ? error.message : 'Unknown error'}`;
+                            logger!.error(msg);
+                            webviewPanel!.webview.postMessage({
+                                type: 'suggestionsUpdated',
+                                payload: { suggestions: [] }
+                            });
+                        }
+                        break;
+
+                    case 'applySuggestion':
+                        try {
+                            const { taskId, suggestedCondition } = message.payload;
+                            logger!.system(`✏️ Applying suggestion for task ${taskId}...`, '✏️');
+                            
+                            // Read Tasks.RL4
+                            const tasksPath = path.join(workspaceRoot, '.reasoning_rl4', 'Tasks.RL4');
+                            if (!fs.existsSync(tasksPath)) {
+                                throw new Error('Tasks.RL4 not found');
+                            }
+
+                            let tasksContent = fs.readFileSync(tasksPath, 'utf-8');
+                            
+                            // Find the line with @rl4:id=taskId and add @rl4:completeWhen
+                            const lines = tasksContent.split('\n');
+                            let modified = false;
+                            
+                            for (let i = 0; i < lines.length; i++) {
+                                if (lines[i].includes(`@rl4:id=${taskId}`)) {
+                                    // Add @rl4:completeWhen on the same line (or next line if too long)
+                                    if (!lines[i].includes('@rl4:completeWhen')) {
+                                        // Check if line is too long (>120 chars)
+                                        if (lines[i].length > 120) {
+                                            // Add on next line with proper indentation
+                                            const indent = lines[i].match(/^\s*/)?.[0] || '  ';
+                                            lines.splice(i + 1, 0, `${indent}  - @rl4:completeWhen="${suggestedCondition}"`);
+                                        } else {
+                                            // Add on same line
+                                            lines[i] = lines[i].trim() + ` @rl4:completeWhen="${suggestedCondition}"`;
+                                        }
+                                        modified = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (modified) {
+                                // Write back
+                                tasksContent = lines.join('\n');
+                                fs.writeFileSync(tasksPath, tasksContent, 'utf-8');
+                                
+                                // Log decision (optional - decisions.jsonl not yet implemented)
+                                logger!.system(`✅ Applied suggestion for task ${taskId}`, '✅');
+                                
+                                // Send success message
+                                webviewPanel!.webview.postMessage({
+                                    type: 'suggestionApplied',
+                                    payload: { taskId, success: true }
+                                });
+                                
+                                // Refresh suggestions
+                                webviewPanel!.webview.postMessage({
+                                    type: 'requestSuggestions'
+                                });
+                            } else {
+                                throw new Error(`Task ${taskId} not found or already has @rl4:completeWhen`);
+                            }
+                        } catch (error) {
+                            const msg = `Failed to apply suggestion: ${error instanceof Error ? error.message : 'Unknown error'}`;
+                            logger!.error(msg);
+                            vscode.window.showErrorMessage(msg);
+                            webviewPanel!.webview.postMessage({
+                                type: 'suggestionApplied',
+                                payload: { taskId: message.payload?.taskId, success: false, error: msg }
+                            });
+                        }
+                        break;
+
+                    case 'requestAdHocActions':
+                        try {
+                            logger!.system('🔍 Loading ad-hoc actions...', '🔍');
+                            
+                            // Detect ad-hoc actions (last 2 hours)
+                            const adHocTracker = new AdHocTracker(workspaceRoot);
+                            const actions = adHocTracker.detectAdHocActions(120);
+                            
+                            logger!.system(`✅ Found ${actions.length} ad-hoc actions`, '✅');
+                            
+                            // Send to WebView
+                            webviewPanel!.webview.postMessage({
+                                type: 'adHocActionsUpdated',
+                                payload: { actions }
+                            });
+                        } catch (error) {
+                            const msg = `Failed to load ad-hoc actions: ${error instanceof Error ? error.message : 'Unknown error'}`;
+                            logger!.error(msg);
+                            webviewPanel!.webview.postMessage({
+                                type: 'adHocActionsUpdated',
+                                payload: { actions: [] }
                             });
                         }
                         break;
@@ -887,18 +1209,18 @@ _This file is managed by RL4. Add ADRs here as they are proposed by the agent._
                     logger!.system('🖥️ WebView revealed', '🖥️');
                 } else {
                     // Recreate WebView if disposed
-                    webviewPanel = vscode.window.createWebviewPanel(
-                        'rl4Webview',
-                        '🧠 RL4 Dashboard',
-                        { viewColumn: vscode.ViewColumn.Two, preserveFocus: true },
-                        {
-                            enableScripts: true,
-                            retainContextWhenHidden: true,
-                            localResourceRoots: [
-                                vscode.Uri.joinPath(context.extensionUri, 'extension', 'webview', 'ui', 'dist')
-                            ]
-                        }
-                    );
+        webviewPanel = vscode.window.createWebviewPanel(
+            'rl4Webview',
+            '🧠 RL4 Dashboard',
+            { viewColumn: vscode.ViewColumn.Two, preserveFocus: true },
+            {
+                enableScripts: true,
+                retainContextWhenHidden: false, // ✅ FIXED: Free memory when hidden (was causing 1.2 GB leak)
+                localResourceRoots: [
+                    vscode.Uri.joinPath(context.extensionUri, 'extension', 'webview', 'ui', 'dist')
+                ]
+            }
+        );
                     
                     webviewPanel.webview.html = getWebviewHtml(context, webviewPanel);
                     
@@ -1426,6 +1748,21 @@ Agent:
 
 export async function deactivate() {
     logger?.system('🛑 RL4 Kernel deactivating...', '🛑');
+    
+    // ✅ FIXED: Dispose all event listeners (IDE, Build metrics) - CRITICAL for memory leak prevention
+    if (kernel?.scheduler) {
+        try {
+            logger?.system('🧹 Disposing event listeners...', '🧹');
+            
+            // Call disposeAll() which disposes IDEActivityListener and BuildMetricsListener
+            // This cleans all VS Code event listeners (onDidChangeActiveTextEditor, etc.)
+            kernel.scheduler.disposeAll();
+            
+            logger?.system('✅ Event listeners disposed', '✅');
+        } catch (error) {
+            logger?.error(`Dispose listeners error: ${error}`);
+        }
+    }
     
     // Dispose Status Bar Item
     if (statusBarItem) {

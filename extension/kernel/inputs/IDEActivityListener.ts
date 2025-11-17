@@ -62,6 +62,7 @@ export class IDEActivityListener {
     private outputChannel: vscode.OutputChannel | null = null;
     private recentlyViewed: string[] = []; // Cache top 10
     private lastEditTimestamp: number = Date.now();
+    private disposables: vscode.Disposable[] = []; // ✅ NEW: Track disposables
     
     constructor(workspaceRoot: string, appendWriter?: AppendOnlyWriter, outputChannel?: vscode.OutputChannel) {
         this.workspaceRoot = workspaceRoot;
@@ -95,18 +96,23 @@ export class IDEActivityListener {
             this.appendWriter = new AppendOnlyWriter(logPath);
         }
         
+        // ✅ FIXED: Store disposables
         // Track active editor changes for recently viewed cache
-        vscode.window.onDidChangeActiveTextEditor(editor => {
-            if (editor && editor.document) {
-                this.trackRecentlyViewed(editor.document.uri.fsPath);
-                this.lastEditTimestamp = Date.now();
-            }
-        });
+        this.disposables.push(
+            vscode.window.onDidChangeActiveTextEditor(editor => {
+                if (editor && editor.document) {
+                    this.trackRecentlyViewed(editor.document.uri.fsPath);
+                    this.lastEditTimestamp = Date.now();
+                }
+            })
+        );
         
         // Track text edits
-        vscode.workspace.onDidChangeTextDocument(() => {
-            this.lastEditTimestamp = Date.now();
-        });
+        this.disposables.push(
+            vscode.workspace.onDidChangeTextDocument(() => {
+                this.lastEditTimestamp = Date.now();
+            })
+        );
     }
     
     /**
@@ -279,6 +285,15 @@ export class IDEActivityListener {
         }
         
         simpleLogger.log('👁️ IDEActivityListener stopped');
+    }
+    
+    /**
+     * Dispose all event listeners (CRITICAL for memory leak prevention)
+     */
+    public dispose(): void {
+        this.disposables.forEach(d => d.dispose());
+        this.disposables = [];
+        simpleLogger.log('👁️ IDEActivityListener disposed (all listeners cleaned)');
     }
     
     /**

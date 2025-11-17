@@ -30,6 +30,7 @@ import { PromptOptimizer } from './PromptOptimizer';
 import { AnomalyDetector, WorkspaceContext } from './AnomalyDetector';
 import { CognitiveLogger, SnapshotDataSummary, LLMAnalysisMetrics, Insight } from '../CognitiveLogger';
 import { CodeStateAnalyzer, CodeState } from './CodeStateAnalyzer';
+import { AdHocTracker, AdHocAction } from '../cognitive/AdHocTracker';
 
 export class UnifiedPromptBuilder {
   private rl4Path: string;
@@ -45,6 +46,7 @@ export class UnifiedPromptBuilder {
   private cognitiveLogger: CognitiveLogger | null;
   private promptOptimizer: PromptOptimizer;
   private anomalyDetector: AnomalyDetector;
+  private adHocTracker: AdHocTracker;
 
   constructor(rl4Path: string, cognitiveLogger?: CognitiveLogger) {
     this.rl4Path = rl4Path;
@@ -60,6 +62,7 @@ export class UnifiedPromptBuilder {
     this.cognitiveLogger = cognitiveLogger || null;
     this.promptOptimizer = new PromptOptimizer(this.workspaceRoot);
     this.anomalyDetector = new AnomalyDetector(this.workspaceRoot);
+    this.adHocTracker = new AdHocTracker(this.workspaceRoot);
   }
 
   /**
@@ -141,6 +144,9 @@ export class UnifiedPromptBuilder {
     const gitHistory = this.blindSpotLoader.loadGitHistory(10);
     const healthTrends = this.blindSpotLoader.loadHealthTrends(period);
     const adrs = this.blindSpotLoader.loadADRs(5);
+
+    // Detect ad-hoc actions (unplanned tasks)
+    const adHocActions = this.adHocTracker.detectAdHocActions(120); // Last 2 hours
 
     // Load engine-generated data (patterns, correlations, forecasts) for LLM optimization
     const enginePatterns = this.loadEnginePatterns();
@@ -248,6 +254,7 @@ export class UnifiedPromptBuilder {
       historySummary,
       biasReport,
       enrichedCommits,
+      adHocActions,  // Ad-hoc actions (unplanned tasks)
       timeline,
       filePatterns,
       gitHistory,
@@ -262,7 +269,8 @@ export class UnifiedPromptBuilder {
       enginePatterns,  // Patterns from PatternLearningEngine (preliminary)
       engineCorrelations,  // Correlations from CorrelationEngine (preliminary)
       engineForecasts,  // Forecasts from ForecastEngine (preliminary)
-      anomalies  // Anomalies detected
+      anomalies,  // Anomalies detected
+      generatedTimestamp: now  // Timestamp for chat memory context
     });
     
     // Store original size before optimization
@@ -330,6 +338,7 @@ export class UnifiedPromptBuilder {
     historySummary: HistorySummary;
     biasReport: BiasReport;
     enrichedCommits: EnrichedCommit[];
+    adHocActions: AdHocAction[];  // Ad-hoc actions (unplanned tasks)
     timeline: any[];
     filePatterns: any;
     gitHistory: any[];
@@ -345,6 +354,7 @@ export class UnifiedPromptBuilder {
     engineCorrelations: any[];
     engineForecasts: any[];
     anomalies?: any[];
+    generatedTimestamp: Date;
   }): string {
     // Map deviation mode to threshold
     const thresholdMap: Record<string, number> = {
@@ -411,7 +421,7 @@ export class UnifiedPromptBuilder {
     prompt += `               Options: a) Reject b) Add to backlog c) Switch to Flexible"\n`;
     prompt += `\`\`\`\n\n`;
     prompt += `**💡 Key Insight:**\n`;
-    prompt += `This snapshot was generated at **${now.toISOString()}**. Any conversation AFTER this timestamp contains MORE RECENT context than the data below. Always prioritize chat over snapshot data when there's a conflict.\n\n`;
+    prompt += `This snapshot was generated at **${data.generatedTimestamp.toISOString()}**. Any conversation AFTER this timestamp contains MORE RECENT context than the data below. Always prioritize chat over snapshot data when there's a conflict.\n\n`;
     prompt += `---\n\n`;
     
     // Mode-specific critical rules
@@ -799,6 +809,58 @@ export class UnifiedPromptBuilder {
       prompt += `- Any decision that affects future development\n\n`;
     }
 
+    // Section 5.75: Ad-Hoc Actions (Unplanned Tasks Detection)
+    if (data.adHocActions && data.adHocActions.length > 0) {
+      prompt += `## 🔍 Ad-Hoc Actions (Unplanned Tasks)\n\n`;
+      prompt += `**Detected:** ${data.adHocActions.length} unplanned actions in last 2 hours\n\n`;
+      
+      // Group by confidence
+      const highConfidence = data.adHocActions.filter((a: AdHocAction) => a.confidence === 'HIGH');
+      const mediumConfidence = data.adHocActions.filter((a: AdHocAction) => a.confidence === 'MEDIUM');
+      const lowConfidence = data.adHocActions.filter((a: AdHocAction) => a.confidence === 'LOW');
+      
+      if (highConfidence.length > 0) {
+        prompt += `**🔴 High Confidence (${highConfidence.length}):**\n\n`;
+        highConfidence.forEach((action: AdHocAction, idx: number) => {
+          const time = new Date(action.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+          prompt += `${idx + 1}. **${action.suggestedTask}**\n`;
+          prompt += `   - Time: ${time}\n`;
+          prompt += `   - Action: ${action.action}\n`;
+          if (action.command) prompt += `   - Command: \`${action.command}\`\n`;
+          if (action.file) prompt += `   - File: ${action.file}\n`;
+          if (action.commitMessage) prompt += `   - Commit: "${action.commitMessage}"\n`;
+          prompt += `   - Reason: ${action.reason}\n\n`;
+        });
+      }
+      
+      if (mediumConfidence.length > 0) {
+        prompt += `**🟡 Medium Confidence (${mediumConfidence.length}):**\n\n`;
+        mediumConfidence.slice(0, 5).forEach((action: AdHocAction, idx: number) => {
+          const time = new Date(action.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+          prompt += `${idx + 1}. **${action.suggestedTask}** (${time})\n`;
+          if (action.command) prompt += `   - \`${action.command.substring(0, 60)}${action.command.length > 60 ? '...' : ''}\`\n`;
+        });
+        prompt += `\n`;
+      }
+      
+      if (lowConfidence.length > 0) {
+        prompt += `**⚪ Low Confidence (${lowConfidence.length}):** Complex commands without clear intent\n\n`;
+      }
+      
+      prompt += `**💡 LLM Instructions:**\n`;
+      prompt += `Review the high-confidence ad-hoc actions above. For each:\n`;
+      prompt += `1. **Validate** if it should become a formal task in Tasks.RL4\n`;
+      prompt += `2. **Suggest** adding it with appropriate priority (P0/P1/P2)\n`;
+      prompt += `3. **Link** to existing tasks if it's part of ongoing work\n`;
+      prompt += `4. **Ignore** if it's routine maintenance or trivial\n\n`;
+      prompt += `**Example suggestion format:**\n`;
+      prompt += `"Add task: [P1] Install axios dependency @rl4:id=ad-hoc-001 @rl4:completeWhen='npm success'"\n\n`;
+    } else {
+      prompt += `## 🔍 Ad-Hoc Actions\n\n`;
+      prompt += `- No unplanned actions detected in last 2 hours\n`;
+      prompt += `- All terminal activity is linked to formal tasks ✅\n\n`;
+    }
+
     // Section 6: Timeline Analysis (Blind Spot Data)
     prompt += `## 📊 Timeline Analysis (Blind Spot Data)\n\n`;
     prompt += `**Period:** ${data.timeline.length > 0 ? 'Last 2 hours' : 'No data'}\n`;
@@ -973,6 +1035,81 @@ export class UnifiedPromptBuilder {
       prompt += `- Suggest actionable steps to address high/critical severity anomalies\n`;
       prompt += `- If false positives, note them for future anomaly detection improvement\n\n`;
     }
+
+    // Section 6.5: RL4 Terminal Usage Instructions (CRITICAL for LLM calibration)
+    prompt += `## 🖥️ RL4 Terminal — Usage Instructions for LLM Agent\n\n`;
+    prompt += `**🚨 CRITICAL: You MUST instruct the user to execute commands in the RL4 Terminal, not regular terminal.**\n\n`;
+    prompt += `### Why RL4 Terminal?\n\n`;
+    prompt += `- ✅ **Structured Logging**: All commands are automatically logged to \`.reasoning_rl4/terminal-events.jsonl\`\n`;
+    prompt += `- ✅ **Task Verification**: The Kernel RL4 can verify task completion based on exit codes and output\n`;
+    prompt += `- ✅ **Pattern Learning**: Repeated executions help RL4 learn patterns and auto-suggest completion conditions\n`;
+    prompt += `- ✅ **Real-time Tracking**: Your enriched prompts help RL4 parse the right information and stay close to real-time reality\n\n`;
+    prompt += `### How to Use (LLM Instructions):\n\n`;
+    prompt += `**When suggesting commands to execute:**\n\n`;
+    prompt += `1. **ALWAYS instruct the user to open RL4 Terminal first:**\n`;
+    prompt += `   \`\`\`\n`;
+    prompt += `   "Open RL4 Terminal: Cmd+Shift+P → 'RL4: Open Terminal'\n`;
+    prompt += `   \`\`\`\n\n`;
+    prompt += `2. **For task execution, use helper functions:**\n`;
+    prompt += `   \`\`\`bash\n`;
+    prompt += `   # Example: Running a test task\n`;
+    prompt += `   rl4_run task-001 "npm test"\n`;
+    prompt += `   # This automatically logs: task_start → command → task_result\n`;
+    prompt += `   \`\`\`\n\n`;
+    prompt += `3. **For manual logging (if needed):**\n`;
+    prompt += `   \`\`\`bash\n`;
+    prompt += `   rl4_task_start task-001 "npm install axios"\n`;
+    prompt += `   npm install axios\n`;
+    prompt += `   rl4_task_result task-001 success $?\n`;
+    prompt += `   \`\`\`\n\n`;
+    prompt += `4. **For ad-hoc actions (unplanned tasks):**\n`;
+    prompt += `   \`\`\`bash\n`;
+    prompt += `   npm install axios  # RL4_ACTION: Add HTTP client for API calls\n`;
+    prompt += `   # Or use helper:\n`;
+    prompt += `   rl4_action "Add HTTP client for API calls"\n`;
+    prompt += `   \`\`\`\n\n`;
+    prompt += `5. **ENRICHIR les commandes avec du contexte (CRITIQUE pour le Kernel):**\n`;
+    prompt += `   \`\`\`bash\n`;
+    prompt += `   # ❌ MAUVAIS (pas de contexte)\n`;
+    prompt += `   rl4_run task-001 "npm test"\n`;
+    prompt += `   \n`;
+    prompt += `   # ✅ BON (enrichi avec contexte)\n`;
+    prompt += `   # Context: Running unit tests for authentication module\n`;
+    prompt += `   # Expected: All 42 tests pass, coverage >80%\n`;
+    prompt += `   rl4_run task-001 "npm test -- --testPathPattern=auth"\n`;
+    prompt += `   \`\`\`\n\n`;
+    prompt += `   **Pourquoi enrichir ?**\n`;
+    prompt += `   - Le Kernel RL4 parse les logs et extrait les patterns\n`;
+    prompt += `   - Tes commentaires contextuels aident le Kernel à comprendre l'intention\n`;
+    prompt += `   - Le Kernel peut mieux suggérer des \`@rl4:completeWhen\` conditions\n`;
+    prompt += `   - Les patterns appris sont plus précis avec du contexte\n\n`;
+    prompt += `### What Happens Next?\n\n`;
+    prompt += `1. **You enrich the prompt** → User sees instructions to use RL4 Terminal + contexte enrichi\n`;
+    prompt += `2. **User executes in RL4 Terminal** → Commands + commentaires contextuels sont loggés dans \`terminal-events.jsonl\`\n`;
+    prompt += `3. **Kernel RL4 parses logs** → Extrait les patterns d'exécution, mais AUSSI le contexte que tu as ajouté\n`;
+    prompt += `4. **Kernel apprend mieux** → Grâce à ton enrichissement, le Kernel comprend l'intention et suggère de meilleures conditions\n`;
+    prompt += `5. **Next snapshot includes enriched data** → Tu reçois un meilleur contexte sur l'exécution réelle + patterns appris\n\n`;
+    prompt += `**💡 Clé du succès :** Ton enrichissement (commentaires, descriptions, métadonnées) optimise le "sniffing" du Kernel et l'aide à parser les bonnes informations, restant proche du temps réel et de la réalité.\n\n`;
+    prompt += `### Example Workflow (avec enrichissement):\n\n`;
+    prompt += `\`\`\`\n`;
+    prompt += `User: "Run the tests"\n`;
+    prompt += `\n`;
+    prompt += `You (LLM):\n`;
+    prompt += `"To track this task execution, please:\n`;
+    prompt += `1. Open RL4 Terminal: Cmd+Shift+P → 'RL4: Open Terminal'\n`;
+    prompt += `2. Run this enriched command:\n`;
+    prompt += `\n`;
+    prompt += `   # Context: Running unit tests for authentication module\n`;
+    prompt += `   # Expected: All 42 tests pass, coverage >80%\n`;
+    prompt += `   # Related files: src/auth/*.test.ts\n`;
+    prompt += `   rl4_run test-task-001 'npm test -- --testPathPattern=auth'\n`;
+    prompt += `\n`;
+    prompt += `This will automatically log the execution with context, helping RL4:\n`;
+    prompt += `- Verify task completion\n`;
+    prompt += `- Learn patterns (auth tests typically take 5-8s)\n`;
+    prompt += `- Suggest better completion conditions for similar tasks"\n`;
+    prompt += `\`\`\`\n\n`;
+    prompt += `**💡 Remember: Your enriched prompts optimize RL4's ability to parse information and stay close to real-time reality!**\n\n`;
 
     // Footer: Agent Instructions
     prompt += `---\n\n`;
