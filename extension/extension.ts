@@ -1,9 +1,8 @@
+/**
+ * RL4 Kernel - Ultra Minimal (Zero RL3 Dependencies)
+ */
+
 import * as vscode from 'vscode';
-import * as path from 'path';
-import * as fs from 'fs';
-import { PersistenceManager } from './core/PersistenceManager';
-import { EventAggregator } from './core/EventAggregator';
-// RL4 Kernel imports
 import { TimerRegistry } from './kernel/TimerRegistry';
 import { StateRegistry } from './kernel/StateRegistry';
 import { HealthMonitor } from './kernel/HealthMonitor';
@@ -11,68 +10,32 @@ import { CognitiveScheduler } from './kernel/CognitiveScheduler';
 import { KernelAPI } from './kernel/KernelAPI';
 import { ExecPool } from './kernel/ExecPool';
 import { loadKernelConfig } from './kernel/config';
-import { SBOMCaptureEngine } from './core/SBOMCaptureEngine';
-import { ConfigCaptureEngine } from './core/ConfigCaptureEngine';
-import { TestCaptureEngine } from './core/TestCaptureEngine';
-import { GitMetadataEngine } from './core/GitMetadataEngine';
-import { SchemaManager } from './core/SchemaManager';
-import { ManifestGenerator } from './core/ManifestGenerator';
-import { registerObserveCommands } from './commands/observe';
-import { registerUnderstandCommands } from './commands/understand';
-import { registerExecuteCommands } from './commands/execute';
-import { registerMaintainCommands } from './commands/maintain';
-import { registerHelpCommands } from './commands/help';
-import { registerAgentCommands } from './commands/agent';
-import { registerPlanCommands } from './commands/contextual/plan';
-import { registerTasksCommands } from './commands/contextual/tasks';
-import { registerReportsCommands } from './commands/contextual/reports';
-import { registerForecastsCommands } from './commands/contextual/forecasts';
-import { registerPatternsCommands } from './commands/contextual/patterns';
-import { registerLegacyRedirects } from './core/compat/commandRedirects';
-import { runSelfAudit } from './core/selfAudit';
-import { runCognitiveAwakening } from './core/onboarding/AwakeningSequence';
-import { showCognitiveGreeting } from './core/onboarding/CognitiveGreeting';
-import { CognitiveRebuilder } from './core/autonomous/CognitiveRebuilder';
-import { UnifiedLogger } from './core/UnifiedLogger';
-import { getCursorChatIntegration } from './core/integrations/CursorChatIntegration';
-import { loadManifest } from './core/utils/manifestLoader';
-import { GitCommitListener } from './core/inputs/GitCommitListener';
-import { FileChangeWatcher } from './core/inputs/FileChangeWatcher';
-import { GitHubDiscussionListener } from './core/inputs/GitHubDiscussionListener';
-import { ShellMessageCapture } from './core/inputs/ShellMessageCapture';
-// RBOM Engine temporarily disabled for diagnostics
-// import { RBOMEngine } from './core/rbom/RBOMEngine';
-// import { ADR } from './core/rbom/types';
-// import { EvidenceMapper } from './core/EvidenceMapper';
+import { GitCommitListener } from './kernel/inputs/GitCommitListener';
+import { FileChangeWatcher } from './kernel/inputs/FileChangeWatcher';
+import { AppendOnlyWriter } from './kernel/AppendOnlyWriter';
+import { KernelBootstrap } from './kernel/KernelBootstrap';
+import { CognitiveLogger } from './kernel/CognitiveLogger';
+import { ADRValidationCommands } from './commands/adr-validation';
+import { UnifiedPromptBuilder } from './kernel/api/UnifiedPromptBuilder';
+import { AdaptivePromptBuilder } from './kernel/api/AdaptivePromptBuilder';
+import { ADRParser } from './kernel/api/ADRParser';
+import { PlanTasksContextParser } from './kernel/api/PlanTasksContextParser';
+import { FirstBootstrapEngine } from './kernel/bootstrap/FirstBootstrapEngine';
+import { GitHubFineGrainedManager } from './core/integrations/GitHubFineGrainedManager';
+import { CommitContextCollector } from './kernel/api/CommitContextCollector';
+import { CommitPromptGenerator } from './kernel/api/CommitPromptGenerator';
+import { TerminalPatternsLearner } from './kernel/cognitive/TerminalPatternsLearner';
+import { TasksRL4Parser } from './kernel/cognitive/TasksRL4Parser';
+import { AdHocTracker } from './kernel/cognitive/AdHocTracker';
+import { MemoryMonitor } from './kernel/MemoryMonitor'; // ✅ NEW: Memory monitoring
+import { MemoryWatchdog } from './kernel/MemoryWatchdog'; // ✅ NEW: Memory watchdog
+import * as path from 'path';
+import * as fs from 'fs';
 
-let persistence: PersistenceManager | null = null;
-let cursorChatIntegration: any = null;
-let eventAggregator: EventAggregator | null = null;
-let sbomCapture: SBOMCaptureEngine | null = null;
-let configCapture: ConfigCaptureEngine | null = null;
-let testCapture: TestCaptureEngine | null = null;
-let gitMetadata: GitMetadataEngine | null = null;
-let schemaManager: SchemaManager | null = null;
-// RBOM Engine enabled (asynchronously initialized)
-let rbomEngine: any = null; // RBOMEngine dynamically loaded
-let evidenceMapper: any = null; // EvidenceMapper dynamically loaded
-let decisionSynthesizer: any = null; // DecisionSynthesizer dynamically loaded
+// Cognitive Logger
+let logger: CognitiveLogger | null = null;
 
-// Level 5: Security components
-let integrityEngine: any = null; // IntegrityEngine dynamically loaded
-let snapshotManager: any = null; // SnapshotManager dynamically loaded
-let lifecycleManager: any = null; // LifecycleManager dynamically loaded
-
-// Level 7: Reasoning components
-let patternLearningEngine: any = null; // PatternLearningEngine dynamically loaded
-
-// Input Layer components
-let gitCommitListener: GitCommitListener | null = null;
-let fileChangeWatcher: FileChangeWatcher | null = null;
-let githubDiscussionListener: GitHubDiscussionListener | null = null;
-let shellMessageCapture: ShellMessageCapture | null = null;
-
-// RL4 Kernel components
+// RL4 Kernel
 let kernel: {
     timerRegistry: TimerRegistry;
     stateRegistry: StateRegistry;
@@ -82,46 +45,98 @@ let kernel: {
     api: KernelAPI;
 } | null = null;
 
-// Autonomous cycle timers (DEPRECATED - replaced by CognitiveScheduler)
-let autonomousTimers: Array<ReturnType<typeof setInterval>> = [];
+// WebView Panel
+let webviewPanel: vscode.WebviewPanel | null = null;
 
-// Status bar item (visual activation indicator)
-let rl3StatusBarItem: vscode.StatusBarItem | null = null;
-// Track if output channel is currently visible
-let outputChannelVisible = false;
-
-// Debounce map to prevent event multiplication
-const fileDebounceMap = new Map<string, NodeJS.Timeout>();
+// Status Bar Item
+let statusBarItem: vscode.StatusBarItem | null = null;
 
 export async function activate(context: vscode.ExtensionContext) {
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!workspaceRoot) {
-        vscode.window.showErrorMessage('Reasoning Layer V3 requires a workspace folder');
+        vscode.window.showErrorMessage('RL4 Kernel requires a workspace folder');
         return;
     }
     
-    // ═══════════════════════════════════════════════════════════════
-    // RL4 KERNEL INITIALIZATION
-    // ═══════════════════════════════════════════════════════════════
+    // Create Cognitive Logger
+    const outputChannel = vscode.window.createOutputChannel('RL4 Kernel');
+    logger = new CognitiveLogger(workspaceRoot, outputChannel);
+    outputChannel.show();
+    
+    logger.system('=== RL4 KERNEL — Cognitive Console ===', '🧠');
+    logger.system(`Workspace: ${workspaceRoot}`, '📁');
+    logger.system('=====================================', '═');
+    
+    // ✅ NEW: Initialize MemoryMonitor (E4.1 Phase 0)
+    const memoryMonitor = new MemoryMonitor();
+    logger.system(`📊 Memory Monitor initialized (baseline: ${memoryMonitor.getBaselineHeapUsage()} MB)`, '📊');
+    
+    // Log memory snapshots every 5 minutes
+    const memoryLoggingInterval = setInterval(() => {
+        const metrics = memoryMonitor.getMetrics();
+        if (logger) {
+            logger.system(
+                `Memory: ${metrics.current.heapUsed} MB (Δ${metrics.current.deltaFromBaseline >= 0 ? '+' : ''}${metrics.current.deltaFromBaseline} MB, ` +
+                `avg: ${metrics.averageHeapUsed} MB, peak: ${metrics.peakHeapUsed} MB)`,
+                '📊'
+            );
+        }
+        
+        // Check if memory is high
+        memoryMonitor.logIfHigh(500);
+    }, 5 * 60 * 1000); // 5 minutes
+    
+    // Store in subscriptions for cleanup
+    context.subscriptions.push({
+        dispose: () => {
+            clearInterval(memoryLoggingInterval);
+            if (logger) {
+                logger.system('📊 Memory Monitor disposed', '📊');
+            }
+        }
+    });
+    
+    // ✅ NEW: Initialize MemoryWatchdog (E4.1 Phase 5)
+    const memoryWatchdog = new MemoryWatchdog(logger);
+    memoryWatchdog.start(500); // Alert if > 500 MB
+    logger.system('🐕 Memory Watchdog started (threshold: 500 MB)', '🐕');
+    
+    // Store watchdog in subscriptions for cleanup
+    context.subscriptions.push({
+        dispose: () => {
+            memoryWatchdog.stop();
+            if (logger) {
+                logger.system('🐕 Memory Watchdog disposed', '🐕');
+            }
+        }
+    });
+    
+    // Load kernel configuration
     const kernelConfig = loadKernelConfig(workspaceRoot);
     
+    // Initialize RL4 Kernel
     if (kernelConfig.USE_TIMER_REGISTRY) {
-        // Initialize Kernel components
+        logger.system('🔧 Initializing RL4 Kernel...', '🔧');
+        
+        // Create components
         const timerRegistry = new TimerRegistry();
         const stateRegistry = new StateRegistry(workspaceRoot);
         const healthMonitor = new HealthMonitor(workspaceRoot, timerRegistry);
-        const scheduler = new CognitiveScheduler(workspaceRoot, timerRegistry);
+        
+        // Load bootstrap artifacts first (for ForecastEngine metrics)
+        const bootstrap = KernelBootstrap.initialize(workspaceRoot);
+        const forecastMetrics = bootstrap.metrics;
+        
+        const scheduler = new CognitiveScheduler(workspaceRoot, timerRegistry, logger, forecastMetrics);
+        const execPool = new ExecPool(2, 2000, workspaceRoot);
         const api = new KernelAPI(
             timerRegistry,
             stateRegistry,
             healthMonitor,
             scheduler,
-            new Map(), // writers (will be populated)
-            undefined as any // execPool (will be added in I3-F)
+            new Map(),
+            execPool
         );
-        
-        // Initialize shared ExecPool (CRITICAL for concurrency control)
-        const execPool = new ExecPool(2, 2000, workspaceRoot); // Max 2 concurrent, 2s timeout, JSONL logging
         
         kernel = {
             timerRegistry,
@@ -132,1928 +147,1666 @@ export async function activate(context: vscode.ExtensionContext) {
             api
         };
         
+        logger.system('✅ RL4 Kernel components created', '✅');
+        
+        // Bootstrap already loaded above (before scheduler creation)
+        if (bootstrap.initialized) {
+            logger.system(`✅ Bootstrap complete: ${bootstrap.universals ? Object.keys(bootstrap.universals).length : 0} universals loaded`, '✅');
+            
+            // Load state into StateRegistry if available
+            if (bootstrap.state) {
+                // StateRegistry can be extended to accept loaded state
+                logger.system('📦 Kernel state restored from artifacts', '📦');
+            }
+            
+            // Log forecast baseline (now integrated into ForecastEngine)
+            if (bootstrap.metrics?.forecast_precision) {
+                logger.system(`📊 Forecast precision baseline: ${bootstrap.metrics.forecast_precision.toFixed(3)} (Phase E1 active)`, '📊');
+            }
+        } else {
+            logger.warning('No kernel artifacts found, starting with default baseline (0.73)');
+        }
+        
         // Start health monitoring
         if (kernelConfig.USE_HEALTH_MONITOR) {
             healthMonitor.start(timerRegistry);
+            logger.system('❤️ Health Monitor started', '❤️');
         }
         
-        console.log('✅ RL4 Kernel initialized');
-    }
-    
-    // Initialize Unified Logger (single source of truth for all output)
-    const logger = UnifiedLogger.getInstance();
-    logger.show();
-    
-    // Load manifest data (supports both camelCase and snake_case)
-    const manifest = loadManifest(workspaceRoot);
-    const totalEvents = manifest.totalEvents;
-    let githubConnected = false;
-    
-    // Check GitHub status
-    const githubTokenPath = path.join(workspaceRoot, '.reasoning', 'security', 'github.json');
-    githubConnected = fs.existsSync(githubTokenPath);
-    
-    // Log startup header
-    const workspaceName = path.basename(workspaceRoot);
-    logger.logStartup(workspaceName, totalEvents, githubConnected);
-    
-    try {
-        // STEP 1: PersistenceManager (core stable)
-        const useAppendOnly = kernelConfig.USE_APPEND_ONLY_IO || false;
-        persistence = new PersistenceManager(workspaceRoot, useAppendOnly);
-        persistence.logWithEmoji('🧠', 'Reasoning Layer V3 - Activated successfully!');
-
-        // Status bar indicator (bottom-left): opens output channel on click
-        try {
-            rl3StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-            rl3StatusBarItem.text = '$(rocket) RL3 Activated';
-            rl3StatusBarItem.tooltip = 'Reasoning Layer V3 — Click to open Output';
-            // Register a dedicated command to ensure output channel opens reliably
-            const openOutputCmd = vscode.commands.registerCommand('reasoning.status.openOutput', async () => {
-                // Only open if not already visible
-                if (!outputChannelVisible) {
-                    persistence?.show();
-                    // Ensure the Output panel is explicitly shown (avoid toggle behavior)
-                    await vscode.commands.executeCommand('workbench.action.output.show');
-                    outputChannelVisible = true;
-                    persistence?.logWithEmoji('📺', 'Output channel opened');
-                }
-            });
-            context.subscriptions.push(openOutputCmd);
-            rl3StatusBarItem.command = 'reasoning.status.openOutput';
-            rl3StatusBarItem.show();
-            context.subscriptions.push(rl3StatusBarItem);
-            persistence.logWithEmoji('🟢', 'Status bar: RL3 Activated');
-            // Auto-open output once on activation for visual cue
-            setTimeout(() => {
-                if (!outputChannelVisible) {
-                    // Show activation notification with CTA (non-blocking)
-                    void vscode.window.showInformationMessage(
-                        '🧠 RL3 Activated — Click "Open Output" to view logs.',
-                        'Open Output'
-                    ).then(sel => { 
-                        if (sel === 'Open Output' && !outputChannelVisible) { 
-                            vscode.commands.executeCommand('reasoning.status.openOutput'); 
-                        } 
-                    });
-                    // Also reveal the output once on activation to provide a visual cue
-                    setTimeout(() => {
-                        if (!outputChannelVisible) {
-                            persistence?.show();
-                            void vscode.commands.executeCommand('workbench.action.output.show');
-                            outputChannelVisible = true;
-                        }
-                    }, 250);
-                }
-            }, 700);
-        } catch (e) {
-            // Non-blocking
-        }
+        // Start CognitiveScheduler (double-delay for Extension Host stability)
+        logger.system('🧠 Starting CognitiveScheduler (delayed start in 3s)...', '🧠');
         
-        // STEP 1.5: SchemaManager (persistence contract)
-        schemaManager = new SchemaManager(workspaceRoot, persistence);
-        persistence.logWithEmoji('📋', 'SchemaManager initialized - persistence contract v1.0');
-        
-        // STEP 1.6: GitHub connection health check (fine-grained only)
+        // External delay: Ensure kernel is fully initialized before scheduler starts
+        const channel = outputChannel; // Capture for setTimeout callback
         setTimeout(async () => {
-            try {
-                const { GitHubFineGrainedManager } = await import('./core/integrations/GitHubFineGrainedManager');
-                const gh = new GitHubFineGrainedManager(workspaceRoot);
-                const status = await gh.checkConnection();
-                if (!status.ok) {
-                    let msg = 'GitHub is not connected.';
-                    if (status.reason === 'no_repo') msg = 'No GitHub repository detected in this workspace.';
-                    if (status.reason === 'missing_token') msg = `No fine-grained token found for ${status.repo}.`;
-                    if (status.reason === 'unauthorized') msg = 'GitHub token unauthorized or expired.';
-                    if (status.reason === 'missing_repo_access') msg = 'GitHub token valid but lacks repository access permissions.';
-
-                    // Auto-clean invalid/revoked tokens to avoid conflicts
-                    if (status.reason === 'unauthorized') {
-                        try {
-                            const tokenPath = path.join(workspaceRoot, '.reasoning', 'security', 'github.json');
-                            if (fs.existsSync(tokenPath)) {
-                                fs.unlinkSync(tokenPath);
-                                persistence?.logWithEmoji('🧹', 'Removed invalid GitHub token from workspace');
-                            }
-                        } catch {}
-                    }
-
-                    const action = await vscode.window.showInformationMessage(
-                        `🐙 ${msg} Connect now?`,
-                        'Connect GitHub',
-                        'Dismiss'
-                    );
-                    if (action === 'Connect GitHub') {
-                        void vscode.commands.executeCommand('reasoning.github.setup');
-                    }
-                } else {
-                    if (persistence) {
-                        persistence.logWithEmoji('🐙', `GitHub connected for ${status.repo}`);
-                    }
-                }
-            } catch (e) {
-                // Do not block activation on GitHub check
-            }
-        }, 1200);
-
-        // Auto-generate initial manifest (DISABLED)
-        
-        // STEP 2: EventAggregator (centralization + debounce)
-        eventAggregator = new EventAggregator();
-        console.log('EventAggregator created successfully');
-        
-        // STEP 2: Connect EventAggregator to PersistenceManager with schema validation
-        eventAggregator.on('eventCaptured', (event) => {
-            if (schemaManager) {
-                const validatedEvent = schemaManager.validateEvent(event);
-                if (validatedEvent) {
-                    persistence?.saveEvent(validatedEvent as any);
-                }
+            channel.appendLine(`[${new Date().toISOString().substring(11, 23)}] ⏳ Scheduler: Starting delayed initialization...`);
+            await scheduler.start(kernelConfig.cognitive_cycle_interval_ms);
+            channel.appendLine(`[${new Date().toISOString().substring(11, 23)}] ✅ Scheduler started successfully`);
+            channel.appendLine(`[${new Date().toISOString().substring(11, 23)}] 🛡️ Watchdog active (${kernelConfig.cognitive_cycle_interval_ms}ms cycles)`);
+            
+            // Start Input Layer: GitCommitListener + FileChangeWatcher
+            channel.appendLine(`[${new Date().toISOString().substring(11, 23)}] 📥 Starting Input Layer...`);
+            
+            // 1. GitCommitListener (Phase 3: Uses CognitiveLogger + commit counter callback)
+            const gitTracesWriter = new AppendOnlyWriter(path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'git_commits.jsonl'));
+            const gitListener = new GitCommitListener(
+                workspaceRoot, 
+                execPool, 
+                gitTracesWriter, 
+                logger || undefined,
+                () => scheduler.incrementCommitCount() // Callback to increment commit counter for hourly summary
+            );
+            
+            if (gitListener.isGitRepository()) {
+                await gitListener.startWatching();
+                channel.appendLine(`[${new Date().toISOString().substring(11, 23)}] ✅ GitCommitListener active`);
             } else {
-                persistence?.saveEvent(event);
+                channel.appendLine(`[${new Date().toISOString().substring(11, 23)}] ⚠️ Not a Git repository, GitCommitListener disabled`);
             }
-        });
-        console.log('EventAggregator connected to persistence manager with schema validation');
-        
-        // Force creation of .reasoning directory
-        persistence.logWithEmoji('📁', 'Creating .reasoning directory structure...');
-        
-        // STEP 2: VS Code Watchers via EventAggregator
-        setupVSCodeWatchers();
-        persistence.logWithEmoji('👀', 'VS Code file watchers started');
-        
-        // STEP 3: SBOMCaptureEngine (Priority 1)
-        setTimeout(() => {
-            if (!persistence || !eventAggregator) return;
             
-            try {
-                sbomCapture = new SBOMCaptureEngine(workspaceRoot, persistence, eventAggregator);
-                sbomCapture.start();
-                persistence.logWithEmoji('📦', 'SBOMCaptureEngine started - monitoring dependencies');
-            } catch (sbomError) {
-                console.warn('⚠️ SBOMCaptureEngine failed to start:', sbomError);
-                persistence.logWithEmoji('⚠️', 'SBOMCaptureEngine disabled');
-            }
-        }, 2000); // Delayed activation of 2 seconds
+            // 2. FileChangeWatcher
+            const fileTracesWriter = new AppendOnlyWriter(path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'file_changes.jsonl'));
+            const fileWatcher = new FileChangeWatcher(workspaceRoot, fileTracesWriter, logger || undefined);
+            await fileWatcher.startWatching();
+            channel.appendLine(`[${new Date().toISOString().substring(11, 23)}] ✅ FileChangeWatcher active`);
+        }, 3000);
         
-        // STEP 4: ConfigCaptureEngine (Priority 2)
-        setTimeout(() => {
-            if (!persistence || !eventAggregator) return;
-            
-            try {
-                configCapture = new ConfigCaptureEngine(workspaceRoot, persistence, eventAggregator);
-                configCapture.start();
-                persistence.logWithEmoji('⚙️', 'ConfigCaptureEngine started - monitoring config files');
-            } catch (configError) {
-                console.warn('⚠️ ConfigCaptureEngine failed to start:', configError);
-                persistence.logWithEmoji('⚠️', 'ConfigCaptureEngine disabled');
-            }
-        }, 3000); // Delayed activation of 3 seconds
-        
-        // STEP 5: TestCaptureEngine (Priority 3)
-        setTimeout(() => {
-            if (!persistence || !eventAggregator) return;
-            
-            try {
-                testCapture = new TestCaptureEngine(workspaceRoot, persistence, eventAggregator);
-                testCapture.start();
-                persistence.logWithEmoji('🧪', 'TestCaptureEngine started - monitoring test reports');
-            } catch (testError) {
-                console.warn('⚠️ TestCaptureEngine failed to start:', testError);
-                persistence.logWithEmoji('⚠️', 'TestCaptureEngine disabled');
-            }
-        }, 4000); // Delayed activation of 4 seconds
-        
-        // STEP 6: GitMetadataEngine (Priority 4)
-        setTimeout(async () => {
-            if (!persistence || !eventAggregator) return;
-            
-            try {
-                gitMetadata = new GitMetadataEngine(workspaceRoot, persistence, eventAggregator, kernel?.execPool);
-                await gitMetadata.start();
-                persistence.logWithEmoji('🌿', 'GitMetadataEngine started - monitoring Git metadata');
-            } catch (gitError) {
-                console.warn('⚠️ GitMetadataEngine failed to start:', gitError);
-                persistence.logWithEmoji('⚠️', 'GitMetadataEngine disabled');
-            }
-        }, 5000); // Delayed activation of 5 seconds
-        
-        // STEP 6.5: GitHubCaptureEngine (Priority 5)
-        setTimeout(async () => {
-            if (!persistence || !eventAggregator) return;
-            
-            try {
-                const { GitHubCaptureEngine } = await import('./core/GitHubCaptureEngine');
-                const githubCapture = new GitHubCaptureEngine(workspaceRoot, persistence, eventAggregator);
-                githubCapture.start();
-                persistence.logWithEmoji('🐙', 'GitHubCaptureEngine started - GitHub integration active');
-            } catch (githubError) {
-                console.warn('⚠️ GitHubCaptureEngine failed to start:', githubError);
-                persistence.logWithEmoji('⚠️', 'GitHubCaptureEngine disabled');
-            }
-        }, 5500); // Delayed activation of 5.5 seconds
-        
-        // 🎧 INPUT LAYER: GitCommitListener (Priority 6)
-        setTimeout(async () => {
-            if (!persistence) return;
-            
-            try {
-                // Create AppendOnlyWriter for commit events if RL4 mode
-                const commitWriter = kernelConfig.USE_APPEND_ONLY_IO
-                    ? new (await import('./kernel/AppendOnlyWriter')).AppendOnlyWriter(
-                        path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'commits.jsonl'),
-                        50 * 1024 * 1024
-                      )
-                    : undefined;
-                
-                gitCommitListener = new GitCommitListener(workspaceRoot, kernel?.execPool, commitWriter);
-                if (gitCommitListener.isGitRepository()) {
-                    await gitCommitListener.startWatching();
-                    persistence.logWithEmoji('🎧', 'GitCommitListener started - Input Layer active');
-                    logger.log('✅ Input Layer Phase 1: GitCommitListener operational');
-                } else {
-                    persistence.logWithEmoji('⚠️', 'GitCommitListener disabled - Not a Git repository');
-                }
-            } catch (gitListenerError) {
-                console.warn('⚠️ GitCommitListener failed to start:', gitListenerError);
-                persistence.logWithEmoji('⚠️', 'GitCommitListener disabled');
-            }
-        }, 6500); // Delayed activation of 6.5 seconds
-        
-        // STEP 7: RBOMEngine asynchronous activation via dynamic import
-        setTimeout(async () => {
-            console.log('🧠 Extension RBOM entrypoint reached (deferred load)');
-            
-            if (!persistence || !eventAggregator || !workspaceRoot) {
-                console.warn('⚠️ Missing dependencies for RBOMEngine');
-                return;
-            }
-
-            try {
-                // Dynamic import to avoid top-level blocking
-                const { RBOMEngine } = await import('./core/rbom/RBOMEngine');
-                const { EvidenceMapper } = await import('./core/EvidenceMapper');
-                const { DecisionSynthesizer } = await import('./core/rbom/DecisionSynthesizer');
-                
-                // Fire-and-forget callbacks
-                const log = (msg: string) => {
-                    console.log(msg);
-                    persistence?.appendLine(msg);
-                };
-                const warn = (msg: string) => {
-                    console.warn(msg);
-                    persistence?.appendLine(`⚠️ ${msg}`);
-                };
-
-                console.log('🔧 Creating RBOMEngine instance (async)...');
-                rbomEngine = new RBOMEngine(workspaceRoot, log, warn);
-                evidenceMapper = new EvidenceMapper();
-                decisionSynthesizer = new DecisionSynthesizer(workspaceRoot, persistence, rbomEngine);
-
-                // Fire-and-forget: never await
-                console.log('🔧 Calling warmupValidation()...');
-                rbomEngine.warmupValidation();
-
-                persistence.logWithEmoji('🧠', 'RBOMEngine initialized asynchronously (deferred 6s)');
-                persistence.logWithEmoji('🔗', 'EvidenceMapper ready - Capture ↔ RBOM bridge active');
-                persistence.logWithEmoji('🤖', 'DecisionSynthesizer ready - Auto ADR generation enabled');
-                console.log('✅ RBOMEngine initialization completed (async deferred)');
-                
-                // Trigger ADR synthesis after 2 minutes
-                setTimeout(() => {
-                    console.log('🧠 Starting historical decision synthesis...');
-                    decisionSynthesizer?.synthesizeHistoricalDecisions();
-                }, 120000); // 2 minutes
-                
-                // Periodic synthesis every 5 minutes
-                setInterval(() => {
-                    console.log('🧠 Periodic decision synthesis...');
-                    decisionSynthesizer?.synthesizeHistoricalDecisions();
-                }, 300000); // 5 minutes
-            } catch (rbomError) {
-                const errorMsg = rbomError instanceof Error ? rbomError.message : String(rbomError);
-                console.warn('⚠️ RBOMEngine could not load:', errorMsg);
-                persistence?.logWithEmoji('⚠️', `RBOMEngine disabled - ${errorMsg}`);
-            }
-        }, 6000); // Delayed activation of 6 seconds to avoid top-level blocking
-        
-        // GitHub Repository Info (once only)
-        persistence.logWithEmoji('🚀', 'GitHub integration available - create repo for full features');
-        
-        // Base commands
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.init', () => {
-                vscode.window.showInformationMessage('✅ Reasoning Layer V3 initialized!');
-                persistence?.logWithEmoji('🎉', 'Manual initialization triggered');
-                persistence?.show();
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.showOutput', () => {
-                persistence?.show();
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.captureNow', () => {
-                vscode.window.showInformationMessage('📸 Manual capture triggered');
-                persistence?.logWithEmoji('📸', 'Manual capture triggered');
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.checkGitHub', () => {
-                const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-                if (!workspaceRoot) return;
-                
-                const gitDir = require('path').join(workspaceRoot, '.git');
-                if (require('fs').existsSync(gitDir)) {
-                    vscode.window.showInformationMessage('✅ Git repository detected! Create a GitHub repo to unlock all features.');
-                    persistence?.logWithEmoji('✅', 'Git repository detected - GitHub integration available');
-                } else {
-                    vscode.window.showInformationMessage('❌ No Git repository detected. Initialize Git then create a GitHub repo.');
-                    persistence?.logWithEmoji('❌', 'No Git repository detected - initialize Git first');
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.refreshTraces', () => {
-                vscode.commands.executeCommand('workbench.files.action.refreshFilesExplorer');
-                persistence?.logWithEmoji('🔄', 'Traces refreshed in explorer');
-                vscode.window.showInformationMessage('🔄 Traces refreshed!');
-            })
-        );
-
-        // GitHub Setup Command (Fine-Grained Integration)
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.github.setup', async () => {
-                try {
-                    const { GitHubFineGrainedManager } = await import('./core/integrations/GitHubFineGrainedManager');
-                    const manager = new GitHubFineGrainedManager(workspaceRoot);
-                    await manager.setupIntegration();
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to setup GitHub: ${error}`);
-                }
-            })
-        );
-
-        // GitHub Clear Token Command
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.github.clear', async () => {
-                try {
-                    const { GitHubTokenManager } = await import('./core/GitHubTokenManager');
-                    await GitHubTokenManager.clearToken();
-                    vscode.window.showInformationMessage('✅ GitHub token cleared');
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to clear token: ${error}`);
-                }
-            })
-        );
-
-        // GitHub Test Command
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.github.test', async () => {
-                try {
-                    const { GitHubFineGrainedManager } = await import('./core/integrations/GitHubFineGrainedManager');
-                    const { GitHubCaptureEngine } = await import('./core/GitHubCaptureEngine');
-                    
-                    if (!persistence || !eventAggregator) {
-                        vscode.window.showErrorMessage('❌ Persistence or EventAggregator not initialized');
-                        return;
-                    }
-
-                    const fgm = new GitHubFineGrainedManager(workspaceRoot!);
-                    const token = fgm.getToken();
-                    if (!token) {
-                        vscode.window.showWarningMessage('⚠️ No fine-grained GitHub token found. Please run "Setup GitHub integration".');
-                        return;
-                    }
-
-                    vscode.window.showInformationMessage('🧪 Testing GitHub integration...');
-                    const githubCapture = new GitHubCaptureEngine(workspaceRoot!, persistence, eventAggregator);
-                    githubCapture.start();
-                    vscode.window.showInformationMessage('✅ GitHub integration test complete! Check output logs.');
-                } catch (error) {
-                    vscode.window.showErrorMessage(`❌ Test failed: ${error}`);
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.showSchema', () => {
-                if (schemaManager) {
-                    const documentation = schemaManager.getSchemaDocumentation();
-                    vscode.window.showInformationMessage('📋 Persistence Contract v1.0', 'View Schema').then(selection => {
-                        if (selection === 'View Schema') {
-                            vscode.workspace.openTextDocument({
-                                content: documentation,
-                                language: 'markdown'
-                            }).then(doc => {
-                                vscode.window.showTextDocument(doc);
-                            });
-                        }
-                    });
-                } else {
-                    vscode.window.showErrorMessage('SchemaManager not initialized');
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.validateTraces', () => {
-                if (schemaManager && persistence) {
-                    const tracesPath = persistence.getTracesPath();
-                    const isValid = schemaManager.validateTracesFile(tracesPath);
-                    if (isValid) {
-                        vscode.window.showInformationMessage('✅ Traces file is valid');
-                    } else {
-                        vscode.window.showErrorMessage('❌ Traces file validation failed');
-                    }
-                } else {
-                    vscode.window.showErrorMessage('SchemaManager or PersistenceManager not initialized');
-                }
-            })
-        );
-
-        // RBOM Engine DISABLED for Layer 1 stability (re-enabled in Strata 2)
-        /*
-        if (workspaceRoot) {
-            rbomEngine = new RBOMEngine(workspaceRoot);
-            evidenceMapper = new EvidenceMapper();
-            decisionSynthesizer = new DecisionSynthesizer(workspaceRoot, persistence, rbomEngine);
-            persistence.logWithEmoji('🧠', 'RBOM Engine initialized with historical synthesis');
-
-            const synthesisInterval = setInterval(() => {
-                decisionSynthesizer?.synthesizeHistoricalDecisions();
-            }, 300000);
-
-            context.subscriptions.push({
-                dispose: () => clearInterval(synthesisInterval)
-            });
-
-            setTimeout(() => {
-                decisionSynthesizer?.synthesizeHistoricalDecisions();
-            }, 120000);
-        }
-        */
-
-        // ✅ ADR Commands ACTIVÉS (Layer 2)
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.adr.create', async () => {
-                if (!rbomEngine) {
-                    vscode.window.showErrorMessage('RBOM Engine not initialized');
-                    return;
-                }
-
-                const title = await vscode.window.showInputBox({
-                    prompt: 'Enter ADR title',
-                    placeHolder: 'e.g., Use TypeScript for type safety'
-                });
-
-                if (!title) return;
-
-                const author = await vscode.window.showInputBox({
-                    prompt: 'Enter author name',
-                    value: 'Developer'
-                });
-
-                if (!author) return;
-
-                const adr = rbomEngine.createADR({
-                    title,
-                    author,
-                    status: 'proposed',
-                    context: '',
-                    decision: '',
-                    consequences: ''
-                });
-
-                if (adr) {
-                    vscode.window.showInformationMessage(`✅ ADR created: ${adr.id}`);
-                    persistence?.logWithEmoji('📝', `ADR created: ${adr.title}`);
-                } else {
-                    vscode.window.showErrorMessage('❌ Failed to create ADR');
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.adr.list', async () => {
-                if (!rbomEngine) {
-                    vscode.window.showErrorMessage('RBOM Engine not initialized');
-                    return;
-                }
-
-                const adrs = rbomEngine.listADRs();
-                
-                if (adrs.length === 0) {
-                    vscode.window.showInformationMessage('📋 No ADRs found. Create one with "Create ADR" command.');
-                    return;
-                }
-
-                const items = adrs.map((adr: any) => ({
-                    label: `📄 ${adr.title}`,
-                    description: `Status: ${adr.status} | ${adr.evidenceIds?.length || 0} evidence(s)`,
-                    adr
-                }));
-
-                const selected: any = await vscode.window.showQuickPick(items, {
-                    placeHolder: 'Select an ADR to view'
-                });
-
-                if (selected && selected.adr) {
-                    vscode.commands.executeCommand('reasoning.adr.view', selected.adr.id);
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.adr.view', async (adrId?: string) => {
-                if (!rbomEngine) {
-                    vscode.window.showErrorMessage('RBOM Engine not initialized');
-                    return;
-                }
-
-                let id = adrId;
-                
-                if (!id) {
-                    const adrs = rbomEngine.listADRs();
-                    if (adrs.length === 0) {
-                        vscode.window.showInformationMessage('📋 No ADRs found');
-                        return;
-                    }
-
-                    const items = adrs.map((adr: any) => ({
-                        label: adr.title,
-                        description: `Status: ${adr.status}`,
-                        id: adr.id
-                    }));
-
-                    const selected: any = await vscode.window.showQuickPick(items);
-                    if (!selected) return;
-                    id = selected.id;
-                }
-
-                const adr = rbomEngine.getADR(id);
-                if (!adr) {
-                    vscode.window.showErrorMessage(`ADR not found: ${id}`);
-                    return;
-                }
-
-                // Open ADR in new editor
-                const content = `# ${adr.title}
-
-**Status**: ${adr.status}
-**Author**: ${adr.author}
-**Created**: ${adr.createdAt}
-**Modified**: ${adr.modifiedAt}
-
-## Context
-${adr.context}
-
-## Decision
-${adr.decision}
-
-## Consequences
-${adr.consequences}
-
-## Tags
-${adr.tags.join(', ')}
-
-## Components
-${adr.components.join(', ')}
-
-## Evidence
-${adr.evidenceIds.length} evidence(s) linked
-`;
-
-                const doc = await vscode.workspace.openTextDocument({
-                    content,
-                    language: 'markdown'
-                });
-                vscode.window.showTextDocument(doc);
-
-                persistence?.logWithEmoji('👁️', `Viewing ADR: ${adr.title}`);
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.adr.link', async () => {
-                if (!rbomEngine || !persistence) {
-                    vscode.window.showErrorMessage('RBOM Engine not initialized');
-                    return;
-                }
-
-                const adrs = rbomEngine.listADRs();
-                if (adrs.length === 0) {
-                    vscode.window.showInformationMessage('📋 No ADRs found. Create one first.');
-                    return;
-                }
-
-                const adrItems = adrs.map((adr: any) => ({
-                    label: adr.title,
-                    description: `Status: ${adr.status}`,
-                    adrId: adr.id
-                }));
-
-                const selectedADR: any = await vscode.window.showQuickPick(adrItems, {
-                    placeHolder: 'Select ADR to link evidence'
-                });
-
-                if (!selectedADR) return;
-
-                // Load recent evidence (from traces)
-                const tracesPath = path.join(persistence.getWorkspaceRoot(), '.reasoning', 'traces');
-                let evidenceCount = 0;
-                
-                if (fs.existsSync(tracesPath)) {
-                    const files = fs.readdirSync(tracesPath).filter(f => f.endsWith('.json'));
-                    for (const file of files) {
-                        const filePath = path.join(tracesPath, file);
-                        const events = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-                        evidenceCount += events.length;
-                    }
-                }
-
-                vscode.window.showInformationMessage(`🔗 Link evidence to ADR\nFound ${evidenceCount} events in traces`);
-                persistence.logWithEmoji('🔗', `Linking evidence to ADR: ${selectedADR?.label || 'Unknown'}`);
-            })
-        );
-
-        // Auto-synthesis ADR Command
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.adr.auto', async () => {
-                if (!rbomEngine) {
-                    vscode.window.showErrorMessage('RBOM Engine not initialized. Please wait a few seconds.');
-                    persistence?.logWithEmoji('⚠️', 'Auto-synthesis skipped: RBOM Engine not ready');
-                    return;
-                }
-
-                const progressOptions: vscode.ProgressOptions = {
-                    location: vscode.ProgressLocation.Notification,
-                    title: 'Auto-generating ADRs',
-                    cancellable: false
-                };
-
-                vscode.window.withProgress(progressOptions, async () => {
-                    try {
-                        if (decisionSynthesizer) {
-                            await decisionSynthesizer.runAutoSynthesis();
-                            vscode.window.showInformationMessage('✅ Auto ADR synthesis complete!');
-                            persistence?.logWithEmoji('✅', 'Auto-synthesis completed successfully');
-                        } else {
-                            vscode.window.showErrorMessage('DecisionSynthesizer not initialized');
-                        }
-                    } catch (error) {
-                        const errorMsg = error instanceof Error ? error.message : String(error);
-                        vscode.window.showErrorMessage(`Auto-synthesis failed: ${errorMsg}`);
-                        persistence?.logWithEmoji('❌', `Auto-synthesis error: ${errorMsg}`);
-                    }
-                });
-            })
-        );
-
-        // Evolution Timeline Commands
-        let evolutionManager: any = null;
-        
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.adr.evolution', async () => {
-                if (!rbomEngine) {
-                    vscode.window.showErrorMessage('RBOM Engine not initialized');
-                    return;
-                }
-
-                // Dynamic import of EvolutionManager
-                if (!evolutionManager) {
-                    const { EvolutionManager } = await import('./core/rbom/EvolutionManager');
-                    evolutionManager = new EvolutionManager(rbomEngine, (msg: string) => persistence?.logWithEmoji('🔄', msg));
-                }
-
-                const allADRs = rbomEngine.listADRs();
-                if (allADRs.length === 0) {
-                    vscode.window.showInformationMessage('No ADRs found. Create some ADRs first.');
-                    return;
-                }
-
-                interface ADRChoice {
-                    label: string;
-                    adr: any;
-                }
-                
-                const adrChoices: ADRChoice[] = allADRs.map((adr: any) => ({ label: adr.title, adr }));
-                const selected = await vscode.window.showQuickPick(adrChoices, {
-                    placeHolder: 'Select an ADR to view its evolution timeline'
-                });
-
-                if (selected && selected.adr) {
-                    const timeline = evolutionManager.getEvolutionTimeline(selected.adr.id);
-                    if (timeline.length === 0) {
-                        vscode.window.showInformationMessage(`No evolution links found for "${selected.adr.title}"`);
-                    } else {
-                        const details = timeline.map((link: any) => `• ${link.from.substring(0, 8)} → ${link.to.substring(0, 8)}`).join('\n');
-                        vscode.window.showInformationMessage(`Evolution timeline for "${selected.adr.title}":\n${details}`);
-                    }
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.adr.deprecated', async () => {
-                if (!rbomEngine) {
-                    vscode.window.showErrorMessage('RBOM Engine not initialized');
-                    return;
-                }
-
-                if (!evolutionManager) {
-                    const { EvolutionManager } = await import('./core/rbom/EvolutionManager');
-                    evolutionManager = new EvolutionManager(rbomEngine, (msg: string) => persistence?.logWithEmoji('🔄', msg));
-                }
-
-                const deprecated = evolutionManager.getDeprecatedADRs();
-                if (deprecated.length === 0) {
-                    vscode.window.showInformationMessage('No deprecated ADRs found.');
-                } else {
-                    const list = deprecated.map((adr: any) => `• ${adr.title} (${adr.status})`).join('\n');
-                    vscode.window.showInformationMessage(`Deprecated ADRs:\n${list}`);
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.adr.suggest', async () => {
-                if (!rbomEngine) {
-                    vscode.window.showErrorMessage('RBOM Engine not initialized');
-                    return;
-                }
-
-                if (!evolutionManager) {
-                    const { EvolutionManager } = await import('./core/rbom/EvolutionManager');
-                    evolutionManager = new EvolutionManager(rbomEngine, (msg: string) => persistence?.logWithEmoji('🔄', msg));
-                }
-
-                vscode.window.showInformationMessage('Analyzing ADRs for potential superseding relationships...');
-                const suggestions = evolutionManager.suggestSuperseding();
-                
-                if (suggestions.length === 0) {
-                    vscode.window.showInformationMessage('No potential superseding relationships found.');
-                } else {
-                    const top = suggestions.slice(0, 5);
-                    const list = top.map((s: any) => `• Similarity: ${(s.similarity * 100).toFixed(0)}% between ${s.adr1.substring(0, 8)} and ${s.adr2.substring(0, 8)}`).join('\n');
-                    vscode.window.showInformationMessage(`Potential superseding relationships:\n${list}`);
-                }
-            })
-        );
-
-        // Rationale Scorer Command
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.adr.score', async () => {
-                if (!rbomEngine) {
-                    vscode.window.showErrorMessage('RBOM Engine not initialized');
-                    return;
-                }
-
-                const allADRs = rbomEngine.listADRs();
-                if (allADRs.length === 0) {
-                    vscode.window.showInformationMessage('No ADRs found. Create some ADRs first.');
-                    return;
-                }
-
-                interface ADRChoice {
-                    label: string;
-                    adr: any;
-                }
-                
-                const adrChoices: ADRChoice[] = allADRs.map((adr: any) => ({ label: `${adr.title} (${adr.status})`, adr }));
-                const selected = await vscode.window.showQuickPick(adrChoices, {
-                    placeHolder: 'Select an ADR to score its rationale quality'
-                });
-
-                if (selected && selected.adr) {
-                    // Dynamic import of RationaleScorer
-                    const { RationaleScorer } = await import('./core/rbom/RationaleScorer');
-                    const scorer = new RationaleScorer();
-                    
-                    const score = scorer.calculateScore(selected.adr);
-                    const label = scorer.getQualityLabel(score.overall);
-                    const suggestions = scorer.suggestImprovements(selected.adr);
-
-                    const report = [
-                        `📊 Rationale Quality Score: ${(score.overall * 100).toFixed(0)}% (${label})`,
-                        '',
-                        `Evidence: ${(score.evidence * 100).toFixed(0)}%`,
-                        `Trade-offs: ${(score.tradeoffs * 100).toFixed(0)}%`,
-                        `Alternatives: ${(score.alternatives * 100).toFixed(0)}%`,
-                        `Assumptions: ${(score.assumptions * 100).toFixed(0)}%`,
-                        `Risks: ${(score.risks * 100).toFixed(0)}%`,
-                        `Mitigations: ${(score.mitigations * 100).toFixed(0)}%`,
-                        `Completeness: ${(score.completeness * 100).toFixed(0)}%`,
-                    ];
-
-                    if (suggestions.length > 0) {
-                        report.push('', '💡 Suggestions:', ...suggestions.map(s => `  • ${s}`));
-                    }
-
-                    vscode.window.showInformationMessage(report.join('\n'));
-                }
-            })
-        );
-
-        // Human Context Commands
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.contributors.extract', async () => {
-                if (!workspaceRoot) {
-                    vscode.window.showErrorMessage('No workspace found');
-                    return;
-                }
-
-                const progressOptions: vscode.ProgressOptions = {
-                    location: vscode.ProgressLocation.Notification,
-                    title: 'Extracting contributors from Git history',
-                    cancellable: false
-                };
-
-                vscode.window.withProgress(progressOptions, async () => {
-                    try {
-                        const { HumanContextManager } = await import('./core/HumanContextManager');
-                        const humanContext = new HumanContextManager(workspaceRoot, (msg: string) => persistence?.logWithEmoji('👥', msg));
-                        
-                        const contributors = await humanContext.extractContributors();
-                        
-                        if (contributors.length === 0) {
-                            vscode.window.showInformationMessage('No contributors found in Git history.');
-                        } else {
-                            // Save to .reasoning/human-context.json
-                            const contextPath = path.join(workspaceRoot, '.reasoning', 'human-context.json');
-                            const contextData = humanContext.exportHumanContext(contributors);
-                            fs.writeFileSync(contextPath, JSON.stringify(contextData, null, 2));
-                            
-                            vscode.window.showInformationMessage(
-                                `✅ Extracted ${contributors.length} contributor(s). Saved to .reasoning/human-context.json`
-                            );
-                            
-                            // Show contributors summary
-                            const summary = contextData.summary;
-                            const exportContributors = contextData.contributors;
-                            const contributorInfo = exportContributors.map((c: any, i: number) => 
-                                `  ${i + 1}. ${c.name} - ${c.activity.commitCount} commits - Domains: ${c.expertise.slice(0, 3).join(', ')}`
-                            ).join('\n');
-                            
-                            vscode.window.showInformationMessage(
-                                `Contributors Summary:\n${contributorInfo}\n\nTotal commits: ${summary.totalCommits}\nDomains: ${summary.domains.join(', ')}`
-                            );
-                        }
-                    } catch (error) {
-                        const errorMsg = error instanceof Error ? error.message : String(error);
-                        vscode.window.showErrorMessage(`Failed to extract contributors: ${errorMsg}`);
-                        persistence?.logWithEmoji('❌', `Contributor extraction error: ${errorMsg}`);
-                    }
-                });
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.contributors.list', async () => {
-                if (!workspaceRoot) {
-                    vscode.window.showErrorMessage('No workspace found');
-                    return;
-                }
-
-                const contextPath = path.join(workspaceRoot, '.reasoning', 'human-context.json');
-                if (!fs.existsSync(contextPath)) {
-                    vscode.window.showInformationMessage(
-                        'No contributor data found. Run "Extract Contributors from Git" first.'
-                    );
-                    return;
-                }
-
-                try {
-                    const contextData = JSON.parse(fs.readFileSync(contextPath, 'utf-8'));
-                    const contributors = contextData.contributors;
-
-                    if (contributors.length === 0) {
-                        vscode.window.showInformationMessage('No contributors data available.');
-                    } else {
-                        const list = contributors.map((c: any, i: number) => 
-                            `${i + 1}. ${c.name} - ${c.activity.commitCount} commits - ${c.expertise.join(', ')}`
-                        ).join('\n');
-                        
-                        vscode.window.showInformationMessage(
-                            `Contributors (${contributors.length}):\n${list}`
-                        );
-                    }
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to read contributor data: ${error}`);
-                }
-            })
-        );
-
-        // Evidence Report Command
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.evidence.report', async () => {
-                if (!rbomEngine) {
-                    vscode.window.showErrorMessage('RBOM Engine not initialized');
-                    return;
-                }
-
-                const allADRs = rbomEngine.listADRs();
-                if (allADRs.length === 0) {
-                    vscode.window.showInformationMessage('No ADRs found.');
-                    return;
-                }
-
-                interface ADRChoice {
-                    label: string;
-                    adr: any;
-                }
-                
-                const adrChoices: ADRChoice[] = allADRs.map((adr: any) => ({ label: `${adr.title} (${adr.evidenceIds?.length || 0} evidence)`, adr }));
-                const selected = await vscode.window.showQuickPick(adrChoices, {
-                    placeHolder: 'Select an ADR to view its evidence report'
-                });
-
-                if (selected && selected.adr) {
-                    try {
-                        const { ADREvidenceManager } = await import('./core/rbom/ADREvidenceManager');
-                        const evidenceManager = new ADREvidenceManager();
-                        
-                        // Load all events from traces directory
-                        const tracesDir = path.join(workspaceRoot, '.reasoning', 'traces');
-                        let allEvents: any[] = [];
-                        if (fs.existsSync(tracesDir)) {
-                            const traceFiles = fs.readdirSync(tracesDir).filter(f => f.endsWith('.json'));
-                            for (const file of traceFiles) {
-                                try {
-                                    const filePath = path.join(tracesDir, file);
-                                    const traceEvents = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-                                    if (Array.isArray(traceEvents)) {
-                                        allEvents.push(...traceEvents);
-                                    }
-                                } catch (error) {
-                                    // Ignore corrupted files
-                                }
-                            }
-                        }
-                        
-                        const report = evidenceManager.generateEvidenceReport(selected.adr, allEvents);
-                        const formatted = evidenceManager.formatEvidenceReport(report);
-                        
-                        // Show report
-                        vscode.window.showInformationMessage(formatted);
-                    } catch (error) {
-                        const errorMsg = error instanceof Error ? error.message : String(error);
-                        vscode.window.showErrorMessage(`Failed to generate evidence report: ${errorMsg}`);
-                    }
-                }
-            })
-        );
-
-        // Level 5: Security Commands
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.verify.integrity', async () => {
-                try {
-                    const { IntegrityEngine } = await import('./core/security/IntegrityEngine');
-                    
-                    integrityEngine = new IntegrityEngine(workspaceRoot);
-                    const result = integrityEngine.verifyLedgerIntegrity();
-                    
-                    if (result.valid) {
-                        vscode.window.showInformationMessage('✅ Integrity Chain: Valid ✓');
-                    } else {
-                        vscode.window.showErrorMessage(`❌ Integrity Chain Invalid:\n${result.errors.join('\n')}`);
-                    }
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to verify integrity: ${error}`);
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.snapshot.create', async () => {
-                try {
-                    if (!rbomEngine) {
-                        vscode.window.showErrorMessage('RBOM Engine not initialized');
-                        return;
-                    }
-
-                    const { IntegrityEngine } = await import('./core/security/IntegrityEngine');
-                    const { SnapshotManager } = await import('./core/security/SnapshotManager');
-                    
-                    integrityEngine = new IntegrityEngine(workspaceRoot);
-                    snapshotManager = new SnapshotManager(workspaceRoot, integrityEngine);
-                    
-                    const allADRs = rbomEngine.listADRs();
-                    
-                    const tracesDir = path.join(workspaceRoot, '.reasoning', 'traces');
-                    let allEvents: any[] = [];
-                    if (fs.existsSync(tracesDir)) {
-                        const traceFiles = fs.readdirSync(tracesDir).filter(f => f.endsWith('.json'));
-                        for (const file of traceFiles) {
-                            try {
-                                const filePath = path.join(tracesDir, file);
-                                const traceEvents = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-                                if (Array.isArray(traceEvents)) { allEvents.push(...traceEvents); }
-                            } catch (error) { /* Ignore corrupted files */ }
-                        }
-                    }
-                    
-                    const snapshot = await snapshotManager.generateSnapshot(allADRs, allEvents);
-                    
-                    vscode.window.showInformationMessage(
-                        `✅ Snapshot created: ${snapshot.snapshot_id}\n` +
-                        `📊 ADRs: ${snapshot.adr_count}, Evidence: ${snapshot.evidence_count}`
-                    );
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to create snapshot: ${error}`);
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.snapshot.list', async () => {
-                try {
-                    const { IntegrityEngine } = await import('./core/security/IntegrityEngine');
-                    const { SnapshotManager } = await import('./core/security/SnapshotManager');
-                    
-                    integrityEngine = new IntegrityEngine(workspaceRoot);
-                    snapshotManager = new SnapshotManager(workspaceRoot, integrityEngine);
-                    
-                    const snapshots = snapshotManager.listSnapshots();
-                    
-                    if (snapshots.length === 0) {
-                        vscode.window.showInformationMessage('No snapshots found.');
-                        return;
-                    }
-                    
-                    const choices = snapshots.map((snap: any) => ({
-                        label: snap.snapshot_id,
-                        detail: `${snap.adr_count} ADRs, ${snap.evidence_count} evidence - ${new Date(snap.created_at).toLocaleDateString()}`
-                    }));
-                    
-                    await vscode.window.showQuickPick(choices, { placeHolder: 'Select a snapshot to view details' });
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to list snapshots: ${error}`);
-                }
-            })
-        );
-
-        // Level 6: External Evidence Commands
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.external.sync', async () => {
-                try {
-                    const { ExternalIntegrator } = await import('./core/external/ExternalIntegrator');
-                    const integrator = new ExternalIntegrator(workspaceRoot);
-                    
-                    vscode.window.showInformationMessage('🔄 Syncing external evidence...');
-                    const results = await integrator.syncAll();
-                    
-                    const summary = results.map(r => 
-                        `✅ ${r.source}: ${r.evidenceCount} evidence (${r.status})`
-                    ).join('\n');
-                    
-                    vscode.window.showInformationMessage(
-                        `✅ External Evidence Synced:\n${summary}`
-                    );
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to sync: ${error}`);
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.external.status', async () => {
-                try {
-                    const { ExternalIntegrator } = await import('./core/external/ExternalIntegrator');
-                    const integrator = new ExternalIntegrator(workspaceRoot);
-                    
-                    const results = await integrator.syncAll();
-                    const allEvidence = integrator.getAllExternalEvidence();
-                    
-                    const status = `📊 External Evidence Status:\n\n` +
-                        results.map(r => `• ${r.source}: ${r.evidenceCount} items - ${r.status}`).join('\n') +
-                        `\n\n📦 Total Evidence: ${allEvidence.length}`;
-                    
-                    vscode.window.showInformationMessage(status);
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to get status: ${error}`);
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.external.linkADR', async () => {
-                try {
-                    if (!rbomEngine) {
-                        vscode.window.showErrorMessage('RBOM Engine not initialized');
-                        return;
-                    }
-
-                    const { ExternalIntegrator } = await import('./core/external/ExternalIntegrator');
-                    const integrator = new ExternalIntegrator(workspaceRoot);
-                    
-                    // Select ADR
-                    const allADRs = rbomEngine.listADRs();
-                    if (allADRs.length === 0) {
-                        vscode.window.showInformationMessage('No ADRs found.');
-                        return;
-                    }
-
-                    const adrChoices = allADRs.map((adr: any) => ({
-                        label: adr.title,
-                        adr
-                    }));
-                    
-                    const selectedADR: any = await vscode.window.showQuickPick(adrChoices, {
-                        placeHolder: 'Select ADR to link external evidence'
-                    });
-
-                    if (!selectedADR) { return; }
-
-                    // Select evidence
-                    const allEvidence = integrator.getAllExternalEvidence();
-                    if (allEvidence.length === 0) {
-                        vscode.window.showInformationMessage('No external evidence found. Run sync first.');
-                        return;
-                    }
-
-                    const evidenceChoices = allEvidence.map(ev => ({
-                        label: `${ev.type}: ${ev.source}`,
-                        evidence: ev
-                    }));
-
-                    const selected = await vscode.window.showQuickPick(evidenceChoices, {
-                        placeHolder: 'Select evidence to link',
-                        canPickMany: true
-                    });
-
-                    if (!selected || selected.length === 0) { return; }
-
-                    // Link evidence to ADR
-                    const evidenceIds = selected.map(s => s.evidence.id);
-                    await integrator.linkToADR(selectedADR.adr.id, evidenceIds);
-                    
-                    vscode.window.showInformationMessage(
-                        `✅ Linked ${evidenceIds.length} evidence to ADR: ${selectedADR.adr?.title || 'Unknown'}`
-                    );
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to link evidence: ${error}`);
-                }
-            })
-        );
-
-        // Level 7: Pattern Learning & Correlation Commands
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.pattern.analyze', async () => {
-                try {
-                    const { PatternLearningEngine } = await import('./core/base/PatternLearningEngine');
-                    const ple = new PatternLearningEngine(workspaceRoot);
-                    
-                    vscode.window.showInformationMessage('🔍 Analyzing patterns from ledger...');
-                    const patterns = await ple.analyzePatterns();
-                    
-                    vscode.window.showInformationMessage(
-                        `🧠 Pattern Analysis Complete:\n` +
-                        `📊 Found ${patterns.length} patterns\n` +
-                        patterns.slice(0, 3).map(p => `  • ${p.pattern} (conf: ${Math.round(p.confidence * 100)}%)`).join('\n')
-                    );
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to analyze patterns: ${error}`);
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.correlation.analyze', async () => {
-                try {
-                    const { CorrelationEngine } = await import('./core/base/CorrelationEngine');
-                    const corrEngine = new CorrelationEngine(workspaceRoot);
-                    
-                    vscode.window.showInformationMessage('🔗 Analyzing correlations...');
-                    const correlations = await corrEngine.analyze();
-                    
-                    const strong = correlations.filter(c => c.correlation_score >= 0.75);
-                    
-                    vscode.window.showInformationMessage(
-                        `🔗 Correlation Analysis Complete:\n` +
-                        `📊 Found ${correlations.length} correlations\n` +
-                        `🎯 ${strong.length} strong correlations (≥0.75)\n` +
-                        strong.slice(0, 3).map(c => `  • ${c.direction} (score: ${Math.round(c.correlation_score * 100)}%)`).join('\n')
-                    );
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to analyze correlations: ${error}`);
-                }
-            })
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.forecast.generate', async () => {
-                try {
-                    const { ForecastEngine } = await import('./core/base/ForecastEngine');
-                    const forecastEngine = new ForecastEngine(workspaceRoot);
-                    
-                    vscode.window.showInformationMessage('🔮 Generating forecasts...');
-                    const forecasts = await forecastEngine.generate();
-                    
-                    const byType = {
-                        ADR_Proposal: forecasts.filter(f => f.decision_type === 'ADR_Proposal').length,
-                        Risk_Alert: forecasts.filter(f => f.decision_type === 'Risk_Alert').length,
-                        Opportunity: forecasts.filter(f => f.decision_type === 'Opportunity').length,
-                        Refactor: forecasts.filter(f => f.decision_type === 'Refactor').length
-                    };
-                    
-                    vscode.window.showInformationMessage(
-                        `🔮 Forecast Generation Complete:\n` +
-                        `📊 Generated ${forecasts.length} forecasts\n` +
-                        `• ${byType.ADR_Proposal} decisions\n` +
-                        `• ${byType.Risk_Alert} risks\n` +
-                        `• ${byType.Opportunity} opportunities\n` +
-                        `• ${byType.Refactor} refactors`
-                    );
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to generate forecasts: ${error}`);
-                }
-            })
-        );
-
-        // Retroactive Trace Builder (Level 12)
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.retroactive.reconstruct', async () => {
-                try {
-                    const { RetroactiveTraceBuilder } = await import('./core/retroactive/RetroactiveTraceBuilder');
-                    const builder = new RetroactiveTraceBuilder(workspaceRoot);
-                    
-                    const shouldReconstruct = await builder.shouldReconstruct();
-                    
-                    if (!shouldReconstruct) {
-                        vscode.window.showInformationMessage(
-                            '✅ Historical memory already exists. Traces found in .reasoning/traces/'
-                        );
-                        return;
-                    }
-                    
-                    const progressOptions: vscode.ProgressOptions = {
-                        location: vscode.ProgressLocation.Notification,
-                        title: 'Reconstructing Historical Memory',
-                        cancellable: false
-                    };
-                    
-                    vscode.window.withProgress(progressOptions, async () => {
-                        const result = await builder.reconstruct();
-                        
-                        vscode.window.showInformationMessage(
-                            `✅ Historical memory reconstructed:\n` +
-                            `📊 ${result.commitsAnalyzed} commits analyzed\n` +
-                            `🎭 ${result.eventsGenerated} events generated\n` +
-                            `🔍 ${result.patternsDetected} patterns detected\n` +
-                            `💯 Avg confidence: ${(result.averageConfidence * 100).toFixed(0)}%`
-                        );
-                    });
-                } catch (error) {
-                    console.error('❌ Failed to reconstruct historical memory:', error);
-                    vscode.window.showErrorMessage(`Reconstruction failed: ${error}`);
-                }
-            })
-        );
-
-        // Perceptual Layer (Level 11)
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.perceptual.open', () => {
-                try {
-                    console.log('🎨 Opening Perceptual Layer...');
-                    
-                    const panel = vscode.window.createWebviewPanel(
-                        'reasoningPerceptualLayer',
-                        '🧠 Reasoning Layer - Perceptual View',
-                        vscode.ViewColumn.One,
-                        {
-                            enableScripts: true,
-                            retainContextWhenHidden: true
-                        }
-                    );
-
-                    // Load the built UI
-                    const uiPath = path.join(context.extensionPath, 'webview', 'ui', 'dist', 'index.html');
-                    console.log('📁 UI Path:', uiPath);
-                    console.log('📁 Extension Path:', context.extensionPath);
-                    
-                    if (!fs.existsSync(uiPath)) {
-                        vscode.window.showErrorMessage(`UI not found at: ${uiPath}`);
-                        console.error('❌ UI file not found!');
-                        panel.webview.html = '<h1>UI not found</h1><p>Please run: cd extension/webview/ui && npm run build</p>';
-                        return;
-                    }
-                    
-                    const htmlContent = fs.readFileSync(uiPath, 'utf-8');
-                    console.log('✅ HTML loaded, size:', htmlContent.length);
-                    panel.webview.html = htmlContent;
-
-                // Load cognitive state and send to UI
-                const cognitiveManifestPath = path.join(workspaceRoot, '.reasoning', 'CognitiveManifest.json');
-                const goalsPath = path.join(workspaceRoot, '.reasoning', 'goals.json');
-                
-                if (fs.existsSync(cognitiveManifestPath)) {
-                    const cognitiveState = JSON.parse(fs.readFileSync(cognitiveManifestPath, 'utf-8'));
-                    
-                    // Load goals if exists
-                    if (fs.existsSync(goalsPath)) {
-                        const goalsData = JSON.parse(fs.readFileSync(goalsPath, 'utf-8'));
-                        cognitiveState.cognitive_state.goals_list = goalsData.active_goals || [];
-                    }
-                    
-                    panel.webview.postMessage({
-                        command: 'cognitiveStateUpdate',
-                        data: cognitiveState.cognitive_state
-                    });
-                }
-
-                // Listen for messages from UI
-                panel.webview.onDidReceiveMessage(message => {
-                    if (message.command === 'requestCognitiveState') {
-                        const cognitiveManifestPath = path.join(workspaceRoot, '.reasoning', 'CognitiveManifest.json');
-                        const goalsPath = path.join(workspaceRoot, '.reasoning', 'goals.json');
-                        
-                        if (fs.existsSync(cognitiveManifestPath)) {
-                            const cognitiveState = JSON.parse(fs.readFileSync(cognitiveManifestPath, 'utf-8'));
-                            
-                            // Load goals if exists
-                            if (fs.existsSync(goalsPath)) {
-                                const goalsData = JSON.parse(fs.readFileSync(goalsPath, 'utf-8'));
-                                cognitiveState.cognitive_state.goals_list = goalsData.active_goals || [];
-                            }
-                            
-                            panel.webview.postMessage({
-                                command: 'cognitiveStateUpdate',
-                                data: cognitiveState.cognitive_state
-                            });
-                        }
-                    }
-                });
-
-                    persistence?.logWithEmoji('🎨', 'Perceptual Layer opened');
-                } catch (error) {
-                    console.error('❌ Failed to open Perceptual Layer:', error);
-                    vscode.window.showErrorMessage(`Failed to open Perceptual Layer: ${error}`);
-                }
-            })
-        );
-
-        // 🎧 Input Layer - GitCommitListener (Phase 1)
-        setTimeout(async () => {
-            try {
-                // Create AppendOnlyWriter for commit events if RL4 mode (legacy path)
-                const commitWriterLegacy = kernelConfig.USE_APPEND_ONLY_IO
-                    ? new (await import('./kernel/AppendOnlyWriter')).AppendOnlyWriter(
-                        path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'commits.jsonl'),
-                        50 * 1024 * 1024
-                      )
-                    : undefined;
-                
-                gitCommitListener = new GitCommitListener(workspaceRoot, kernel?.execPool, commitWriterLegacy);
-                if (gitCommitListener.isGitRepository()) {
-                    await gitCommitListener.startWatching();
-                    persistence?.logWithEmoji('🎧', 'Input Layer: GitCommitListener activated');
-                    
-                    // Store in context for disposal
-                    context.subscriptions.push({
-                        dispose: () => gitCommitListener?.stopWatching()
-                    });
-                } else {
-                    persistence?.logWithEmoji('⚠️', 'Input Layer: Not a git repository (listener disabled)');
-                }
-            } catch (error) {
-                persistence?.logWithEmoji('⚠️', `Input Layer: GitCommitListener failed - ${error}`);
-            }
-        }, 7000); // 7 seconds - after RBOM
-        
-        // 🎧 Input Layer - FileChangeWatcher (Phase 2)
-        setTimeout(async () => {
-            try {
-                // Create AppendOnlyWriter for file change events if RL4 mode
-                const fileChangeWriter = kernelConfig.USE_APPEND_ONLY_IO 
-                    ? new (await import('./kernel/AppendOnlyWriter')).AppendOnlyWriter(
-                        path.join(workspaceRoot, '.reasoning_rl4', 'traces', 'file_changes.jsonl'),
-                        50 * 1024 * 1024
-                      )
-                    : undefined;
-                
-                fileChangeWatcher = new FileChangeWatcher(workspaceRoot, fileChangeWriter);
-                await fileChangeWatcher.startWatching();
-                persistence?.logWithEmoji('🎧', 'Input Layer: FileChangeWatcher activated');
-                
-                // Store in context for disposal
-                context.subscriptions.push({
-                    dispose: () => fileChangeWatcher?.stopWatching()
-                });
-            } catch (error) {
-                persistence?.logWithEmoji('⚠️', `Input Layer: FileChangeWatcher failed - ${error}`);
-            }
-        }, 8000); // 8 seconds - after GitCommitListener
-        
-        // 🎧 Input Layer - GitHubDiscussionListener (Phase 3)
-        setTimeout(async () => {
-            try {
-                githubDiscussionListener = new GitHubDiscussionListener(workspaceRoot);
-                await githubDiscussionListener.startWatching(5); // Poll every 5 minutes
-                persistence?.logWithEmoji('🎧', 'Input Layer: GitHubDiscussionListener activated');
-                
-                // Store in context for disposal
-                context.subscriptions.push({
-                    dispose: () => githubDiscussionListener?.stopWatching()
-                });
-            } catch (error) {
-                persistence?.logWithEmoji('⚠️', `Input Layer: GitHubDiscussionListener failed - ${error}`);
-            }
-        }, 9000); // 9 seconds - after FileChangeWatcher
-        
-        // 🎧 Input Layer - ShellMessageCapture (Phase 4)
-        setTimeout(async () => {
-            try {
-                shellMessageCapture = new ShellMessageCapture(workspaceRoot);
-                shellMessageCapture.startCapturing();
-                persistence?.logWithEmoji('🎧', 'Input Layer: ShellMessageCapture activated');
-                
-                // Store in context for disposal
-                context.subscriptions.push({
-                    dispose: () => shellMessageCapture?.stopCapturing()
-                });
-            } catch (error) {
-                persistence?.logWithEmoji('⚠️', `Input Layer: ShellMessageCapture failed - ${error}`);
-            }
-        }, 10000); // 10 seconds - after GitHubDiscussionListener
-        
-        // Register structured cognitive command groups
-        registerObserveCommands(context, workspaceRoot);
-        registerUnderstandCommands(context, workspaceRoot);
-        registerExecuteCommands(context);
-        registerMaintainCommands(context, workspaceRoot);
-        registerHelpCommands(context, workspaceRoot);
-        registerAgentCommands(context);
-        
-        // ═══════════════════════════════════════════════════════════════════════════
-        // 🤖 AUTO-PACKAGING COMMANDS
-        // ═══════════════════════════════════════════════════════════════════════════
-        
-        // Command: Auto Package (full: compile + package + install)
-        const autoPackageCommand = vscode.commands.registerCommand('reasoning.autopackage', async () => {
-            try {
-                const { AutoPackager } = await import('./core/auto/AutoPackager');
-                
-                // Réutiliser le channel principal au lieu d'en créer un nouveau
-                logger.show();
-                logger.log('');
-                logger.log('═══════════════════════════════════════════════════════════════');
-                logger.log('🤖 AUTOPACKAGER — Compile + Package + Install');
-                logger.log('═══════════════════════════════════════════════════════════════');
-                
-                // Ensure workspaceRoot is defined
-                if (!workspaceRoot) {
-                    const errorMsg = '❌ Workspace root not found. Please open a workspace folder.';
-                    logger.log(errorMsg);
-                    vscode.window.showErrorMessage(errorMsg);
-                    return;
-                }
-                
-                const autoPackager = new AutoPackager(workspaceRoot, logger.getChannel());
-                await autoPackager.run({ bumpVersion: false, installLocally: true });
-            } catch (error: any) {
-                const errorMsg = `❌ AutoPackager failed: ${error.message}`;
-                console.error(errorMsg, error);
-                logger.log(errorMsg);
-                vscode.window.showErrorMessage(errorMsg);
-            }
-        });
-        context.subscriptions.push(autoPackageCommand);
-
-        // Command: Auto Package with Version Bump
-        const autoPackageBumpCommand = vscode.commands.registerCommand('reasoning.autopackage.bump', async () => {
-            try {
-                const { AutoPackager } = await import('./core/auto/AutoPackager');
-                
-                // Réutiliser le channel principal
-                logger.show();
-                logger.log('');
-                logger.log('═══════════════════════════════════════════════════════════════');
-                logger.log('🔢 AUTOPACKAGER — Version Bump + Compile + Package + Install');
-                logger.log('═══════════════════════════════════════════════════════════════');
-                
-                // Ensure workspaceRoot is defined
-                if (!workspaceRoot) {
-                    const errorMsg = '❌ Workspace root not found. Please open a workspace folder.';
-                    logger.log(errorMsg);
-                    vscode.window.showErrorMessage(errorMsg);
-                    return;
-                }
-                
-                const autoPackager = new AutoPackager(workspaceRoot, logger.getChannel());
-                await autoPackager.run({ bumpVersion: true, installLocally: true });
-            } catch (error: any) {
-                const errorMsg = `❌ AutoPackager with version bump failed: ${error.message}`;
-                console.error(errorMsg, error);
-                logger.log(errorMsg);
-                vscode.window.showErrorMessage(errorMsg);
-            }
-        });
-        context.subscriptions.push(autoPackageBumpCommand);
-
-        // Command: Quick Rebuild (compile + package only, no install)
-        const quickRebuildCommand = vscode.commands.registerCommand('reasoning.quickrebuild', async () => {
-            try {
-                const { AutoPackager } = await import('./core/auto/AutoPackager');
-                
-                // Réutiliser le channel principal
-                logger.show();
-                logger.log('');
-                logger.log('═══════════════════════════════════════════════════════════════');
-                logger.log('⚡ QUICK REBUILD — Compile + Package (no install)');
-                logger.log('═══════════════════════════════════════════════════════════════');
-                
-                // Ensure workspaceRoot is defined
-                if (!workspaceRoot) {
-                    const errorMsg = '❌ Workspace root not found. Please open a workspace folder.';
-                    logger.log(errorMsg);
-                    vscode.window.showErrorMessage(errorMsg);
-                    return;
-                }
-                
-                const autoPackager = new AutoPackager(workspaceRoot, logger.getChannel());
-                await autoPackager.quickRebuild();
-            } catch (error: any) {
-                const errorMsg = `❌ Quick rebuild failed: ${error.message}`;
-                console.error(errorMsg, error);
-                logger.log(errorMsg);
-                vscode.window.showErrorMessage(errorMsg);
-            }
-        });
-        context.subscriptions.push(quickRebuildCommand);
-        
-        // Register contextual command groups
-        registerPlanCommands(context, workspaceRoot);
-        registerTasksCommands(context, workspaceRoot);
-        registerReportsCommands(context, workspaceRoot);
-        registerForecastsCommands(context, workspaceRoot);
-        registerPatternsCommands(context, workspaceRoot);
-        
-        // Register legacy command redirects (migration compatibility)
-        registerLegacyRedirects(context, workspaceRoot);
-        
-        // Register Self-Audit command
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.selfaudit.run', async () => {
-                try {
-                    await vscode.window.withProgress({
-                        location: vscode.ProgressLocation.Notification,
-                        title: 'Running Self-Audit (Level 13)',
-                        cancellable: false
-                    }, async () => {
-                        const result = await runSelfAudit(workspaceRoot);
-                        
-                        vscode.window.showInformationMessage(
-                            `✅ Self-Audit completed:\n` +
-                            `📝 ADR generated\n` +
-                            `📄 Report: ${path.basename(result.reportPath)}\n` +
-                            `💯 Confidence: ${(result.confidence * 100).toFixed(0)}%`
-                        );
-                    });
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Self-Audit failed: ${error}`);
-                }
-            })
-        );
-
-        // Register Cognitive Rebuilder command (Full Autonomous Reconstruction)
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.rebuild.full', async () => {
-                try {
-                    await vscode.window.withProgress({
-                        location: vscode.ProgressLocation.Notification,
-                        title: 'Full Cognitive Reconstruction',
-                        cancellable: false
-                    }, async () => {
-                        const rebuilder = new CognitiveRebuilder(workspaceRoot);
-                        await rebuilder.executeFullRebuild();
-                    });
-                } catch (error) {
-                    vscode.window.showErrorMessage(`Full reconstruction failed: ${error}`);
-                }
-            })
-        );
-        
-        logger.log('✅ Reasoning Layer V3 - Commands registered successfully');
-        
-        // Initialize Cursor Chat Integration
-        cursorChatIntegration = getCursorChatIntegration(workspaceRoot);
-        
-        // Register Cursor Chat Integration commands
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.cursor.queryContext', () => {
-                const ctx = cursorChatIntegration.queryContext();
-                logger.log('💬 Querying cognitive context for Cursor Chat...');
-                logger.log(cursorChatIntegration.getContextString());
-                vscode.window.showInformationMessage(
-                    `🧠 Cognitive Context: ${ctx.summary} (Confidence: ${(ctx.confidence * 100).toFixed(1)}%)`
-                );
-                return ctx;
-            })
-        );
-        
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.cursor.logInteraction', async (prompt: string, response: string) => {
-                await cursorChatIntegration.logInteraction(prompt, response);
-                logger.log('💬 Logged chat interaction to reasoning traces');
-            })
-        );
-        
-        logger.log('🔗 Cursor Chat Integration loaded');
-        
-        // Register autoInit command
-        context.subscriptions.push(
-            vscode.commands.registerCommand('reasoning.autoInit', async () => {
-                const ctx = cursorChatIntegration.queryContext();
-                if (ctx.confidence < 0.5) {
-                    logger.log('🔄 Running autopilot cycle to bootstrap cognition...');
-                    // Trigger autopilot cycle
-                    await vscode.commands.executeCommand('reasoning.autopilot.run');
-                }
-                
-                logger.log('✅ Reasoning Layer auto-initialized and synced with Cursor Chat');
-                vscode.window.showInformationMessage('🧠 RL3 auto-initialized and synced.');
-            })
-        );
-
-        // ═══════════════════════════════════════════════════════════════
-        // RL4 KERNEL COMMANDS
-        // ═══════════════════════════════════════════════════════════════
-        
-        if (kernel) {
-            // Kernel Status
+        // Register minimal commands
             context.subscriptions.push(
                 vscode.commands.registerCommand('reasoning.kernel.status', () => {
-                    const status = kernel!.api.status();
-                    vscode.window.showInformationMessage(
+                const timers = kernel!.timerRegistry.getActiveCount();
+                const memUsage = process.memoryUsage();
+                const uptime = process.uptime();
+                
+                const message = 
                         `🧠 RL4 Kernel Status:\n` +
-                        `Memory: ${status.health.memoryMB.toFixed(0)}MB\n` +
-                        `Timers: ${status.timers}\n` +
-                        `Queue: ${status.queueSize}\n` +
-                        `Uptime: ${(status.uptime / 1000 / 60).toFixed(0)}min\n` +
-                        `Event Loop Lag (p95): ${status.health.eventLoopLag.p95.toFixed(1)}ms`
-                    );
-                })
-            );
+                    `Memory: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB\n` +
+                    `Timers: ${timers.total}\n` +
+                    `Uptime: ${Math.floor(uptime / 60)}min`;
+                
+                vscode.window.showInformationMessage(message);
+                logger!.system(message);
+            }),
             
-            // Kernel Reflect (Run Cognitive Cycle)
-            context.subscriptions.push(
                 vscode.commands.registerCommand('reasoning.kernel.reflect', async () => {
-                    const result = await kernel!.api.reflect();
-                    vscode.window.showInformationMessage(
-                        `✅ Cognitive Cycle ${result.cycleId} complete\n` +
-                        `Duration: ${result.duration}ms\n` +
-                        `Phases: ${result.phases.filter(p => p.success).length}/${result.phases.length} succeeded`
-                    );
-                })
-            );
+                logger!.system('🧠 Running manual cycle...', '🧠');
+                const result = await kernel!.scheduler.runCycle();
+                const message = `✅ Cycle ${result.cycleId}: ${result.duration}ms, ${result.phases.length} phases`;
+                vscode.window.showInformationMessage(message);
+                logger!.system(message);
+            }),
             
-            // Kernel Flush
-            context.subscriptions.push(
                 vscode.commands.registerCommand('reasoning.kernel.flush', async () => {
                     await kernel!.api.flush();
-                    vscode.window.showInformationMessage('✅ All queues flushed');
-                })
-            );
-        }
-
-        // ───────────────────────────────────────────────────────────────────────
-        // 🤖 Cognitive Cycle Scheduler (RL4 Kernel vs RL3 Legacy)
-        // ───────────────────────────────────────────────────────────────────────
-        if (kernel && kernelConfig.USE_TIMER_REGISTRY) {
-            // RL4 MODE: Use single CognitiveScheduler
-            kernel.scheduler.start(kernelConfig.cognitive_cycle_interval_ms);
-            persistence?.logWithEmoji('🧠', `RL4 CognitiveScheduler started (${kernelConfig.cognitive_cycle_interval_ms}ms cycles)`);
+                vscode.window.showInformationMessage('✅ Flushed');
+                logger!.system('💾 All queues flushed', '💾');
+            }),
             
-        } else {
-            // RL3 LEGACY MODE: Use multiple autonomous timers (DEPRECATED)
-            try {
-                const run = async (cmd: string) => {
-                    try {
-                        persistence?.logWithEmoji('⏱️', `Scheduled run: ${cmd}`);
-                        await vscode.commands.executeCommand(cmd);
-                        persistence?.logWithEmoji('✅', `Scheduled run completed: ${cmd}`);
-                    } catch (err) {
-                        const msg = err instanceof Error ? err.message : String(err);
-                        persistence?.logWithEmoji('❌', `Scheduled run failed (${cmd}): ${msg}`);
+            vscode.commands.registerCommand('reasoning.kernel.whereami', async () => {
+                logger!.system('🧠 Generating cognitive snapshot...', '🧠');
+                
+                // Ask user to select Perception Angle mode
+                const choice = await vscode.window.showQuickPick([
+                    {
+                        label: '🔴 Strict (0%)',
+                        description: 'P0 only — Generate from existing RL4 data (~1s)',
+                        detail: 'Focus ONLY on critical tasks',
+                        mode: 'strict'
+                    },
+                    {
+                        label: '🟡 Flexible (25%)',
+                        description: 'P0+P1 OK — Generate from existing RL4 data (~1s)',
+                        detail: 'Focus on P0+P1 tasks, minor scope changes OK',
+                        mode: 'flexible'
+                    },
+                    {
+                        label: '🟢 Exploratory (50%)',
+                        description: 'New ideas welcome — Include recent history (~2s)',
+                        detail: 'Welcome creative solutions, new features OK',
+                        mode: 'exploratory'
+                    },
+                    {
+                        label: '⚪ Free (100%)',
+                        description: 'Creative mode — Include recent history (~2s)',
+                        detail: 'All ideas welcome, no constraints',
+                        mode: 'free'
+                    },
+                    {
+                        label: '🔍 First Use (Deep Analysis)',
+                        description: 'Analyze project history + Git commits (~5s)',
+                        detail: 'Use on first RL4 install or to refresh context',
+                        mode: 'firstUse'
                     }
-                };
-
-                // Cadences (ms)
-                const TWO_HOURS = 2 * 60 * 60 * 1000;
-                const FOUR_HOURS = 4 * 60 * 60 * 1000;
-                const ONE_DAY = 24 * 60 * 60 * 1000;
-
-                // Every ~2h: patterns, correlations, ADR auto
-                autonomousTimers.push(setInterval(() => {
-                    void run('reasoning.pattern.analyze');
-                    void run('reasoning.correlation.analyze');
-                    void run('reasoning.adr.auto');
-                }, TWO_HOURS));
-
-                // Every ~4h: external sync/status (if configured)
-                autonomousTimers.push(setInterval(() => {
-                    void run('reasoning.external.sync');
-                    void run('reasoning.external.status');
-                }, FOUR_HOURS));
-
-                // Daily: integrity check and snapshot
-                autonomousTimers.push(setInterval(() => {
-                    void run('reasoning.verify.integrity');
-                    void run('reasoning.snapshot.create');
-                }, ONE_DAY));
-
-                // Dispose timers on deactivate via context subscription
-                context.subscriptions.push({ dispose: () => {
-                    autonomousTimers.forEach(t => clearInterval(t));
-                    autonomousTimers = [];
-                }});
-
-                persistence?.logWithEmoji('🗓️', 'RL3 Legacy scheduler started (autonomous timers)');
-            } catch (e) {
-                const msg = e instanceof Error ? e.message : String(e);
-                persistence?.logWithEmoji('⚠️', `Scheduler initialization skipped: ${msg}`);
-            }
-        }
-        
-        // Check if first run (minimalist onboarding)
-        const reasoningDir = path.join(workspaceRoot, '.reasoning');
-        const tracesDir = path.join(reasoningDir, 'traces');
-        
-        if (fs.existsSync(tracesDir)) {
-            const traceFiles = fs.readdirSync(tracesDir).filter(f => f.endsWith('.json'));
-            const hasEvents = traceFiles.some(file => {
-                const content = JSON.parse(fs.readFileSync(path.join(tracesDir, file), 'utf-8'));
-                return Array.isArray(content) && content.length > 0;
-            });
-            
-            if (!hasEvents) {
-                logger.logOnboarding();
-            }
-        } else {
-            logger.logOnboarding();
-        }
-
-        // Generate manifest after 2 seconds (safe)
-        setTimeout(async () => {
-            try {
-                if (persistence && workspaceRoot) {
-                    const manifestGenerator = new ManifestGenerator(workspaceRoot, persistence);
-                    await manifestGenerator.generate();
-                    persistence.logWithEmoji('📄', 'Manifest auto-generated successfully');
+                ], {
+                    placeHolder: 'Select Perception Angle (mode)'
+                });
+                
+                if (!choice) {
+                    return; // User cancelled
                 }
-            } catch (err) {
-                persistence?.logWithEmoji('⚠️', `Manifest generation skipped: ${(err as Error).message}`);
+                
+                try {
+                    logger!.system(`📋 Generating snapshot (mode: ${choice.mode})...`, '📋');
+                    
+                    // Generate adaptive prompt with selected mode (Phase 5: Pass CognitiveLogger)
+                    const promptBuilder = new AdaptivePromptBuilder(workspaceRoot, logger || undefined);
+                    const snapshot = await promptBuilder.buildPrompt({
+                        mode: choice.mode as any,
+                        includeHistory: choice.mode === 'exploratory' || choice.mode === 'free' || choice.mode === 'firstUse',
+                        includeGoals: true,
+                        includeTechStack: true
+                    });
+                    
+                    // Show in new document
+                    const doc = await vscode.workspace.openTextDocument({
+                        content: snapshot,
+                        language: 'markdown'
+                    });
+                    await vscode.window.showTextDocument(doc);
+                    
+                    vscode.window.showInformationMessage(`✅ Snapshot generated (${choice.label})! Copy-paste it into your AI agent.`);
+                    logger!.system('✅ Snapshot generated successfully', '✅');
+                } catch (error) {
+                    const msg = `❌ Failed to generate snapshot: ${error}`;
+                    vscode.window.showErrorMessage(msg);
+                    logger!.system(msg, '❌');
+                }
+            })
+        );
+        
+        // Phase E2 Final: Register ADR Validation Commands
+        ADRValidationCommands.registerCommands(context, workspaceRoot);
+        
+        // Phase E2.7: Create Status Bar Item for WebView
+        statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+        statusBarItem.text = '$(brain) RL4 Dashboard';
+        statusBarItem.tooltip = 'Click to open/close RL4 Cognitive Dashboard';
+        statusBarItem.command = 'rl4.toggleWebview';
+        statusBarItem.show();
+        context.subscriptions.push(statusBarItem);
+        logger.system('✅ Status Bar item created', '✅');
+        
+        // Phase E2.7: Create WebView Dashboard with auto-push snapshots
+        logger.system('🖥️ Creating RL4 Dashboard WebView...', '🖥️');
+        
+        webviewPanel = vscode.window.createWebviewPanel(
+            'rl4Webview',
+            '🧠 RL4 Dashboard',
+            { viewColumn: vscode.ViewColumn.Two, preserveFocus: true },
+            {
+                enableScripts: true,
+                retainContextWhenHidden: false, // ✅ FIXED: Free memory when hidden (was causing 1.2 GB leak)
+                localResourceRoots: [
+                    vscode.Uri.joinPath(context.extensionUri, 'extension', 'webview', 'ui', 'dist')
+                ]
             }
-        }, 2000);
+        );
+        
+        // Load WebView HTML
+        webviewPanel.webview.html = getWebviewHtml(context, webviewPanel);
+        logger.system('✅ WebView HTML loaded', '✅');
+        
+        // Phase E3.3: Handle messages from WebView
+        const rl4Path = path.join(workspaceRoot, '.reasoning_rl4');
+        const promptBuilder = new AdaptivePromptBuilder(workspaceRoot, logger || undefined);
+        const adrParser = new ADRParser(rl4Path);
+        const planParser = new PlanTasksContextParser(rl4Path);
+        
+        // Initialize ADRs.RL4 template if it doesn't exist
+        const adrsPath = path.join(rl4Path, 'ADRs.RL4');
+        if (!fs.existsSync(adrsPath)) {
+            try {
+                // Ensure .reasoning_rl4 directory exists
+                if (!fs.existsSync(rl4Path)) {
+                    fs.mkdirSync(rl4Path, { recursive: true });
+                }
+                
+                // Create template ADRs.RL4 file
+                const template = `# ADRs (Architecture Decision Records)
 
+This file contains Architecture Decision Records (ADRs) for this project.
+
+## Format
+
+Each ADR follows this structure:
+
+\`\`\`markdown
+## ADR-XXX: [Title]
+
+**Status**: proposed | accepted | rejected | deprecated | superseded
+**Date**: YYYY-MM-DD
+**Author**: [Author name]
+
+### Context
+
+[Describe the context and problem that led to this decision]
+
+### Decision
+
+[Describe the decision made]
+
+### Consequences
+
+**Positive:**
+- [List positive consequences]
+
+**Negative:**
+- [List negative consequences]
+
+**Risks:**
+- [List potential risks]
+
+**Alternatives Considered:**
+- [List alternatives that were considered]
+\`\`\`
+
+## How to Use
+
+1. When the LLM (agent) proposes an ADR, add it to this file
+2. RL4 will automatically detect the change and parse it
+3. The ADR will be added to the ledger (\`.reasoning_rl4/ledger/adrs.jsonl\`)
+4. Future prompts will include this ADR in the context
+
+---
+
+_This file is managed by RL4. Add ADRs here as they are proposed by the agent._
+`;
+                
+                fs.writeFileSync(adrsPath, template, 'utf-8');
+                logger.system('📜 Created ADRs.RL4 template', '📜');
+            } catch (error) {
+                logger.warning(`Failed to create ADRs.RL4 template: ${error}`);
+            }
+        }
+        
+        // Helper: Send Context.RL4 to WebView for initial KPI load
+        const sendContextToWebView = async () => {
+            if (webviewPanel) {
+                try {
+                    const fs = await import('fs/promises');
+                    const contextPath = path.join(rl4Path, 'Context.RL4');
+                    const contextContent = await fs.readFile(contextPath, 'utf-8');
+                    
+                    webviewPanel.webview.postMessage({
+                        type: 'kpisUpdated',
+                        payload: contextContent
+                    });
+                    
+                    logger!.system('✅ Initial Context.RL4 sent to WebView', '✅');
+                } catch (error) {
+                    logger!.system(`⚠️ Context.RL4 not found yet (will use mock data)`, '⚠️');
+                }
+            }
+        };
+        
+        // Helper: Send all initial RL4 data to WebView
+        const sendInitialRL4Data = async () => {
+            if (!webviewPanel) return;
+            
+            const fs = await import('fs/promises');
+            
+            // 1. Send Context.RL4 (already done by sendContextToWebView)
+            await sendContextToWebView();
+            
+            // 2. Send proposals.json for Dev tab
+            try {
+                const proposalsPath = path.join(rl4Path, 'proposals.json');
+                const proposalsContent = await fs.readFile(proposalsPath, 'utf-8');
+                const proposals = JSON.parse(proposalsContent);
+                
+                webviewPanel.webview.postMessage({
+                    type: 'proposalsUpdated',
+                    payload: proposals.suggestedTasks || []
+                });
+                
+                logger!.system(`✅ Initial proposals sent to WebView (${proposals.suggestedTasks?.length || 0} tasks)`, '✅');
+            } catch (error) {
+                logger!.system(`⚠️ proposals.json not found or empty (will show empty state)`, '⚠️');
+            }
+            
+            // 3. Send Tasks.RL4 for Dev tab
+            try {
+                const tasksPath = path.join(rl4Path, 'Tasks.RL4');
+                const tasksContent = await fs.readFile(tasksPath, 'utf-8');
+                
+                webviewPanel.webview.postMessage({
+                    type: 'tasksLoaded',
+                    payload: tasksContent
+                });
+                
+                logger!.system('✅ Initial Tasks.RL4 sent to WebView', '✅');
+            } catch (error) {
+                logger!.system(`⚠️ Tasks.RL4 not found yet`, '⚠️');
+            }
+            
+            // 4. Send ADRs for Insights tab
+            try {
+                const adrsPath = path.join(rl4Path, 'ADRs.RL4');
+                const adrsContent = await fs.readFile(adrsPath, 'utf-8');
+                
+                webviewPanel.webview.postMessage({
+                    type: 'adrsLoaded',
+                    payload: adrsContent
+                });
+                
+                logger!.system('✅ Initial ADRs.RL4 sent to WebView', '✅');
+            } catch (error) {
+                logger!.system(`⚠️ ADRs.RL4 not found yet`, '⚠️');
+            }
+            
+            // 5. TODO: Send task verifications when TaskVerificationEngine is integrated
+            // For now, this is skipped as TaskVerificationEngine is not yet initialized in extension.ts
+        };
+        
+        // Wait 500ms for WebView to be ready, then send all initial RL4 data
+        setTimeout(sendInitialRL4Data, 500);
+        
+        // Send initial GitHub status to WebView
+        setTimeout(async () => {
+            if (!webviewPanel) return;
+            try {
+                const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                const status = await ghManager.checkConnection();
+                
+                webviewPanel.webview.postMessage({
+                    type: 'githubStatus',
+                    payload: {
+                        connected: status.ok,
+                        repo: status.repo,
+                        reason: status.reason
+                    }
+                });
+            } catch (error) {
+                logger!.warning(`Failed to check initial GitHub status: ${error}`);
+            }
+        }, 600);
+
+        // Initialize default Plan/Tasks/Context files if needed
+        await promptBuilder.initializeDefaults();
+        
+        // Initialize Cursor rules for RL4 strict mode enforcement
+        ensureCursorRuleExists(workspaceRoot, logger);
+
+        // Add command to open RL4 Terminal
+        context.subscriptions.push(
+            vscode.commands.registerCommand('rl4.openTerminal', () => {
+                // Check if RL4 Terminal already exists
+                const existingTerminal = vscode.window.terminals.find(t => t.name === 'RL4 Terminal');
+                
+                if (existingTerminal) {
+                    // Reveal existing terminal
+                    existingTerminal.show();
+                    logger!.system('🖥️ RL4 Terminal revealed', '🖥️');
+                } else {
+                    // Create new RL4 Terminal
+                    const terminal = vscode.window.createTerminal({
+                        name: 'RL4 Terminal',
+                        cwd: workspaceRoot,
+                        env: {
+                            ...process.env,
+                            RL4_TERMINAL: '1'
+                        }
+                    });
+                    
+                    terminal.show();
+                    
+                    // Source the helper script if it exists
+                    const helperScript = path.join(workspaceRoot, 'scripts', 'rl4-log.sh');
+                    if (fs.existsSync(helperScript)) {
+                        terminal.sendText(`source ${helperScript}`);
+                        terminal.sendText('echo "✅ RL4 Terminal helper loaded"');
+                    } else {
+                        terminal.sendText('echo "⚠️ RL4 helper script not found at scripts/rl4-log.sh"');
+                    }
+                    
+                    logger!.system('🖥️ RL4 Terminal created', '🖥️');
+                }
+            })
+        );
+
+        webviewPanel.webview.onDidReceiveMessage(
+            async (message) => {
+                console.log('[RL4 Extension] Received message from WebView:', message.type);
+                
+                switch (message.type) {
+                    case 'generateSnapshot':
+                        try {
+                            const deviationMode = message.deviationMode || 'flexible';
+                            logger!.system(`📋 Generating snapshot (mode: ${deviationMode})...`, '📋');
+                            const snapshot = await promptBuilder.generate(deviationMode);
+                            
+                            webviewPanel!.webview.postMessage({
+                                type: 'snapshotGenerated',
+                                payload: snapshot
+                            });
+                            
+                            logger!.system(`✅ Snapshot generated (${snapshot.length} chars)`, '✅');
+                        } catch (error) {
+                            logger!.error(`Failed to generate snapshot: ${error}`);
+                            webviewPanel!.webview.postMessage({
+                                type: 'error',
+                                payload: 'Failed to generate snapshot'
+                            });
+                        }
+                        break;
+                    
+
+                    case 'requestPatterns':
+                        try {
+                            logger!.system('📊 Loading terminal patterns...', '📊');
+                            
+                            // Load patterns from TerminalPatternsLearner
+                            const patternsLearner = new TerminalPatternsLearner(workspaceRoot);
+                            await patternsLearner.loadPatterns();
+                            
+                            const patterns = patternsLearner.getAllPatterns();
+                            const anomalies = patternsLearner.detectAllAnomalies();
+                            
+                            logger!.system(`✅ Loaded ${patterns.length} patterns, ${anomalies.length} anomalies`, '✅');
+                            
+                            // Send to WebView
+                            webviewPanel!.webview.postMessage({
+                                type: 'patternsUpdated',
+                                payload: {
+                                    patterns,
+                                    anomalies
+                                }
+                            });
+                        } catch (error) {
+                            const msg = `Failed to load patterns: ${error instanceof Error ? error.message : 'Unknown error'}`;
+                            logger!.error(msg);
+                            webviewPanel!.webview.postMessage({
+                                type: 'patternsUpdated',
+                                payload: {
+                                    patterns: [],
+                                    anomalies: []
+                                }
+                            });
+                        }
+                        break;
+
+                    case 'requestSuggestions':
+                        try {
+                            logger!.system('💡 Generating task suggestions...', '💡');
+                            
+                            // Read Tasks.RL4
+                            const tasksPath = path.join(workspaceRoot, '.reasoning_rl4', 'Tasks.RL4');
+                            if (!fs.existsSync(tasksPath)) {
+                                webviewPanel!.webview.postMessage({
+                                    type: 'suggestionsUpdated',
+                                    payload: { suggestions: [] }
+                                });
+                                break;
+                            }
+
+                            const tasksContent = fs.readFileSync(tasksPath, 'utf-8');
+                            const tasks = TasksRL4Parser.parse(tasksContent);
+                            
+                            // Find tasks without @rl4:completeWhen
+                            const tasksWithoutConditions = TasksRL4Parser.findTasksWithoutCompleteWhen(tasks);
+                            
+                            // Load patterns for suggestions
+                            const patternsLearner = new TerminalPatternsLearner(workspaceRoot);
+                            await patternsLearner.loadPatterns();
+                            
+                            // Generate suggestions
+                            const suggestions = tasksWithoutConditions
+                                .map(task => {
+                                    const title = TasksRL4Parser.extractTaskTitle(task.rawText);
+                                    return patternsLearner.suggestForTask(task.id, title);
+                                })
+                                .filter((s): s is NonNullable<typeof s> => s !== null);
+                            
+                            logger!.system(`✅ Generated ${suggestions.length} suggestions for ${tasksWithoutConditions.length} tasks`, '✅');
+                            
+                            // Send to WebView
+                            webviewPanel!.webview.postMessage({
+                                type: 'suggestionsUpdated',
+                                payload: { suggestions }
+                            });
+                        } catch (error) {
+                            const msg = `Failed to generate suggestions: ${error instanceof Error ? error.message : 'Unknown error'}`;
+                            logger!.error(msg);
+                            webviewPanel!.webview.postMessage({
+                                type: 'suggestionsUpdated',
+                                payload: { suggestions: [] }
+                            });
+                        }
+                        break;
+
+                    case 'applySuggestion':
+                        try {
+                            const { taskId, suggestedCondition } = message.payload;
+                            logger!.system(`✏️ Applying suggestion for task ${taskId}...`, '✏️');
+                            
+                            // Read Tasks.RL4
+                            const tasksPath = path.join(workspaceRoot, '.reasoning_rl4', 'Tasks.RL4');
+                            if (!fs.existsSync(tasksPath)) {
+                                throw new Error('Tasks.RL4 not found');
+                            }
+
+                            let tasksContent = fs.readFileSync(tasksPath, 'utf-8');
+                            
+                            // Find the line with @rl4:id=taskId and add @rl4:completeWhen
+                            const lines = tasksContent.split('\n');
+                            let modified = false;
+                            
+                            for (let i = 0; i < lines.length; i++) {
+                                if (lines[i].includes(`@rl4:id=${taskId}`)) {
+                                    // Add @rl4:completeWhen on the same line (or next line if too long)
+                                    if (!lines[i].includes('@rl4:completeWhen')) {
+                                        // Check if line is too long (>120 chars)
+                                        if (lines[i].length > 120) {
+                                            // Add on next line with proper indentation
+                                            const indent = lines[i].match(/^\s*/)?.[0] || '  ';
+                                            lines.splice(i + 1, 0, `${indent}  - @rl4:completeWhen="${suggestedCondition}"`);
+                                        } else {
+                                            // Add on same line
+                                            lines[i] = lines[i].trim() + ` @rl4:completeWhen="${suggestedCondition}"`;
+                                        }
+                                        modified = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (modified) {
+                                // Write back
+                                tasksContent = lines.join('\n');
+                                fs.writeFileSync(tasksPath, tasksContent, 'utf-8');
+                                
+                                // Log decision (optional - decisions.jsonl not yet implemented)
+                                logger!.system(`✅ Applied suggestion for task ${taskId}`, '✅');
+                                
+                                // Send success message
+                                webviewPanel!.webview.postMessage({
+                                    type: 'suggestionApplied',
+                                    payload: { taskId, success: true }
+                                });
+                                
+                                // Refresh suggestions
+                                webviewPanel!.webview.postMessage({
+                                    type: 'requestSuggestions'
+                                });
+                            } else {
+                                throw new Error(`Task ${taskId} not found or already has @rl4:completeWhen`);
+                            }
+                        } catch (error) {
+                            const msg = `Failed to apply suggestion: ${error instanceof Error ? error.message : 'Unknown error'}`;
+                            logger!.error(msg);
+                            vscode.window.showErrorMessage(msg);
+                            webviewPanel!.webview.postMessage({
+                                type: 'suggestionApplied',
+                                payload: { taskId: message.payload?.taskId, success: false, error: msg }
+                            });
+                        }
+                        break;
+
+                    case 'requestAdHocActions':
+                        try {
+                            logger!.system('🔍 Loading ad-hoc actions...', '🔍');
+                            
+                            // Detect ad-hoc actions (last 2 hours)
+                            const adHocTracker = new AdHocTracker(workspaceRoot);
+                            const actions = adHocTracker.detectAdHocActions(120);
+                            
+                            logger!.system(`✅ Found ${actions.length} ad-hoc actions`, '✅');
+                            
+                            // Send to WebView
+                            webviewPanel!.webview.postMessage({
+                                type: 'adHocActionsUpdated',
+                                payload: { actions }
+                            });
+                        } catch (error) {
+                            const msg = `Failed to load ad-hoc actions: ${error instanceof Error ? error.message : 'Unknown error'}`;
+                            logger!.error(msg);
+                            webviewPanel!.webview.postMessage({
+                                type: 'adHocActionsUpdated',
+                                payload: { actions: [] }
+                            });
+                        }
+                        break;
+                    
+                    case 'openFile':
+                        try {
+                            const fileName = message.fileName;
+                            if (!fileName) {
+                                logger!.warning('openFile: fileName missing');
+                                break;
+                            }
+
+                            const filePath = path.join(rl4Path, fileName);
+                            const fileUri = vscode.Uri.file(filePath);
+
+                            // Open file in editor
+                            const document = await vscode.workspace.openTextDocument(fileUri);
+                            await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
+
+                            logger!.system(`📂 Opened ${fileName} in editor`, '📂');
+                        } catch (error) {
+                            logger!.error(`Failed to open file: ${error}`);
+                            vscode.window.showErrorMessage(`Failed to open ${message.fileName}: ${error}`);
+                        }
+                        break;
+                    
+                    case 'connectGitHub':
+                        try {
+                            logger!.system('🔗 Starting GitHub integration setup...', '🔗');
+                            const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                            await ghManager.setupIntegration();
+                            
+                            // Check status after setup
+                            const status = await ghManager.checkConnection();
+                            webviewPanel!.webview.postMessage({
+                                type: 'githubConnected',
+                                payload: status
+                            });
+                            
+                            // Also send updated status
+                            webviewPanel!.webview.postMessage({
+                                type: 'githubStatus',
+                                payload: {
+                                    connected: status.ok,
+                                    repo: status.repo,
+                                    reason: status.reason
+                                }
+                            });
+                            
+                            logger!.system(`✅ GitHub integration setup completed`, '✅');
+                        } catch (error) {
+                            logger!.error(`Failed to setup GitHub integration: ${error}`);
+                            webviewPanel!.webview.postMessage({
+                                type: 'githubError',
+                                payload: error instanceof Error ? error.message : 'Unknown error'
+                            });
+                        }
+                        break;
+                    
+                    case 'checkGitHubStatus':
+                        try {
+                            const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                            const status = await ghManager.checkConnection();
+                            
+                            webviewPanel!.webview.postMessage({
+                                type: 'githubStatus',
+                                payload: {
+                                    connected: status.ok,
+                                    repo: status.repo,
+                                    reason: status.reason
+                                }
+                            });
+                        } catch (error) {
+                            logger!.error(`Failed to check GitHub status: ${error}`);
+                            webviewPanel!.webview.postMessage({
+                                type: 'githubStatus',
+                                payload: {
+                                    connected: false,
+                                    reason: 'error'
+                                }
+                            });
+                        }
+                        break;
+                    
+                    case 'generateCommitPrompt':
+                        try {
+                            logger!.system('📝 Collecting commit context...', '📝');
+                            
+                            const collector = new CommitContextCollector(workspaceRoot, kernel?.execPool);
+                            const context = await collector.collectContext();
+                            
+                            const promptGenerator = new CommitPromptGenerator();
+                            const prompt = promptGenerator.generatePrompt(context);
+                            
+                            // Copy to clipboard
+                            await vscode.env.clipboard.writeText(prompt);
+                            
+                            webviewPanel!.webview.postMessage({
+                                type: 'commitPromptGenerated',
+                                payload: prompt
+                            });
+                            
+                            logger!.system(`✅ Commit prompt generated (${prompt.length} chars) and copied to clipboard`, '✅');
+                        } catch (error) {
+                            logger!.error(`Failed to generate commit prompt: ${error}`);
+                            webviewPanel!.webview.postMessage({
+                                type: 'commitError',
+                                payload: error instanceof Error ? error.message : 'Failed to generate prompt'
+                            });
+                        }
+                        break;
+                    
+                    case 'submitCommitCommand':
+                        // User pasted command from LLM - show it for validation
+                        try {
+                            const command = message.command;
+                            if (!command) {
+                                logger!.warning('submitCommitCommand: command missing');
+                                break;
+                            }
+                            
+                            webviewPanel!.webview.postMessage({
+                                type: 'commitCommandReceived',
+                                payload: command
+                            });
+                            
+                            logger!.system('📋 Commit command received from LLM, waiting for validation', '📋');
+                        } catch (error) {
+                            logger!.error(`Failed to submit commit command: ${error}`);
+                            webviewPanel!.webview.postMessage({
+                                type: 'commitError',
+                                payload: error instanceof Error ? error.message : 'Failed to submit command'
+                            });
+                        }
+                        break;
+                    
+                    case 'executeCommitCommand':
+                        try {
+                            const command = message.command;
+                            if (!command) {
+                                logger!.warning('executeCommitCommand: command missing');
+                                break;
+                            }
+                            
+                            logger!.system('🚀 Executing Git workflow...', '🚀');
+                            logger!.system(`Command: ${command.substring(0, 150)}...`, '📋');
+                            
+                            // Execute via ExecPool
+                            if (kernel?.execPool) {
+                                // Split commands by && and execute separately for better error handling
+                                const commands = command.split(' && ').map((c: string) => c.trim()).filter((c: string) => c);
+                                
+                                logger!.system(`📋 Executing ${commands.length} workflow steps...`, '📋');
+                                
+                                let lastOutput = '';
+                                let lastError = '';
+                                
+                                // Helper function to extract step name from command
+                                const getStepName = (cmd: string): string => {
+                                    if (cmd.includes('git checkout -b')) return 'Create branch';
+                                    if (cmd.includes('git add')) return 'Stage changes';
+                                    if (cmd.includes('git commit')) return 'Commit changes';
+                                    if (cmd.includes('git push')) return 'Push branch';
+                                    if (cmd.includes('gh pr create')) return 'Create PR';
+                                    return 'Unknown step';
+                                };
+                                
+                                for (let i = 0; i < commands.length; i++) {
+                                    const cmd = commands[i];
+                                    const stepName = getStepName(cmd);
+                                    
+                                    logger!.system(`📋 Step ${i + 1}/${commands.length}: ${stepName}...`, '📋');
+                                    
+                                    const shellCommand = process.platform === 'win32' 
+                                        ? `cmd /c "${cmd.replace(/"/g, '\\"')}"`
+                                        : `/bin/sh -c ${JSON.stringify(cmd)}`;
+                                    
+                                    const result = await kernel.execPool.run(shellCommand, { 
+                                        cwd: workspaceRoot,
+                                        timeout: 30000 // 30s timeout per step
+                                    });
+                                    
+                                    lastOutput = result.stdout;
+                                    lastError = result.stderr || '';
+                                    
+                                    // Check if step failed (excluding warnings and info messages)
+                                    // Git/RL3/RL4 may output info messages to stderr that are not errors
+                                    const isInfoMessage = lastError && (
+                                        lastError.includes('Warning:') || 
+                                        lastError.includes('warning:') ||
+                                        lastError.includes('Switched to') ||
+                                        lastError.includes('remote:') ||
+                                        lastError.includes('Already on') ||
+                                        lastError.includes('branch') ||
+                                        lastError.includes('RL3:') ||
+                                        lastError.includes('RL4:') ||
+                                        lastError.includes('Capturing') ||
+                                        lastError.includes('🎧') ||
+                                        lastError.includes('✅') ||
+                                        lastError.includes('📋') ||
+                                        lastError.includes('🚀')
+                                    );
+                                    
+                                    const hasError = result.timedOut || (
+                                        lastError && 
+                                        !isInfoMessage &&
+                                        lastError.trim().length > 0 &&
+                                        // Real errors usually contain words like "error", "fatal", "failed"
+                                        (lastError.toLowerCase().includes('error') ||
+                                         lastError.toLowerCase().includes('fatal') ||
+                                         lastError.toLowerCase().includes('failed') ||
+                                         lastError.toLowerCase().includes('denied') ||
+                                         lastError.toLowerCase().includes('permission'))
+                                    );
+                                    
+                                    if (hasError) {
+                                        const errorMsg = result.timedOut 
+                                            ? `Step ${i + 1} (${stepName}) timed out after 30s` 
+                                            : `Step ${i + 1} (${stepName}) failed: ${lastError}`;
+                                        logger!.error(`❌ ${errorMsg}`);
+                                        throw new Error(errorMsg);
+                                    }
+                                    
+                                    logger!.system(`✅ Step ${i + 1}/${commands.length} completed: ${stepName}`, '✅');
+                                }
+                                
+                                // All steps completed successfully
+                                webviewPanel!.webview.postMessage({
+                                    type: 'commitExecuted',
+                                    payload: lastOutput || 'Workflow completed successfully'
+                                });
+                                
+                                logger!.system('✅ Git workflow completed successfully!', '✅');
+                                
+                                // Refresh GitHub status
+                                const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                                const status = await ghManager.checkConnection();
+                                webviewPanel!.webview.postMessage({
+                                    type: 'githubStatus',
+                                    payload: {
+                                        connected: status.ok,
+                                        repo: status.repo,
+                                        reason: status.reason
+                                    }
+                                });
+                            } else {
+                                throw new Error('ExecPool not available');
+                            }
+                        } catch (error) {
+                            logger!.error(`Failed to execute commit command: ${error}`);
+                            webviewPanel!.webview.postMessage({
+                                type: 'commitError',
+                                payload: error instanceof Error ? error.message : 'Failed to execute command'
+                            });
+                        }
+                        break;
+                    
+                    default:
+                        break;
+                }
+            },
+            undefined,
+            context.subscriptions
+        );
+        
+        // Phase 6: Helper function to detect and log RL4 file changes
+        const logRL4FileChange = async (fileType: 'Plan' | 'Tasks' | 'Context' | 'ADR', filePath: string) => {
+            if (!logger) return;
+            
+            try {
+                const fs = await import('fs/promises');
+                const content = await fs.readFile(filePath, 'utf-8');
+                
+                // Extract version and updated from frontmatter (between --- markers)
+                const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+                let versionNew = 'unknown';
+                let timestamp = new Date().toISOString();
+                
+                if (frontmatterMatch) {
+                    const frontmatter = frontmatterMatch[1];
+                    const versionMatch = frontmatter.match(/^version:\s*([^\n]+)/m);
+                    const updatedMatch = frontmatter.match(/^updated:\s*([^\n]+)/m);
+                    
+                    if (versionMatch) versionNew = versionMatch[1].trim();
+                    if (updatedMatch) timestamp = updatedMatch[1].trim();
+                }
+                
+                // Detect who made the change (try to get Git author from last commit, fallback to "User")
+                let updatedBy = 'User';
+                try {
+                    const { exec } = require('child_process');
+                    const { promisify } = require('util');
+                    const execAsync = promisify(exec);
+                    
+                    // Get last commit author for this file
+                    const result = await execAsync(`git log -1 --pretty=format:"%an" -- "${filePath}"`, {
+                        cwd: workspaceRoot,
+                        timeout: 2000
+                    });
+                    if (result.stdout && result.stdout.trim()) {
+                        updatedBy = result.stdout.trim();
+                    }
+                } catch (gitError) {
+                    // Fallback to "User" if Git fails
+                }
+                
+                // Extract a summary of changes (detect key sections modified)
+                let changes = 'Content updated';
+                if (fileType === 'Plan' && content.includes('Phase:')) {
+                    const phaseMatch = content.match(/Phase:\s*([^\n]+)/);
+                    if (phaseMatch) changes = `Phase updated: ${phaseMatch[1].trim()}`;
+                } else if (fileType === 'Tasks' && content.includes('Tasks:')) {
+                    const taskCount = (content.match(/- \[/g) || []).length;
+                    changes = `${taskCount} task(s) in file`;
+                } else if (fileType === 'Context' && content.includes('KPIs')) {
+                    changes = 'KPIs updated';
+                } else if (fileType === 'ADR' && content.includes('## ADR-')) {
+                    const adrCount = (content.match(/## ADR-/g) || []).length;
+                    changes = `${adrCount} ADR(s) in file`;
+                }
+                
+                // Get old version from cache (if available) or use "unknown"
+                const versionOld = 'unknown'; // TODO: Cache previous versions for comparison
+                
+                // Log via CognitiveLogger
+                logger.logRL4FileUpdate(fileType, {
+                    file: fileType,
+                    updated_by: updatedBy,
+                    changes: changes,
+                    version_old: versionOld,
+                    version_new: versionNew,
+                    timestamp: timestamp
+                });
+            } catch (error) {
+                logger.warning(`Failed to log ${fileType}.RL4 change: ${error}`);
+            }
+        };
+
+        // Phase E3.3: Setup FileWatchers for Plan/Tasks/Context/ADRs.RL4
+        const planWatcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(rl4Path, 'Plan.RL4')
+        );
+        const tasksWatcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(rl4Path, 'Tasks.RL4')
+        );
+        const contextWatcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(rl4Path, 'Context.RL4')
+        );
+        const adrWatcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(rl4Path, 'ADRs.RL4')
+        );
+
+        // Handle Plan.RL4 changes (Phase 6: Log via CognitiveLogger)
+        planWatcher.onDidChange(async () => {
+            const planPath = path.join(rl4Path, 'Plan.RL4');
+            await logRL4FileChange('Plan', planPath);
+            logger!.system('📋 Plan.RL4 changed, recalculating metrics...', '📋');
+            // Confidence/bias will be recalculated on next snapshot generation
+        });
+
+        // Handle Tasks.RL4 changes (Phase 6: Log via CognitiveLogger)
+        tasksWatcher.onDidChange(async () => {
+            const tasksPath = path.join(rl4Path, 'Tasks.RL4');
+            await logRL4FileChange('Tasks', tasksPath);
+            logger!.system('✅ Tasks.RL4 changed, updating state...', '✅');
+        });
+
+        // Handle Context.RL4 changes → Send to WebView for KPI update (Phase 6: Log via CognitiveLogger)
+        contextWatcher.onDidChange(async () => {
+            const contextPath = path.join(rl4Path, 'Context.RL4');
+            await logRL4FileChange('Context', contextPath);
+            logger!.system('🔍 Context.RL4 changed, refreshing...', '🔍');
+            
+            // Read Context.RL4 and send to WebView for KPI parsing
+            if (webviewPanel) {
+                try {
+                    const fs = await import('fs/promises');
+                    const contextContent = await fs.readFile(contextPath, 'utf-8');
+                    
+                    webviewPanel.webview.postMessage({
+                        type: 'kpisUpdated',
+                        payload: contextContent
+                    });
+                    
+                    logger!.system('✅ Context.RL4 sent to WebView for KPI update', '✅');
+                } catch (error) {
+                    logger!.error(`Failed to read Context.RL4: ${error}`);
+                }
+            }
+        });
+
+        // Handle ADRs.RL4 changes (parse and append to ledger) (Phase 6: Log via CognitiveLogger)
+        adrWatcher.onDidChange(async () => {
+            const adrsPath = path.join(rl4Path, 'ADRs.RL4');
+            await logRL4FileChange('ADR', adrsPath);
+            logger!.system('📜 ADRs.RL4 changed, processing...', '📜');
+            const result = adrParser.processADRsFile();
+            
+            if (result.added > 0) {
+                vscode.window.showInformationMessage(
+                    `✅ RL4: ${result.added} new ADR(s) added to ledger`
+                );
+                logger!.system(`✅ ${result.added} ADR(s) appended to ledger`, '✅');
+            }
+        });
+
+        adrWatcher.onDidCreate(async () => {
+            const adrsPath = path.join(rl4Path, 'ADRs.RL4');
+            await logRL4FileChange('ADR', adrsPath);
+            logger!.system('📜 ADRs.RL4 created, processing...', '📜');
+            const result = adrParser.processADRsFile();
+            
+            if (result.added > 0) {
+                vscode.window.showInformationMessage(
+                    `✅ RL4: Processed ${result.added} ADR(s)`
+                );
+            }
+        });
+
+        context.subscriptions.push(planWatcher, tasksWatcher, contextWatcher, adrWatcher);
+        logger.system('✅ FileWatchers registered for Plan/Tasks/Context/ADRs.RL4', '✅');
+        
+        // Phase E3.3: No auto-push, WebView requests snapshot on demand via 'generateSnapshot' message
+        
+        // Clean up on panel dispose
+        webviewPanel.onDidDispose(() => {
+            webviewPanel = null;
+            if (statusBarItem) {
+                statusBarItem.text = '$(brain) RL4 Dashboard';
+                statusBarItem.tooltip = 'Click to open RL4 Cognitive Dashboard';
+            }
+            logger!.system('🖥️ WebView disposed', '🖥️');
+        }, null, context.subscriptions);
+        
+        // Add command to toggle WebView
+        context.subscriptions.push(
+            vscode.commands.registerCommand('rl4.toggleWebview', () => {
+                if (webviewPanel) {
+                    webviewPanel.reveal(vscode.ViewColumn.Two);
+                    if (statusBarItem) {
+                        statusBarItem.text = '$(brain) RL4 Dashboard $(check)';
+                        statusBarItem.tooltip = 'RL4 Dashboard is open';
+                    }
+                    logger!.system('🖥️ WebView revealed', '🖥️');
+                } else {
+                    // Recreate WebView if disposed
+        webviewPanel = vscode.window.createWebviewPanel(
+            'rl4Webview',
+            '🧠 RL4 Dashboard',
+            { viewColumn: vscode.ViewColumn.Two, preserveFocus: true },
+            {
+                enableScripts: true,
+                retainContextWhenHidden: false, // ✅ FIXED: Free memory when hidden (was causing 1.2 GB leak)
+                localResourceRoots: [
+                    vscode.Uri.joinPath(context.extensionUri, 'extension', 'webview', 'ui', 'dist')
+                ]
+            }
+        );
+                    
+                    webviewPanel.webview.html = getWebviewHtml(context, webviewPanel);
+                    
+                    // Phase E3.3: WebView requests snapshot on demand, no auto-push
+                    const rl4PathRecreated = path.join(workspaceRoot, '.reasoning_rl4');
+                    const promptBuilderRecreated = new AdaptivePromptBuilder(workspaceRoot, logger || undefined);
+                    
+                    // Helper: Send Context.RL4 to WebView for initial KPI load (recreated)
+                    const sendContextToWebViewRecreated = async () => {
+                        if (webviewPanel) {
+                            try {
+                                const fs = await import('fs/promises');
+                                const contextPath = path.join(rl4PathRecreated, 'Context.RL4');
+                                const contextContent = await fs.readFile(contextPath, 'utf-8');
+                                
+                                webviewPanel.webview.postMessage({
+                                    type: 'kpisUpdated',
+                                    payload: contextContent
+                                });
+                                
+                                logger!.system('✅ Initial Context.RL4 sent to WebView', '✅');
+                            } catch (error) {
+                                logger!.system(`⚠️ Context.RL4 not found yet (will use mock data)`, '⚠️');
+                            }
+                        }
+                    };
+                    
+                    // Send initial Context.RL4 to WebView after a delay
+                    setTimeout(sendContextToWebViewRecreated, 500);
+                    
+                    // Send initial GitHub status to WebView
+                    setTimeout(async () => {
+                        if (!webviewPanel) return;
+                        try {
+                            const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                            const status = await ghManager.checkConnection();
+                            
+                            webviewPanel.webview.postMessage({
+                                type: 'githubStatus',
+                                payload: {
+                                    connected: status.ok,
+                                    repo: status.repo,
+                                    reason: status.reason
+                                }
+                            });
+                        } catch (error) {
+                            logger!.warning(`Failed to check initial GitHub status: ${error}`);
+                        }
+                    }, 600);
+                    
+                    webviewPanel.webview.onDidReceiveMessage(
+                        async (message) => {
+                            console.log('[RL4 Extension] Received message from WebView:', message.type);
+                            
+                            switch (message.type) {
+                                case 'generateSnapshot':
+                                    try {
+                                        logger!.system('📋 Generating unified context snapshot...', '📋');
+                                        const snapshot = await promptBuilderRecreated.generate();
+                                        
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'snapshotGenerated',
+                                            payload: snapshot
+                                        });
+                                        
+                                        logger!.system(`✅ Snapshot generated (${snapshot.length} chars)`, '✅');
+                                    } catch (error) {
+                                        logger!.error(`Failed to generate snapshot: ${error}`);
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'error',
+                                            payload: 'Failed to generate snapshot'
+                                        });
+                                    }
+                                    break;
+                                
+                                case 'openFile':
+                                    try {
+                                        const fileName = message.fileName;
+                                        if (!fileName) {
+                                            logger!.warning('openFile: fileName missing');
+                                            break;
+                                        }
+                                        
+                                        const filePath = path.join(rl4PathRecreated, fileName);
+                                        const fileUri = vscode.Uri.file(filePath);
+                                        
+                                        // Open file in editor
+                                        const document = await vscode.workspace.openTextDocument(fileUri);
+                                        await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
+                                        
+                                        logger!.system(`📂 Opened ${fileName} in editor`, '📂');
+                                    } catch (error) {
+                                        logger!.error(`Failed to open file: ${error}`);
+                                        vscode.window.showErrorMessage(`Failed to open ${message.fileName}: ${error}`);
+                                    }
+                                    break;
+                                
+                                case 'connectGitHub':
+                                    try {
+                                        logger!.system('🔗 Starting GitHub integration setup...', '🔗');
+                                        const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                                        await ghManager.setupIntegration();
+                                        
+                                        // Check status after setup
+                                        const status = await ghManager.checkConnection();
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'githubConnected',
+                                            payload: status
+                                        });
+                                        
+                                        // Also send updated status
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'githubStatus',
+                                            payload: {
+                                                connected: status.ok,
+                                                repo: status.repo,
+                                                reason: status.reason
+                                            }
+                                        });
+                                        
+                                        logger!.system(`✅ GitHub integration setup completed`, '✅');
+                                    } catch (error) {
+                                        logger!.error(`Failed to setup GitHub integration: ${error}`);
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'githubError',
+                                            payload: error instanceof Error ? error.message : 'Unknown error'
+                                        });
+                                    }
+                                    break;
+                                
+                                case 'checkGitHubStatus':
+                                    try {
+                                        const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                                        const status = await ghManager.checkConnection();
+                                        
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'githubStatus',
+                                            payload: {
+                                                connected: status.ok,
+                                                repo: status.repo,
+                                                reason: status.reason
+                                            }
+                                        });
+                                    } catch (error) {
+                                        logger!.error(`Failed to check GitHub status: ${error}`);
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'githubStatus',
+                                            payload: {
+                                                connected: false,
+                                                reason: 'error'
+                                            }
+                                        });
+                                    }
+                                    break;
+                                
+                                case 'generateCommitPrompt':
+                                    try {
+                                        logger!.system('📝 Collecting commit context...', '📝');
+                                        
+                                        const collector = new CommitContextCollector(workspaceRoot, kernel?.execPool);
+                                        const context = await collector.collectContext();
+                                        
+                                        const promptGenerator = new CommitPromptGenerator();
+                                        const prompt = promptGenerator.generatePrompt(context);
+                                        
+                                        // Copy to clipboard
+                                        await vscode.env.clipboard.writeText(prompt);
+                                        
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'commitPromptGenerated',
+                                            payload: prompt
+                                        });
+                                        
+                                        logger!.system(`✅ Commit prompt generated (${prompt.length} chars) and copied to clipboard`, '✅');
+                                    } catch (error) {
+                                        logger!.error(`Failed to generate commit prompt: ${error}`);
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'commitError',
+                                            payload: error instanceof Error ? error.message : 'Failed to generate prompt'
+                                        });
+                                    }
+                                    break;
+                                
+                                case 'submitCommitCommand':
+                                    // User pasted command from LLM - show it for validation
+                                    try {
+                                        const command = message.command;
+                                        if (!command) {
+                                            logger!.warning('submitCommitCommand: command missing');
+                                            break;
+                                        }
+                                        
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'commitCommandReceived',
+                                            payload: command
+                                        });
+                                        
+                                        logger!.system('📋 Commit command received from LLM, waiting for validation', '📋');
+                                    } catch (error) {
+                                        logger!.error(`Failed to submit commit command: ${error}`);
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'commitError',
+                                            payload: error instanceof Error ? error.message : 'Failed to submit command'
+                                        });
+                                    }
+                                    break;
+                                
+                                case 'executeCommitCommand':
+                                    try {
+                                        const command = message.command;
+                                        if (!command) {
+                                            logger!.warning('executeCommitCommand: command missing');
+                                            break;
+                                        }
+                                        
+                                        logger!.system('🚀 Executing GH CLI command...', '🚀');
+                                        logger!.system(`Command: ${command.substring(0, 100)}...`, '📋');
+                                        
+                                        // Execute via ExecPool
+                                        if (kernel?.execPool) {
+                                            // For shell commands with pipes/redirects, use shell execution
+                                            const shellCommand = process.platform === 'win32' 
+                                                ? `cmd /c "${command}"`
+                                                : `/bin/sh -c "${command.replace(/"/g, '\\"')}"`;
+                                            
+                                            const result = await kernel.execPool.run(shellCommand, { 
+                                                cwd: workspaceRoot
+                                            });
+                                            
+                                            // Check success: no stderr (or only warnings) and not timed out
+                                            if (!result.timedOut && (!result.stderr || result.stderr.trim().length === 0)) {
+                                                webviewPanel!.webview.postMessage({
+                                                    type: 'commitExecuted',
+                                                    payload: result.stdout
+                                                });
+                                                
+                                                logger!.system('✅ Commit created successfully!', '✅');
+                                                
+                                                // Refresh GitHub status
+                                                const ghManager = new GitHubFineGrainedManager(workspaceRoot);
+                                                const status = await ghManager.checkConnection();
+                                                webviewPanel!.webview.postMessage({
+                                                    type: 'githubStatus',
+                                                    payload: {
+                                                        connected: status.ok,
+                                                        repo: status.repo,
+                                                        reason: status.reason
+                                                    }
+                                                });
+                                            } else {
+                                                throw new Error(result.stderr || (result.timedOut ? 'Command timed out' : 'Command failed'));
+                                            }
+                                        } else {
+                                            throw new Error('ExecPool not available');
+                                        }
+                                    } catch (error) {
+                                        logger!.error(`Failed to execute commit command: ${error}`);
+                                        webviewPanel!.webview.postMessage({
+                                            type: 'commitError',
+                                            payload: error instanceof Error ? error.message : 'Failed to execute command'
+                                        });
+                                    }
+                                    break;
+                            }
+                        },
+                        null,
+                        context.subscriptions
+                    );
+                    
+                    webviewPanel.onDidDispose(() => {
+                        webviewPanel = null;
+                        if (statusBarItem) {
+                            statusBarItem.text = '$(brain) RL4 Dashboard';
+                            statusBarItem.tooltip = 'Click to open RL4 Cognitive Dashboard';
+                        }
+                        logger!.system('🖥️ WebView disposed', '🖥️');
+                    }, null, context.subscriptions);
+                    
+                    if (statusBarItem) {
+                        statusBarItem.text = '$(brain) RL4 Dashboard $(check)';
+                        statusBarItem.tooltip = 'RL4 Dashboard is open';
+                    }
+                    
+                    logger!.system('🖥️ WebView recreated', '🖥️');
+                }
+            })
+        );
+        
+        logger.system('✅ RL4 Kernel activated', '✅');
+        logger.system('🎯 8 commands registered (4 kernel + 3 ADR validation + 1 webview)', '🎯');
+        logger.system('🖥️ Dashboard auto-opened in column 2', '🖥️');
+            
+        } else {
+        logger.warning('TimerRegistry disabled');
+    }
+}
+
+/**
+ * Generate WebView HTML with Vite build assets
+ */
+function getWebviewHtml(context: vscode.ExtensionContext, panel: vscode.WebviewPanel): string {
+    // Read index.html to extract actual Vite asset filenames (they change on each build)
+    const indexHtmlPath = vscode.Uri.joinPath(context.extensionUri, 'extension', 'webview', 'ui', 'dist', 'index.html');
+    const indexHtml = require('fs').readFileSync(indexHtmlPath.fsPath, 'utf-8');
+    
+    // Extract script and style paths from index.html
+    const scriptMatch = indexHtml.match(/src="\.\/assets\/(index-[^"]+\.js)"/);
+    const styleMatch = indexHtml.match(/href="\.\/assets\/(index-[^"]+\.css)"/);
+    
+    if (!scriptMatch || !styleMatch) {
+        throw new Error('Failed to parse Vite build assets from index.html');
+    }
+    
+    // Resolve webview-safe URIs for Vite assets
+    const distPath = vscode.Uri.joinPath(context.extensionUri, 'extension', 'webview', 'ui', 'dist', 'assets');
+    const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(distPath, scriptMatch[1]));
+    const styleUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(distPath, styleMatch[1]));
+    
+    return /* html */ `
+        <!doctype html>
+        <html>
+            <head>
+                <meta charset="utf-8" />
+                <meta
+                    http-equiv="Content-Security-Policy"
+                    content="default-src 'none'; img-src ${panel.webview.cspSource} blob: data:;
+                             script-src ${panel.webview.cspSource} 'unsafe-inline'; style-src ${panel.webview.cspSource} 'unsafe-inline';
+                             font-src ${panel.webview.cspSource}; connect-src ${panel.webview.cspSource};"
+                />
+                <meta name="viewport" content="width=device-width,initial-scale=1" />
+                <link rel="stylesheet" href="${styleUri}">
+                <title>RL4 Dashboard</title>
+            </head>
+            <body>
+                <div id="root"></div>
+                <script>
+                    // Acquire VS Code API BEFORE React loads
+                    // This can only be called once per webview lifetime
+                    (function() {
+                        if (typeof acquireVsCodeApi === 'function') {
+                            try {
+                                window.vscode = acquireVsCodeApi();
+                                console.log('[RL4 WebView] VS Code API acquired in inline script');
+                            } catch (e) {
+                                console.warn('[RL4 WebView] Could not acquire API (may already be acquired):', e.message);
+                                // API already acquired somewhere else - try to find it
+                                if (!window.vscode) {
+                                    console.error('[RL4 WebView] CRITICAL: API acquired elsewhere but not available in window.vscode');
+                                }
+                            }
+                        } else {
+                            console.error('[RL4 WebView] acquireVsCodeApi function not found');
+                        }
+                    })();
+                </script>
+                <script type="module" src="${scriptUri}"></script>
+            </body>
+        </html>
+    `;
+}
+
+/**
+ * Ensure Cursor rule file exists for RL4 strict mode enforcement
+ * This is called automatically on extension activation to ensure users don't need to manually add the rule
+ */
+function ensureCursorRuleExists(workspaceRoot: string, logger: CognitiveLogger | null): void {
+    try {
+        const cursorRulesDir = path.join(workspaceRoot, '.cursor', 'rules');
+        const ruleFilePath = path.join(cursorRulesDir, 'RL4_STRICT_MODE_ENFORCEMENT.mdc');
+        
+        // Check if rule file already exists
+        if (fs.existsSync(ruleFilePath)) {
+            if (logger) {
+                logger.system('✅ Cursor rule already exists', '✅');
+            }
+            return;
+        }
+        
+        // Create .cursor/rules directory if it doesn't exist
+        if (!fs.existsSync(cursorRulesDir)) {
+            fs.mkdirSync(cursorRulesDir, { recursive: true });
+            if (logger) {
+                logger.system(`📁 Created .cursor/rules directory`, '📁');
+            }
+        }
+        
+        // Write the rule file
+        const ruleContent = `---
+description: [RL4] Enforcement strict du mode deviation - OBLIGATOIRE avant toute modification
+globs: **/*
+alwaysApply: true
+manual: false
+---
+
+# 🛡️ RL4 STRICT MODE ENFORCEMENT — RÈGLE ABSOLUE
+
+## ⚠️ RÈGLE #1 : TOUJOURS VÉRIFIER LE MODE AVANT TOUTE ACTION
+
+**AVANT de créer, modifier ou supprimer un fichier TypeScript :**
+
+1. **Lire \`.reasoning_rl4/Plan.RL4\`** → Vérifier \`deviation_mode: strict|flexible|exploratory|free\`
+2. **Lire \`.reasoning_rl4/Tasks.RL4\`** → Lister les tâches P0 actives
+3. **Lire \`.reasoning_rl4/Context.RL4\`** → Vérifier le bias actuel
+
+## 🚫 MODE STRICT (0% threshold) — RÈGLES ABSOLUES
+
+**Si \`deviation_mode: strict\` dans Plan.RL4 :**
+
+### ❌ INTERDICTIONS ABSOLUES :
+- ❌ **NE PAS créer de nouveau fichier \`.ts\`** sauf si c'est explicitement une tâche P0
+- ❌ **NE PAS modifier un fichier** sauf si c'est pour compléter une tâche P0
+- ❌ **NE PAS ajouter de nouvelles fonctionnalités** même si "c'est une bonne idée"
+
+### ✅ AUTORISATIONS UNIQUES :
+- ✅ **Modifier uniquement les fichiers nécessaires pour compléter une tâche P0**
+- ✅ **Corriger des bugs critiques** (si c'est une tâche P0)
+- ✅ **Répondre aux questions** sans modifier de code
+
+### 📋 PROCESSUS OBLIGATOIRE EN MODE STRICT :
+
+**Avant TOUTE modification de code :**
+
+\`\`\`
+1. Lire Tasks.RL4 → Identifier les tâches P0
+2. Vérifier : "Cette modification correspond-elle à une tâche P0 ?"
+   - OUI → Continuer
+   - NON → STOP. Répondre :
+     "⛔ STRICT MODE: Cette modification n'est pas dans les tâches P0.
+     
+     Options:
+     a) ❌ Rejeter (recommandé)
+     b) 📋 Ajouter à Future Backlog (bias reste inchangé)
+     c) 🔄 Passer en mode Flexible (25% threshold)"
+\`\`\`
+
+## ⚖️ MODE FLEXIBLE (25% threshold) — RÈGLES RELATIVES
+
+**Si \`deviation_mode: flexible\` dans Plan.RL4 :**
+
+- ✅ Autoriser modifications P0 + P1
+- ✅ Autoriser petites améliorations si bias < 25%
+- ❌ Demander confirmation avant P2/P3
+
+## 🔍 MODE EXPLORATORY (50% threshold) — RÈGLES PERMISSIVES
+
+**Si \`deviation_mode: exploratory\` dans Plan.RL4 :**
+
+- ✅ Autoriser explorations et améliorations
+- ✅ Proposer des optimisations
+- ⚠️ Calculer bias impact avant d'implémenter
+
+## 🔥 MODE FREE (100% threshold) — AUCUNE RESTRICTION
+
+**Si \`deviation_mode: free\` dans Plan.RL4 :**
+
+- ✅ Toute modification autorisée
+- ✅ Création de fichiers libre
+- ⚠️ Toujours informer l'utilisateur des changements
+
+---
+
+## 🎯 CHECKLIST AVANT TOUTE MODIFICATION
+
+**Copier-coller cette checklist avant chaque modification :**
+
+\`\`\`
+[ ] 1. J'ai lu Plan.RL4 → Mode détecté: [strict/flexible/exploratory/free]
+[ ] 2. J'ai lu Tasks.RL4 → Tâches P0: [liste]
+[ ] 3. J'ai lu Context.RL4 → Bias actuel: [X]%
+[ ] 4. Cette modification correspond à une tâche P0 ? [OUI/NON]
+[ ] 5. Si NON, j'ai demandé confirmation à l'utilisateur ? [OUI/NON]
+[ ] 6. J'ai calculé le bias impact ? [OUI/NON]
+[ ] 7. Le bias total reste sous le threshold ? [OUI/NON]
+\`\`\`
+
+**Si une case est NON → STOP. Demander confirmation.**
+
+---
+
+## 📝 EXEMPLE DE VIOLATION (À NE PAS REPRODUIRE)
+
+**❌ MAUVAIS COMPORTEMENT :**
+\`\`\`
+Utilisateur: "Le snapshot est trop générique"
+Agent: [Crée immédiatement CodeStateAnalyzer.ts sans vérifier]
+→ VIOLATION : Fichier créé sans vérifier Tasks.RL4
+\`\`\`
+
+**✅ BON COMPORTEMENT :**
+\`\`\`
+Utilisateur: "Le snapshot est trop générique"
+Agent: 
+1. Lit Plan.RL4 → Mode: strict
+2. Lit Tasks.RL4 → P0: "Commit 102 fichiers"
+3. Répond: "⛔ STRICT MODE: Enrichir le snapshot n'est pas dans les tâches P0.
+   
+   Options:
+   a) ❌ Rejeter (recommandé en mode strict)
+   b) 📋 Ajouter à backlog
+   c) 🔄 Passer en mode Flexible"
+\`\`\`
+
+---
+
+## 🚨 RAPPEL CONSTANT
+
+**Cette règle doit être appliquée AVANT chaque modification de code, pas après.**
+
+**Si vous oubliez cette règle, vous violez le contrat RL4.**
+`;
+        
+        fs.writeFileSync(ruleFilePath, ruleContent, 'utf-8');
+        
+        if (logger) {
+            logger.system('✅ Cursor rule file created automatically', '✅');
+            logger.system('   → .cursor/rules/RL4_STRICT_MODE_ENFORCEMENT.mdc', '📄');
+        }
     } catch (error) {
-        console.error('❌ Activation failed:', error);
-        vscode.window.showErrorMessage(`Failed to activate: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        if (logger) {
+            logger.warning(`Failed to create Cursor rule file: ${error}`);
+        }
+        // Non-blocking: if rule file creation fails, extension still works
     }
 }
 
 export async function deactivate() {
-    console.log('🧠 Reasoning Layer V3 - Deactivating...');
+    logger?.system('🛑 RL4 Kernel deactivating...', '🛑');
     
-    // RL4 Kernel shutdown (if active)
-    if (kernel) {
+    // ✅ FIXED: Dispose all event listeners (IDE, Build metrics) - CRITICAL for memory leak prevention
+    if (kernel?.scheduler) {
+        try {
+            logger?.system('🧹 Disposing event listeners...', '🧹');
+            
+            // Call disposeAll() which disposes IDEActivityListener and BuildMetricsListener
+            // This cleans all VS Code event listeners (onDidChangeActiveTextEditor, etc.)
+            kernel.scheduler.disposeAll();
+            
+            logger?.system('✅ Event listeners disposed', '✅');
+        } catch (error) {
+            logger?.error(`Dispose listeners error: ${error}`);
+        }
+    }
+    
+    // Dispose Status Bar Item
+    if (statusBarItem) {
+        statusBarItem.dispose();
+        statusBarItem = null;
+        logger?.system('✅ Status Bar disposed', '✅');
+    }
+    
+    // Dispose WebView
+    if (webviewPanel) {
+        webviewPanel.dispose();
+        webviewPanel = null;
+        logger?.system('✅ WebView disposed', '✅');
+    }
+    
+    // Flush ledger
+    try {
+        const ledger = (globalThis as any).RBOM_LEDGER;
+        if (ledger?.flush) {
+                    await ledger.flush();
+            logger?.system('✅ Ledger flushed', '✅');
+        }
+    } catch (error) {
+        logger?.error(`Flush error: ${error}`);
+    }
+    
+    // Clear timers
+    if (kernel?.timerRegistry) {
+        kernel.timerRegistry.clear('kernel:cognitive-cycle');
+        kernel.timerRegistry.clear('kernel:cognitive-watchdog');
+        logger?.system('✅ Timers cleared', '✅');
+    }
+    
+    // Shutdown kernel
+    if (kernel?.api) {
         try {
             await kernel.api.shutdown();
-            console.log('✅ RL4 Kernel shutdown complete');
+            logger?.system('✅ Kernel shutdown complete', '✅');
         } catch (error) {
-            console.error('❌ Kernel shutdown error:', error);
+            logger?.error(`Shutdown error: ${error}`);
         }
     }
     
-    // RL3 Capture engines
-    if (sbomCapture) {
-        sbomCapture.stop();
-    }
-    
-    if (configCapture) {
-        configCapture.stop();
-    }
-    
-    if (testCapture) {
-        testCapture.stop();
-    }
-    
-    if (gitMetadata) {
-        gitMetadata.stop();
-    }
-    
-    if (eventAggregator) {
-        eventAggregator.dispose();
-    }
-    
-    if (persistence) {
-        persistence.dispose();
-    }
-    if (rl3StatusBarItem) {
-        rl3StatusBarItem.dispose();
-        rl3StatusBarItem = null;
-    }
-    
-    // Clear autonomous timers (RL3 legacy mode only)
-    if (autonomousTimers.length) {
-        autonomousTimers.forEach(t => clearInterval(t));
-        autonomousTimers = [];
-    }
-    
-    console.log('✅ Extension deactivated successfully');
+    logger?.system('🧠 RL4 Kernel deactivated cleanly', '🧠');
 }
-
-// STEP 1: VS Code Watchers (progressive and safe)
-function setupVSCodeWatchers() {
-    if (!persistence) {
-        console.warn('⚠️ PersistenceManager not available for watchers');
-        return;
-    }
-
-    // 1. Text document changes (avec debounce)
-    vscode.workspace.onDidChangeTextDocument(textDocEvent => {
-        if (textDocEvent.document.isUntitled || textDocEvent.document.uri.scheme !== 'file') {
-            return;
-        }
-
-        if (shouldIgnoreFile(textDocEvent.document.uri.fsPath)) {
-            return;
-        }
-
-        const filePath = textDocEvent.document.uri.fsPath;
-
-        // Debounce to prevent event multiplication
-        const existingTimeout = fileDebounceMap.get(filePath);
-        if (existingTimeout) {
-            clearTimeout(existingTimeout);
-        }
-
-        const timeout = setTimeout(() => {
-            const change = textDocEvent.contentChanges[0];
-            if (change && eventAggregator) {
-                eventAggregator.captureEvent(
-                    'file_change',
-                    filePath,
-                    {
-                        language: textDocEvent.document.languageId,
-                        lineCount: textDocEvent.document.lineCount,
-                        level: '1 - Code & Structure Technique',
-                        category: 'File Changes'
-                    }
-                );
-                persistence?.logWithEmoji('📝', `File modified: ${path.basename(filePath)}`);
-            }
-            fileDebounceMap.delete(filePath);
-        }, 1000); // 1 second debounce
-
-        fileDebounceMap.set(filePath, timeout);
-    });
-
-    // 2. File saves
-    vscode.workspace.onDidSaveTextDocument(document => {
-        if (document.uri.scheme !== 'file' || shouldIgnoreFile(document.uri.fsPath)) {
-            return;
-        }
-
-        if (eventAggregator) {
-            eventAggregator.captureEvent(
-                'file_change',
-                document.uri.fsPath,
-                {
-                    action: 'save',
-                    language: document.languageId,
-                    lineCount: document.lineCount,
-                    level: '1 - Code & Structure Technique',
-                    category: 'File Saves'
-                }
-            );
-            persistence?.logWithEmoji('💾', `File saved: ${document.fileName}`);
-        }
-    });
-}
-
-// COPIED V2 - Robust filtering
-function shouldIgnoreFile(filePath: string): boolean {
-    const ignoredPatterns = [
-        /node_modules\//,
-        /\.git\//,
-        /\.vscode\//,
-        /out\//,
-        /dist\//,
-        /build\//,
-        /\.reasoning\//,
-        /\.cache\//,
-        /coverage\//,
-        /\.map$/,
-        /\.tmp$/,
-        /\.log$/
-    ];
-
-    return ignoredPatterns.some(pattern => pattern.test(filePath));
-}
+// test flush fix
+// test flush fix

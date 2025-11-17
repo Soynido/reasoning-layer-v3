@@ -29,6 +29,17 @@ export interface IssueData {
     assignees: string[];
 }
 
+export interface GitHubComment {
+    id: string;
+    timestamp: string;
+    type: 'pr_comment' | 'issue_comment';
+    pr_or_issue_number: number;
+    author: string;
+    body: string;
+    related_files: string[];
+    sentiment: 'positive' | 'neutral' | 'concern';
+}
+
 export class GitHubCaptureEngine {
     private githubToken: string | null = null;
     private repoOwner: string | null = null;
@@ -306,6 +317,163 @@ export class GitHubCaptureEngine {
                 reject(error);
             });
         });
+    }
+
+    /**
+     * Capture PR comments for RL4 traces
+     * Persists to .reasoning_rl4/traces/github_comments.jsonl
+     */
+    public async capturePRComments(prNumber: number): Promise<GitHubComment[]> {
+        if (!this.githubToken || !this.repoOwner || !this.repoName) {
+            return [];
+        }
+
+        try {
+            const url = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/issues/${prNumber}/comments`;
+            const comments = await this.apiRequest(url);
+            
+            if (!Array.isArray(comments)) {
+                return [];
+            }
+
+            const captured: GitHubComment[] = [];
+            
+            for (const comment of comments) {
+                const githubComment: GitHubComment = {
+                    id: `gh-comment-${comment.id}`,
+                    timestamp: comment.created_at,
+                    type: 'pr_comment',
+                    pr_or_issue_number: prNumber,
+                    author: comment.user.login,
+                    body: comment.body || '',
+                    related_files: this.extractFileReferences(comment.body || ''),
+                    sentiment: this.detectSentiment(comment.body || '')
+                };
+                
+                captured.push(githubComment);
+            }
+            
+            // Persist to RL4 traces
+            await this.persistRL4Comments(captured);
+            
+            this.persistence.logWithEmoji('💬', `Captured ${captured.length} comments from PR #${prNumber}`);
+            return captured;
+        } catch (error) {
+            this.persistence.logWithEmoji('❌', `Failed to capture PR comments #${prNumber}: ${error}`);
+            return [];
+        }
+    }
+
+    /**
+     * Capture Issue comments for RL4 traces
+     */
+    public async captureIssueComments(issueNumber: number): Promise<GitHubComment[]> {
+        if (!this.githubToken || !this.repoOwner || !this.repoName) {
+            return [];
+        }
+
+        try {
+            const url = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/issues/${issueNumber}/comments`;
+            const comments = await this.apiRequest(url);
+            
+            if (!Array.isArray(comments)) {
+                return [];
+            }
+
+            const captured: GitHubComment[] = [];
+            
+            for (const comment of comments) {
+                const githubComment: GitHubComment = {
+                    id: `gh-comment-${comment.id}`,
+                    timestamp: comment.created_at,
+                    type: 'issue_comment',
+                    pr_or_issue_number: issueNumber,
+                    author: comment.user.login,
+                    body: comment.body || '',
+                    related_files: this.extractFileReferences(comment.body || ''),
+                    sentiment: this.detectSentiment(comment.body || '')
+                };
+                
+                captured.push(githubComment);
+            }
+            
+            // Persist to RL4 traces
+            await this.persistRL4Comments(captured);
+            
+            this.persistence.logWithEmoji('💬', `Captured ${captured.length} comments from Issue #${issueNumber}`);
+            return captured;
+        } catch (error) {
+            this.persistence.logWithEmoji('❌', `Failed to capture Issue comments #${issueNumber}: ${error}`);
+            return [];
+        }
+    }
+
+    /**
+     * Extract file references from comment body
+     */
+    private extractFileReferences(body: string): string[] {
+        const files: string[] = [];
+        
+        // Match common file patterns in markdown
+        const patterns = [
+            /`([^`]+\.(?:ts|js|tsx|jsx|json|md|py))`/g,  // Backtick code
+            /\b([a-zA-Z0-9_\-\/]+\.(?:ts|js|tsx|jsx|json|md|py))\b/g  // Plain text
+        ];
+        
+        for (const pattern of patterns) {
+            const matches = body.matchAll(pattern);
+            for (const match of matches) {
+                if (!files.includes(match[1])) {
+                    files.push(match[1]);
+                }
+            }
+        }
+        
+        return files;
+    }
+
+    /**
+     * Detect sentiment from comment body (basic keyword analysis)
+     */
+    private detectSentiment(body: string): 'positive' | 'neutral' | 'concern' {
+        const lowerBody = body.toLowerCase();
+        
+        // Concern indicators
+        const concernKeywords = ['bug', 'issue', 'problem', 'error', 'fail', 'broken', 'concern', 'warning', 'critical'];
+        const hasConcern = concernKeywords.some(kw => lowerBody.includes(kw));
+        
+        if (hasConcern) {
+            return 'concern';
+        }
+        
+        // Positive indicators
+        const positiveKeywords = ['lgtm', 'looks good', 'approved', 'great', 'perfect', 'excellent', 'thanks'];
+        const hasPositive = positiveKeywords.some(kw => lowerBody.includes(kw));
+        
+        if (hasPositive) {
+            return 'positive';
+        }
+        
+        return 'neutral';
+    }
+
+    /**
+     * Persist comments to RL4 traces
+     */
+    private async persistRL4Comments(comments: GitHubComment[]): Promise<void> {
+        const tracesDir = path.join(this.workspaceRoot, '.reasoning_rl4', 'traces');
+        
+        if (!fs.existsSync(tracesDir)) {
+            fs.mkdirSync(tracesDir, { recursive: true });
+        }
+        
+        const logPath = path.join(tracesDir, 'github_comments.jsonl');
+        
+        // Append each comment as JSONL
+        for (const comment of comments) {
+            const line = JSON.stringify(comment) + '\n';
+            fs.appendFileSync(logPath, line, 'utf-8');
+        }
     }
 
     public stop(): void {

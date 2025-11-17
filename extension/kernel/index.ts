@@ -14,6 +14,7 @@ export { CognitiveScheduler, CycleResult, PhaseResult } from './CognitiveSchedul
 export { RBOMLedger, RBOMEntry, MerkleRoot } from './RBOMLedger';
 export { EvidenceGraph } from './EvidenceGraph';
 export { loadKernelConfig, KernelConfig } from './config';
+export { KernelBootstrap, KernelArtifacts } from './KernelBootstrap';
 
 // Adapters
 export { initTimerProxy, proxySetInterval, proxySetTimeout } from './adapters/TimerProxy';

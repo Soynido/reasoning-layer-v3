@@ -1,0 +1,309 @@
+.patterns-card {
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 6px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.patterns-card.empty {
+  padding: 40px;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--vscode-descriptionForeground);
+}
+
+.empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  margin: 12px 0 8px;
+  color: var(--vscode-foreground);
+}
+
+.empty-state p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.empty-state .hint {
+  margin-top: 16px;
+  font-size: 13px;
+}
+
+.empty-state code {
+  background: var(--vscode-textCodeBlock-background);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: var(--vscode-editor-font-family);
+}
+
+.patterns-header {
+  margin-bottom: 20px;
+}
+
+.patterns-header h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: var(--vscode-foreground);
+}
+
+.patterns-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--vscode-descriptionForeground);
+}
+
+/* Anomalies Section */
+.patterns-anomalies {
+  background: var(--vscode-inputValidation-errorBackground);
+  border: 1px solid var(--vscode-inputValidation-errorBorder);
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.patterns-anomalies h4 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  color: var(--vscode-foreground);
+}
+
+.anomaly-item {
+  background: var(--vscode-editor-background);
+  border-left: 4px solid var(--vscode-editorError-foreground);
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+}
+
+.anomaly-item:last-child {
+  margin-bottom: 0;
+}
+
+.anomaly-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.anomaly-severity {
+  font-size: 16px;
+}
+
+.anomaly-type {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: var(--vscode-foreground);
+}
+
+.anomaly-task {
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+  font-family: var(--vscode-editor-font-family);
+}
+
+.anomaly-description {
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--vscode-foreground);
+}
+
+.anomaly-details {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+  font-family: var(--vscode-editor-font-family);
+  margin: 8px 0;
+}
+
+.anomaly-recommendation {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--vscode-textLink-foreground);
+  font-style: italic;
+}
+
+/* Patterns Table */
+.patterns-table-container {
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.patterns-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.patterns-table thead {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.patterns-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-weight: 600;
+  color: var(--vscode-foreground);
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.patterns-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  color: var(--vscode-foreground);
+}
+
+.patterns-table tbody tr:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.task-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phase-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+}
+
+.task-title {
+  font-family: var(--vscode-editor-font-family);
+  font-size: 13px;
+}
+
+.runs-cell {
+  text-align: center;
+  font-weight: 600;
+}
+
+.success-rate {
+  font-weight: 600;
+}
+
+.duration-cell {
+  font-family: var(--vscode-editor-font-family);
+}
+
+.timestamp-cell {
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+}
+
+.condition-code {
+  background: var(--vscode-textCodeBlock-background);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: var(--vscode-editor-font-family);
+  font-size: 12px;
+  color: var(--vscode-textLink-foreground);
+}
+
+.no-condition {
+  color: var(--vscode-descriptionForeground);
+}
+
+/* Patterns Details */
+.patterns-details {
+  margin-top: 16px;
+  border-top: 1px solid var(--vscode-panel-border);
+  padding-top: 16px;
+}
+
+.patterns-details summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vscode-textLink-foreground);
+  padding: 8px 0;
+  user-select: none;
+}
+
+.patterns-details summary:hover {
+  text-decoration: underline;
+}
+
+.patterns-breakdown {
+  margin-top: 16px;
+}
+
+.pattern-detail {
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.pattern-detail h5 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--vscode-foreground);
+}
+
+.pattern-commands {
+  margin-bottom: 12px;
+}
+
+.pattern-commands strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--vscode-foreground);
+}
+
+.pattern-commands ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.pattern-commands li {
+  margin-bottom: 4px;
+}
+
+.pattern-commands code {
+  background: var(--vscode-textCodeBlock-background);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: var(--vscode-editor-font-family);
+  font-size: 12px;
+  display: inline-block;
+}
+
+.pattern-stats {
+  display: flex;
+  gap: 24px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--vscode-editor-font-family);
+}
+

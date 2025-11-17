@@ -1,26 +1,68 @@
+# Development files
 .vscode/**
-.reasoning/reports/**
-.reasoning/logs/**
-.reasoning/conversations/**
-.reasoning/traces/**
-.reasoning/adrs/**
-.reasoning/snapshots/**
-.reasoning/self_review/**
-.reasoning/security/**
-.reasoning/ledger/**
-.reasoning/session_history.json
-.reasoning/current-context.json
+.vscode-test/**
+.github/**
+.claude/**
 node_modules/**
 test-project/**
-*.md
-.github/**
+extension_DISABLED/**
+out_DISABLED/**
+repo_reference/**
+extension-builds_DISABLED/**
+
+# Source files (only compiled JS needed)
 *.ts
+!*.d.ts
 tsconfig.json
 webpack.config.js
+
+# Reasoning data (keep local only)
+.reasoning/**
+.reasoning_rl4/**
+.reasoning_rl4.backup/**
+.reasoning.rl3-backup*/**
+
+# Backups and snapshots
+*.tar.gz
+*.backup
+rl4-snapshot.json
+rl4-backup-*.tar.gz
+rl4-kernel-baseline-*.tar.gz
+
+# MCP Server (not needed in extension)
+mcp-server/**
+
+# Build artifacts
+extension/node_modules/**
+extension/webview/ui/node_modules/**
+extension/webview/ui/src/**
+extension/webview/ui/package-lock.json
+extension/webview/ui/vite.config.ts
+extension/webview/ui/tsconfig.json
+extension/webview/ui/tailwind.config.ts
+extension/webview/ui/postcss.config.js
+
+# Documentation (keep only README)
+*.md
+!README.md
+!LICENSE.txt
+
+# Logs and temp files
+*.log
+*.pid
+.DS_Store
+.env
+.env.*
+
+# Git
 .git
 .gitignore
-.claude/**
-*.json
-!package.json
-!package-lock.json
-!extension/**/*.json
+.vscodeignore
+
+# Analysis and reports
+analysis_result.json
+cursor-extension.json
+*.vsix
+
+# Old extension builds
+reasoning-layer-rl4-*.vsix

@@ -57,11 +57,15 @@ export class TimerRegistry {
      * @throws Error if ID already registered
      */
     registerInterval(id: string, callback: () => void, interval: number): void {
+        // Auto-clear if already exists (idempotent registration)
         if (this.intervals.has(id)) {
-            throw new Error(`Interval ID already registered: ${id}`);
+            console.warn(`⚠️ [TimerRegistry] Timer ID already registered: ${id} - auto-clearing`);
+            this.clear(id);
         }
         
+        console.log(`🧪 [TimerRegistry] Creating setInterval for ${id}...`);
         const timer = setInterval(callback, interval);
+        console.log(`✅ [TimerRegistry] setInterval created: ${id}, handle type: ${typeof timer}`);
         
         this.intervals.set(id, timer);
         this.metadata.set(id, {
@@ -71,6 +75,8 @@ export class TimerRegistry {
             interval,
             callback: callback.name || 'anonymous'
         });
+        
+        console.log(`✅ [TimerRegistry] Interval registered: ${id} (${interval}ms, callback: ${callback.name || 'anonymous'})`);
     }
     
     /**

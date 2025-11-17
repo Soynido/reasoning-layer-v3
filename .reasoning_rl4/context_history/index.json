@@ -1,0 +1,212 @@
+[
+  {
+    "cycle": 610,
+    "timestamp": "2025-11-17T12:24:11.722Z",
+    "file": "snapshot-610.json",
+    "compressed": false,
+    "size_bytes": 479
+  },
+  {
+    "cycle": 620,
+    "timestamp": "2025-11-17T12:25:51.741Z",
+    "file": "snapshot-620.json",
+    "compressed": false,
+    "size_bytes": 479
+  },
+  {
+    "cycle": 630,
+    "timestamp": "2025-11-17T12:27:31.788Z",
+    "file": "snapshot-630.json",
+    "compressed": false,
+    "size_bytes": 473
+  },
+  {
+    "cycle": 640,
+    "timestamp": "2025-11-17T12:29:11.790Z",
+    "file": "snapshot-640.json",
+    "compressed": false,
+    "size_bytes": 521
+  },
+  {
+    "cycle": 650,
+    "timestamp": "2025-11-17T12:30:51.826Z",
+    "file": "snapshot-650.json",
+    "compressed": false,
+    "size_bytes": 522
+  },
+  {
+    "cycle": 660,
+    "timestamp": "2025-11-17T12:32:31.857Z",
+    "file": "snapshot-660.json",
+    "compressed": false,
+    "size_bytes": 521
+  },
+  {
+    "cycle": 670,
+    "timestamp": "2025-11-17T12:34:11.863Z",
+    "file": "snapshot-670.json",
+    "compressed": false,
+    "size_bytes": 521
+  },
+  {
+    "cycle": 680,
+    "timestamp": "2025-11-17T12:35:51.862Z",
+    "file": "snapshot-680.json",
+    "compressed": false,
+    "size_bytes": 492
+  },
+  {
+    "cycle": 690,
+    "timestamp": "2025-11-17T12:37:31.882Z",
+    "file": "snapshot-690.json",
+    "compressed": false,
+    "size_bytes": 491
+  },
+  {
+    "cycle": 700,
+    "timestamp": "2025-11-17T12:39:11.904Z",
+    "file": "snapshot-700.json",
+    "compressed": false,
+    "size_bytes": 534
+  },
+  {
+    "cycle": 710,
+    "timestamp": "2025-11-17T12:40:52.004Z",
+    "file": "snapshot-710.json",
+    "compressed": false,
+    "size_bytes": 533
+  },
+  {
+    "cycle": 720,
+    "timestamp": "2025-11-17T12:42:32.041Z",
+    "file": "snapshot-720.json",
+    "compressed": false,
+    "size_bytes": 509
+  },
+  {
+    "cycle": 730,
+    "timestamp": "2025-11-17T12:44:12.065Z",
+    "file": "snapshot-730.json",
+    "compressed": false,
+    "size_bytes": 508
+  },
+  {
+    "cycle": 740,
+    "timestamp": "2025-11-17T12:45:52.098Z",
+    "file": "snapshot-740.json",
+    "compressed": false,
+    "size_bytes": 548
+  },
+  {
+    "cycle": 750,
+    "timestamp": "2025-11-17T10:30:43.556Z",
+    "file": "snapshot-750.json",
+    "compressed": false,
+    "size_bytes": 474
+  },
+  {
+    "cycle": 760,
+    "timestamp": "2025-11-17T10:32:23.604Z",
+    "file": "snapshot-760.json",
+    "compressed": false,
+    "size_bytes": 510
+  },
+  {
+    "cycle": 770,
+    "timestamp": "2025-11-17T10:34:03.619Z",
+    "file": "snapshot-770.json",
+    "compressed": false,
+    "size_bytes": 510
+  },
+  {
+    "cycle": 780,
+    "timestamp": "2025-11-17T10:35:43.651Z",
+    "file": "snapshot-780.json",
+    "compressed": false,
+    "size_bytes": 545
+  },
+  {
+    "cycle": 790,
+    "timestamp": "2025-11-16T18:13:09.029Z",
+    "file": "snapshot-790.json",
+    "compressed": false,
+    "size_bytes": 562
+  },
+  {
+    "cycle": 800,
+    "timestamp": "2025-11-16T18:14:49.091Z",
+    "file": "snapshot-800.json",
+    "compressed": false,
+    "size_bytes": 573
+  },
+  {
+    "cycle": 810,
+    "timestamp": "2025-11-16T18:16:29.131Z",
+    "file": "snapshot-810.json",
+    "compressed": false,
+    "size_bytes": 572
+  },
+  {
+    "cycle": 820,
+    "timestamp": "2025-11-16T18:18:09.189Z",
+    "file": "snapshot-820.json",
+    "compressed": false,
+    "size_bytes": 572
+  },
+  {
+    "cycle": 830,
+    "timestamp": "2025-11-16T18:19:49.247Z",
+    "file": "snapshot-830.json",
+    "compressed": false,
+    "size_bytes": 573
+  },
+  {
+    "cycle": 840,
+    "timestamp": "2025-11-16T18:21:29.315Z",
+    "file": "snapshot-840.json",
+    "compressed": false,
+    "size_bytes": 571
+  },
+  {
+    "cycle": 850,
+    "timestamp": "2025-11-16T18:23:09.365Z",
+    "file": "snapshot-850.json",
+    "compressed": false,
+    "size_bytes": 572
+  },
+  {
+    "cycle": 860,
+    "timestamp": "2025-11-16T18:24:49.412Z",
+    "file": "snapshot-860.json",
+    "compressed": false,
+    "size_bytes": 573
+  },
+  {
+    "cycle": 870,
+    "timestamp": "2025-11-16T18:26:29.464Z",
+    "file": "snapshot-870.json",
+    "compressed": false,
+    "size_bytes": 573
+  },
+  {
+    "cycle": 880,
+    "timestamp": "2025-11-16T18:28:09.521Z",
+    "file": "snapshot-880.json",
+    "compressed": false,
+    "size_bytes": 572
+  },
+  {
+    "cycle": 890,
+    "timestamp": "2025-11-16T18:29:49.567Z",
+    "file": "snapshot-890.json",
+    "compressed": false,
+    "size_bytes": 573
+  },
+  {
+    "cycle": 900,
+    "timestamp": "2025-11-16T18:31:29.611Z",
+    "file": "snapshot-900.json",
+    "compressed": false,
+    "size_bytes": 572
+  }
+]

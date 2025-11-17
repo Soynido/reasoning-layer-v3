@@ -10,7 +10,8 @@ export class UnifiedLogger {
     private channel: vscode.OutputChannel;
 
     private constructor() {
-        this.channel = vscode.window.createOutputChannel('RL3');
+        // RL4 Kernel - Isolated output channel (avoids conflict with RL3 legacy)
+        this.channel = vscode.window.createOutputChannel('RL4 Kernel');
     }
 
     /**
@@ -42,7 +43,7 @@ export class UnifiedLogger {
     public logStartup(workspaceName: string, totalEvents: number, githubConnected: boolean): void {
         this.channel.clear();
         this.channel.appendLine('');
-        this.channel.appendLine('=== REASONING LAYER V3 — Session Start ===');
+        this.channel.appendLine('=== RL4 KERNEL — Session Start ===');
         this.channel.appendLine(`Workspace: ${workspaceName}`);
         this.channel.appendLine(`Total Events: ${totalEvents}`);
         this.channel.appendLine(`GitHub Status: ${githubConnected ? '✅ Connected' : '⚠️ Not linked'}`);

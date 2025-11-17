@@ -118,6 +118,19 @@ export class ExecPool {
             this.latencies.push(duration);
             this.successful++;
             
+            // ✅ NEW: Sanitize buffers to prevent memory leaks
+            const rawResult = result as any;
+            const sanitizedResult = {
+                stdout: rawResult.stdout ? rawResult.stdout.slice(0, 1000) : '', // Max 1KB
+                stderr: rawResult.stderr ? rawResult.stderr.slice(0, 1000) : '', // Max 1KB
+                duration,
+                timedOut: false
+            };
+            
+            // Force release original buffers
+            rawResult.stdout = '';
+            rawResult.stderr = '';
+            
             // Log success metric
             this.logMetric({
                 timestamp: new Date().toISOString(),
@@ -129,12 +142,7 @@ export class ExecPool {
                 active_jobs: this.activeJobs
             });
             
-            return {
-                stdout: (result as any).stdout,
-                stderr: (result as any).stderr,
-                duration,
-                timedOut: false
-            };
+            return sanitizedResult;
             
         } catch (error) {
             const duration = Date.now() - start;
@@ -154,7 +162,7 @@ export class ExecPool {
             
             return {
                 stdout: '',
-                stderr: error instanceof Error ? error.message : String(error),
+                stderr: (error instanceof Error ? error.message : String(error)).slice(0, 1000),
                 duration,
                 timedOut: false
             };
@@ -255,11 +263,46 @@ export class ExecPool {
         if (!this.logPath) return;
 
         try {
+            // ✅ NEW: Rotate log if too large
+            this.rotateLogIfNeeded();
+            
             const line = JSON.stringify(entry) + '\n';
             fs.appendFileSync(this.logPath, line);
         } catch (err) {
             // Fail silently to avoid breaking the pool
             console.warn('ExecPool: Failed to log metric:', err);
+        }
+    }
+    
+    /**
+     * ✅ NEW: Rotate git_pool.jsonl after 5000 lines
+     */
+    private rotateLogIfNeeded(): void {
+        if (!this.logPath) return;
+        
+        try {
+            if (!fs.existsSync(this.logPath)) return;
+            
+            const content = fs.readFileSync(this.logPath, 'utf-8');
+            const lines = content.split('\n').filter(l => l.trim()).length;
+            
+            if (lines > 5000) {
+                const timestamp = Date.now();
+                const archivePath = this.logPath.replace('.jsonl', `-${timestamp}.jsonl`);
+                
+                // Archive current file
+                fs.renameSync(this.logPath, archivePath);
+                
+                // Compress in background (non-blocking)
+                const { exec } = require('child_process');
+                exec(`gzip "${archivePath}"`, (err: any) => {
+                    if (err) console.warn('ExecPool: Failed to compress archive:', err);
+                });
+                
+                console.log(`✅ ExecPool: Rotated ${this.logPath} → ${archivePath}.gz`);
+            }
+        } catch (err) {
+            console.warn('ExecPool: Failed to rotate log:', err);
         }
     }
 }

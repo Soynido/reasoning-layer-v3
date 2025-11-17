@@ -1,0 +1,549 @@
+---
+version: 3.4
+updated: '2025-11-17T14:50:00.000Z'
+confidence: 1.0
+deviation_mode: free
+current_phase: "Transition to P0 Production-Ready Mode"
+sprint_completed_on: '2025-11-17T14:50:00.000Z'
+---
+
+# Plan — Strategic Vision
+
+## Phase
+✅ E3.4 - COMPLETED | ✅ E4 - COMPLETED | ✅ E4.1 - Memory Safety (COMPLETED) | 🎯 E5 - Pattern Learning UI (Paused)
+
+## Goal (E4 - COMPLETED ✅)
+**OBJECTIF ATTEINT** — Production MVP prêt :
+1. ✅ **Parse LLM Response automatique** (clipboard → proposals.json, 4 formats supportés)
+2. ✅ **Helper scripts Terminal** (rl4-log.js + rl4-log.sh + README complet)
+3. ✅ **Documentation complète** (README.md + RELEASE_NOTES_v3.5.8.md)
+4. ✅ **Release v3.5.8 ready** (toutes fonctionnalités backend implémentées)
+
+## Goal (E4.1 - Memory Safety Sprint) ✅ COMPLETED
+**OBJECTIF ATTEINT** — Fuites mémoire corrigées
+
+### Problème RÉSOLU
+🚨 **Extension-host:** 770 MB après 1h30 → 164 GB après 2 mois (crash certain)
+🚨 **Renderer:** 1,18 GB après 1h30 → 252 GB après 2 mois (crash certain)
+🚨 **Root causes:** Event listeners jamais nettoyés + ExecPool buffers + Console.log accumulation
+
+### Solution: 5 Phases (3h) — COMPLÉTÉES
+1. **Phase 0: Memory Monitoring** (15min) ✅
+   - Créer MemoryMonitor.ts (baseline + snapshots)
+   - Logs toutes les 5 min + alerte si > 500 MB
+
+2. **Phase 1: Disposables VS Code** (45min) — CRITIQUE ✅
+   - Nettoyer event listeners dans IDEActivityListener, BuildMetricsListener
+   - Stocker disposables + dispose() propre
+   - Gain: -60% croissance extension-host
+
+3. **Phase 2: ExecPool Buffer Management** (45min) — CRITIQUE ✅
+   - Limiter buffers stdout/stderr à 1 KB
+   - Rotation git_pool.jsonl après 5000 lignes
+   - Gain: -40% croissance extension-host
+
+4. **Phase 3: Console.log Production Mode** (30min) ✅
+   - Logger webview avec rotation (max 100 logs)
+   - Désactiver console.log en production
+   - Gain: -70% croissance renderer
+
+5. **Phase 4: JSONL Rotation** (30min) ✅
+   - Rotation automatique après 10K lignes
+   - Compression archives .gz
+   - Maintient fichiers actifs < 10K lignes
+
+**✅ Résultats:** -97% RAM projeté (770 MB → 200 MB après 1h30)  
+**✅ Extension version:** v3.5.11 active depuis 2025-11-17T13:42  
+**✅ Sprint complété:** 2025-11-17T14:50
+
+## Goal (E5 - Pattern Learning UI) 🎯 PAUSED
+**OBJECTIF: Exposer Pattern Learning dans l'UI**
+
+### Problème
+✅ **Backend Ready:** TerminalPatternsLearner (476 lignes) fonctionne et apprend
+❌ **UI Missing:** Utilisateur ne voit JAMAIS les patterns appris ni les suggestions
+
+**✅ UNBLOCKED:** Sprint E4.1 Memory Safety complété (2025-11-17T14:50)
+
+### Solution: 3 Phases
+1. **Phase 1: Terminal Patterns Display** (2h)
+   - Onglet "Patterns" dans Insights Tab
+   - Affichage patterns appris (table + cards)
+   - Section Anomalies (success rate drops, unusual durations)
+
+2. **Phase 2: Auto-Suggestions UI** (2h)
+   - Détection tâches sans `@rl4:completeWhen`
+   - Section "💡 Suggestions" dans Dev Tab
+   - Bouton "Apply Suggestion" pour auto-compléter
+
+3. **Phase 3: Ad-Hoc Actions Tracker** (2h)
+   - Tracking actions non planifiées
+   - UI "Suggested from Activity"
+   - Conversion ad-hoc → tâches formelles
+
+## Timeline
+**Phase E3.4:**
+- Start: 2025-11-16 00:00:00
+- Completed: 2025-11-16 06:45:00
+- Duration: 6h 45min ✅
+
+**Phase E4:**
+- Start: 2025-11-16 07:00:00
+- Completed: 2025-11-16 08:00:00
+- Duration: 1h ✅ (ultra-rapide, backend déjà prêt)
+
+**Phase E5 (Current):**
+- Start: 2025-11-16 08:00:00
+- Target: 2025-11-16 14:00:00
+- Duration: 6h (estimated)
+
+## Success Criteria E4 (ALL ✅)
+
+### 🔴 P0 (Must Have) — COMPLETED
+- [x] Parse LLM Response command implemented (`parseLLMResponse` handler) ✅
+- [x] Button "Parse LLM Response" in Control Tab UI ✅
+- [x] Clipboard → proposals.json workflow validated ✅
+
+### 🟡 P1 (Should Have) — COMPLETED
+- [x] Helper scripts: `rl4-log.js` (Node.js) created ✅
+- [x] Helper scripts: `rl4-log.sh` (Bash) created ✅
+- [x] README_RL4_TERMINAL.md documentation written ✅
+- [x] README.md updated with Phase E3.4 achievements ✅
+
+### 🟢 P2 (Nice to Have) — COMPLETED
+- [x] Release notes v3.5.8 drafted ✅
+- [ ] E2E workflow test in test workspace (manual testing)
+- [ ] ADR-011: Terminal Patterns Learning Strategy (optional)
+
+## Success Criteria E5 (NEW)
+
+### 🔴 P0 (Must Have)
+- [ ] Onglet "Patterns" dans Insights Tab avec affichage terminal-patterns.json
+- [ ] PatternsCard component (table + détails par pattern)
+- [ ] Section Anomalies avec success rate drops + unusual durations
+- [ ] Détection tâches sans `@rl4:completeWhen` + suggestions
+- [ ] UI "Suggested Conditions" dans Dev Tab
+- [ ] Handler `applySuggestion` pour apply auto-suggestions
+
+### 🟡 P1 (Should Have)
+- [ ] AdHocTracker.ts component pour tracking actions non planifiées
+- [ ] Support marqueur `# RL4_ACTION` dans helper scripts
+- [ ] Enrichissement snapshot avec ad-hoc actions
+- [ ] UI "Suggested from Activity" dans Dev Tab
+
+### 🟢 P2 (Nice to Have)
+- [ ] Duration histogram (visual charts)
+- [ ] Command classification badges (color-coded)
+- [ ] Pattern comparison tool (before/after)
+
+## Production-Ready Mode (P0 Core)
+
+**Status:** planned
+**Priority:** P0 (post-E4.1 Memory Safety)
+**Estimated Effort:** 6h
+**Scope:** Minimal (analyzer + snapshot + recommendations only)
+
+### Goal
+Introduire un système de validation production-ready permettant d'analyser l'état du RL4 et de générer un score de robustesse avant release.
+
+**Scope P0 (Minimal):**
+- ProductionReadyAnalyzer (analyse kernel + JSONL + timers)
+- ProductionReadySnapshotBuilder (génère snapshot texte + score)
+- HardeningEngine minimal (recommandations uniquement, pas d'exécution)
+- Commande VS Code + Bouton UI dans Control Tab existant
+- JSONL log production-checks.jsonl (historique scores)
+
+### Components P0
+
+1. **ProductionReadyAnalyzer.ts** (2h)
+   - Analyse: HealthMonitor, MemoryMonitor, CognitiveScheduler, JSONL files, timers/watchers
+   - Calcul score 0-100% basé sur thresholds
+   - Retourne ProductionReadinessReport
+
+2. **ProductionReadySnapshotBuilder.ts** (2h)
+   - Génère snapshot Markdown: Score + Issues + Metrics + Recommendations
+   - Copie automatique clipboard
+   - Appelle ProductionReadyAnalyzer
+
+3. **HardeningEngine.ts** (1h - minimal)
+   - Détecte issues: memory, JSONL size, timers count
+   - Génère recommandations texte (pas d'exécution)
+
+4. **Commande + UI** (1h)
+   - Commande: reasoning.snapshot.productionReady
+   - Bouton "Production Check" dans Control Tab
+   - Notification avec score
+   - Log: production-checks.jsonl
+
+### Success Criteria P0
+
+- ✅ Score readiness calculé (0-100%)
+- ✅ Issues critiques détectées
+- ✅ Recommandations générées
+- ✅ Commande + bouton UI fonctionnels
+- ✅ Historique dans production-checks.jsonl
+
+### Risks
+
+- 🟡 Bias 35% (threshold exploratory 50%) ✅
+- 🟢 Dépendance E4.1 (blocker: E4.1 DOIT être complété AVANT)
+- 🟢 Scoring v1 simple (amélioration P1)
+
+### Dependencies
+
+**Hard:** E4.1 Memory Safety ✅ COMPLÉTÉ (2025-11-17T14:50)
+**Soft:** E5 Pattern Learning (parallèle possible)
+
+### Timeline
+
+**Post-E4.1:** 6h (4 fichiers créés, 3 modifiés)
+**Bias:** 35% (sous threshold 50% exploratory)
+
+### Next Phase (P1 - Sprints Futurs)
+
+- P1.1: UI avancée (onglet Production + gauge) - 3h
+- P1.2: HardeningExecutor (apply recommendations) - 2h
+- P1.3: Advanced analysis (MemoryLeakDetector + PerformanceProfiler) - 2h
+- P1.4: Automation (AutoHardeningScheduler) - 1h
+- P1.5: Documentation (ADR-012 + RL4_ProductionReady.mdc) - 1h
+
+## Success Criteria E3.4 (ALL ✅)
+- ✅ PromptOptimizer.ts avec 4 modes compression (strict/flexible/exploratory/free)
+- ✅ AnomalyDetector.ts avec détection 5 types (sudden_change, regression, unusual_activity, bias_spike, plan_drift)
+- ✅ UnifiedPromptBuilder.ts retourne { prompt, metadata: { anomalies, compression } }
+- ✅ SnapshotReminder avec timer 30min + auto-suggest mode
+- ✅ Terminal RL4 command avec AppendOnlyWriter vers terminal-events.jsonl
+- ✅ Workflow LLM proposals: proposals.json → submitDecisions → applyPatch
+- ✅ WebView 4 tabs (Control/Dev/Insights/About) avec gestion anomalies + compression metrics
+- ✅ TasksRL4Parser pour extraire @rl4:id / @rl4:completeWhen
+- ✅ TaskVerificationEngine avec vérification périodique 10s + confidence calculation
+- ✅ Dev Tab UI "Verified by RL4" avec badges + "Mark as Done"
+- ✅ TerminalPatternsLearner avec auto-learning + suggest completeWhen + detect anomalies
+- ✅ Extension compilée (717 KiB) + webview (307.85 KiB)
+
+## Architecture Dev Tab (État Final)
+
+### **Workflow Complet**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. User génère snapshot (Exploratory/Free mode)                │
+│ 2. LLM retourne propositions avec RL4_PROPOSAL {...}           │
+│ 3. User: "Parse LLM Response" → clipboard lu automatiquement   │
+│ 4. RL4: Parse JSON → Écrit proposals.json                      │
+│ 5. Badge Dev Tab: "3 nouvelles propositions"                   │
+│ 6. User ouvre Dev Tab → Voit 3 propositions                    │
+│ 7. User accepte 2 (P0), rejette 1                              │
+│ 8. Patch preview généré (bias check: 15% < 25% ✅)             │
+│ 9. User valide → 2 tâches ajoutées à Tasks.RL4                │
+│    Format: - [ ] [P0] Task title @rl4:id=task-001              │
+│ 10. User exécute dans RL4 Terminal:                            │
+│     echo '# RL4_TASK_START id=task-001 command="npm test"'     │
+│     npm test                                                    │
+│     echo '# RL4_TASK_RESULT id=task-001 status=success'        │
+│ 11. RL4: Détecte terminal-events.jsonl → Matche @rl4:id        │
+│ 12. Dev Tab: Badge "✅ Verified by RL4" apparaît sur la tâche  │
+│ 13. Prochain snapshot: Tâche marquée comme complétée           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### **Composants à Implémenter**
+
+#### **1. LLM Response Parser (extension.ts)**
+```typescript
+case 'parseLLMResponse':
+  // Lit clipboard
+  const clipboardText = await vscode.env.clipboard.readText();
+  
+  // Cherche RL4_PROPOSAL (supporte JSON fenced ou raw)
+  const match = clipboardText.match(/RL4_PROPOSAL["\s:]*({[\s\S]*?})/);
+  if (match) {
+    const proposals = JSON.parse(match[1]);
+    fs.writeFileSync(proposalsPath, JSON.stringify(proposals, null, 2));
+    webviewPanel.postMessage({ type: 'proposalsParsed', count: proposals.suggestedTasks.length });
+  }
+```
+
+#### **2. Terminal Helper Scripts**
+- **scripts/rl4-log.js** : Helper Node.js pour écrire dans terminal-events.jsonl
+- **scripts/rl4-log.sh** : Helper Bash pour marqueurs RL4_TASK_*
+
+#### **3. TaskVerificationEngine (kernel/api/TaskVerificationEngine.ts)**
+```typescript
+class TaskVerificationEngine {
+  // Lit terminal-events.jsonl
+  loadTerminalEvents(since?: Date): TerminalEvent[]
+  
+  // Lit Tasks.RL4 et extrait @rl4:id / @rl4:completeWhen
+  parseTaskMetadata(tasksFile: string): TaskMetadata[]
+  
+  // Matche events avec tâches
+  verifyTasks(tasks, events): TaskVerification[]
+  
+  // Retourne { taskId, verified: boolean, lastEvent, duration }
+}
+```
+
+#### **4. Extended Tasks.RL4 Parser**
+Support nouveau format :
+```markdown
+- [ ] [P0] Add unit tests @rl4:id=task-001 @rl4:completeWhen="exitCode=0"
+```
+
+#### **5. Dev Tab UI Enhancement**
+Affichage enrichi :
+```tsx
+{item.verified && (
+  <span style={{ color: '#4caf50', fontSize: '10px' }}>
+    ✅ Verified by RL4 ({item.verifiedAt})
+  </span>
+)}
+```
+
+## Vision Long-Term
+
+Transformer RL4 en système auto-apprenant où :
+- **Prompts enrichissent les logs** (via marqueurs RL4_TASK_*)
+- **Kernel sniffe les fichiers** (pas d'API VS Code)
+- **Patterns émergent** (terminal-patterns.json)
+- **Vérification automatique** (Dev Tab temps réel)
+- **Feedback loop complet** (LLM → Tasks → Terminal → Logs → Verification → Snapshot)
+
+## Architecture Globale (Rappel)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     CONTROL TAB                             │
+│  - Generate Snapshot (deviation modes)                     │
+│  - GitHub Integration                                       │
+│  - Commit with WHY                                          │
+│  - Parse LLM Response 🆕                                    │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│                      DEV TAB                                │
+│  - Proposed Tasks (from proposals.json)                    │
+│  - Accept/Reject buttons                                   │
+│  - Patch Preview                                            │
+│  - Apply Patch → Tasks.RL4                                  │
+│  - Task Status: "✅ Verified by RL4" 🆕                     │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   RL4 TERMINAL 🆕                           │
+│  - Terminal dédié pour dev                                 │
+│  - Marqueurs: # RL4_TASK_START / # RL4_TASK_RESULT         │
+│  - Scripts helper: rl4-log.js / rl4-log.sh                 │
+│  - Logs → .reasoning_rl4/terminal-events.jsonl             │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│              TASK VERIFICATION ENGINE 🆕                    │
+│  - Lit terminal-events.jsonl                               │
+│  - Parse @rl4:id dans Tasks.RL4                            │
+│  - Matche events avec tâches                               │
+│  - Retourne verified: true/false                           │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│                  INSIGHTS TAB                               │
+│  - KPIs Dashboard                                           │
+│  - Anomalies Card                                           │
+│  - Task Completion Rate 🆕                                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Dépendances Techniques
+
+- ✅ `proposals.json` watcher (déjà implémenté)
+- ✅ `submitDecisions` handler (déjà implémenté)
+- ✅ `applyPatch` handler (déjà implémenté)
+- ✅ Bias Guard (déjà implémenté)
+- ✅ Ledger logging (déjà implémenté)
+- 🆕 `parseLLMResponse` handler (à implémenter)
+- 🆕 `TaskVerificationEngine` (à implémenter)
+- 🆕 Parser `@rl4:id` dans Tasks.RL4 (à implémenter)
+- 🆕 Scripts helper terminal (à implémenter)
+- 🆕 UI badge "Verified by RL4" (à implémenter)
+- 🆕 **Auto-completion UI** (bouton "Mark as Done" quand verified)
+- 🆕 **Ad-hoc tracker** (`ad-hoc-actions.jsonl` + UI proposals)
+- 🆕 **Pattern learning** (`terminal-patterns.json` + suggestions)
+
+## Auto-Completion Workflow 🚀
+
+### Principe
+**RL4 ne modifie JAMAIS Tasks.RL4 automatiquement**. Il propose uniquement.
+
+### Workflow
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Task dans Tasks.RL4:                                    │
+│    - [ ] [P0] All tests passing @rl4:id=task-001           │
+│                 @rl4:completeWhen="npm test exitCode=0"    │
+│                                                             │
+│ 2. User exécute dans RL4 Terminal:                         │
+│    echo '# RL4_TASK_START id=task-001 command="npm test"'  │
+│    npm test                                                 │
+│    echo '# RL4_TASK_RESULT id=task-001 status=success      │
+│          exitCode=0'                                        │
+│                                                             │
+│ 3. TaskVerificationEngine:                                 │
+│    - Lit terminal-events.jsonl                             │
+│    - Matche id=task-001                                    │
+│    - Vérifie: exitCode=0 && status=success ✅              │
+│    - Marque: verified=true (en mémoire)                    │
+│                                                             │
+│ 4. Dev Tab affiche:                                        │
+│    [P0] All tests passing                                  │
+│    ✅ Verified by RL4 (2025-11-16T05:15:00Z)               │
+│    [Mark as Done] ← Bouton apparaît                        │
+│                                                             │
+│ 5. User clique "Mark as Done":                             │
+│    - extension.ts reçoit { type: 'markTaskDone',           │
+│                             taskId: 'task-001' }           │
+│    - Lit Tasks.RL4                                         │
+│    - Remplace:                                             │
+│      - [ ] [P0] All tests passing...                       │
+│      + [x] [P0] All tests passing (verified 2025-11-16)    │
+│    - Log dans decisions.jsonl:                             │
+│      { event: 'task_completed', taskId: 'task-001',        │
+│        trigger: 'terminal', verified: true }               │
+│                                                             │
+│ 6. Prochain snapshot:                                      │
+│    LLM voit tâche cochée + timestamp vérification          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Règle Stricte
+- ❌ **Jamais d'auto-mark** sans validation user
+- ✅ **Toujours proposer** "Mark as Done" quand verified
+- ✅ **Toujours logger** dans decisions.jsonl avec source (terminal/manual)
+
+## Ad-Hoc Actions Workflow 🔧
+
+### Problème
+User demande: "Refactor cette fonction vite fait" → Pas dans Tasks.RL4
+
+### Solution
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. LLM (moi) détecte: action non liée à Tasks.RL4          │
+│                                                             │
+│ 2. Dans RL4 Terminal, j'ajoute marqueur:                   │
+│    echo '# RL4_ACTION adhoc=true description="Refactor     │
+│           UserService.getProfile" files="UserService.ts"'  │
+│    (refactor code...)                                       │
+│    echo '# RL4_ACTION_RESULT adhoc-001 status=success'     │
+│                                                             │
+│ 3. Kernel écrit dans ad-hoc-actions.jsonl:                 │
+│    { type: 'adhoc', id: 'adhoc-001', timestamp: '...',     │
+│      description: 'Refactor UserService.getProfile',       │
+│      files: ['UserService.ts'], status: 'success' }        │
+│                                                             │
+│ 4. Au prochain snapshot:                                   │
+│    Prompt inclut section "Ad-hoc actions (last 24h)":      │
+│    - Refactor UserService.getProfile (adhoc-001)           │
+│    - Fix typo in README (adhoc-002)                        │
+│                                                             │
+│ 5. LLM analyse et peut proposer dans RL4_PROPOSAL:         │
+│    { id: 'from-adhoc-001', title: 'Document refactored     │
+│      UserService', why: 'Refactored but no doc', ... }     │
+│                                                             │
+│ 6. User voit proposition dans Dev Tab:                     │
+│    💡 Suggested from activity:                             │
+│    "Document refactored UserService"                       │
+│    [Accept P1] [Backlog] [Ignore]                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Bénéfices
+- ✅ Aucune incohérence (ad-hoc ≠ tasks officielles)
+- ✅ Traçabilité complète (toutes actions loggées)
+- ✅ Feedback loop (ad-hoc → proposals → tasks)
+- ✅ Pas de pollution Tasks.RL4 (seulement si user accepte)
+
+## Terminal Patterns Learning 🧠
+
+### Objectif
+RL4 apprend, par workspace, quelles commandes valident quelles tâches.
+
+### Mécanisme
+```json
+// .reasoning_rl4/terminal-patterns.json
+{
+  "learned_at": "2025-11-16T05:00:00.000Z",
+  "workspace_id": "rl4-official",
+  "patterns": {
+    "task-001": {
+      "taskTitle": "All tests passing",
+      "typicalCommands": ["npm test", "npm run test:unit"],
+      "successRate": 0.95,
+      "avgDuration": 5200,
+      "lastRun": "2025-11-16T05:15:00.000Z",
+      "runsCount": 23
+    },
+    "task-002": {
+      "taskTitle": "Build passes",
+      "typicalCommands": ["npm run build", "webpack --config prod"],
+      "successRate": 1.0,
+      "avgDuration": 12000,
+      "lastRun": "2025-11-16T04:30:00.000Z",
+      "runsCount": 12
+    }
+  },
+  "commandClassification": {
+    "npm test": "Debug",
+    "npm run dev": "Implementation",
+    "npm run build": "Validation",
+    "docker-compose up": "Setup"
+  }
+}
+```
+
+### Utilisation
+
+#### 1. Auto-suggestion `@rl4:completeWhen`
+Quand user ajoute nouvelle task sans `@rl4:completeWhen`:
+```markdown
+User ajoute: - [ ] [P0] E2E tests passing
+
+RL4 suggère (Dev Tab):
+💡 This task looks like testing
+   Suggested: @rl4:completeWhen="npm run test:e2e exitCode=0"
+   (Based on learned pattern from task-001)
+   [Apply] [Edit] [Ignore]
+```
+
+#### 2. Phase Classification Améliorée
+Snapshot prompt enrichi:
+```
+Recent terminal activity (last 2h):
+- npm test (15 runs, 93% success) → Debug phase likely
+- npm run dev (running continuously) → Implementation active
+- Last build: 45min ago
+
+Learned patterns suggest: Current phase = Debug
+```
+
+#### 3. Anomaly Detection
+```
+⚠️ Unusual: 'npm test' failed 5 times in a row (usual success rate: 95%)
+   Possible regression? Consider checking:
+   - Recent commits (last 2h)
+   - Dependencies changes
+```
+
+### Learning Process
+1. **Capture**: Chaque commande terminal → terminal-events.jsonl
+2. **Aggregate**: Toutes les 30min, TaskVerificationEngine agrège:
+   - Commandes par task-id
+   - Success rates
+   - Durées moyennes
+3. **Update**: terminal-patterns.json mis à jour
+4. **Suggest**: Suggestions remontent dans Dev Tab
+5. **Feedback**: User accepte/rejette → Affine learning
+
+### Privacy & Control
+- ✅ 100% local (pas de cloud)
+- ✅ Par workspace (pas de data cross-workspace)
+- ✅ User peut reset: `rm .reasoning_rl4/terminal-patterns.json`
+- ✅ Suggestions jamais forcées (toujours boutons Accept/Ignore)

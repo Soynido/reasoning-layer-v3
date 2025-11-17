@@ -3,8 +3,10 @@ out/
 dist/
 *.vsix
 .vscode-test/
-.reasoning/traces/*.json
-.reasoning/traces/*.gz
+.reasoning/
+.reasoning_rl4/traces/*.json
+.reasoning/
+.reasoning_rl4/traces/*.gz
 *.log
 .DS_Store
 test-project/
@@ -16,3 +18,4 @@ REASONING_LAYER_V2_V3_TRANSFER.md
 .vscode/settings.json
 
 .reasoning/
+.reasoning_rl4/

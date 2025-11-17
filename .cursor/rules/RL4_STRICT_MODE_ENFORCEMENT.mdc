@@ -1,0 +1,493 @@
+---
+description: [RL4] Enforcement absolu — Protocoles opérationnels obligatoires
+globs: **/*
+alwaysApply: true
+manual: false
+---
+
+# RL4 ENFORCEMENT — ZÉRO INTERPRÉTATION
+
+## PROTOCOLE DE LECTURE OBLIGATOIRE
+
+**AVANT toute action, exécuter ce protocole dans l'ordre :**
+
+### ÉTAPE 1 : Lecture Plan.RL4
+```
+1. read_file('.reasoning_rl4/Plan.RL4')
+2. Extraire ligne contenant 'deviation_mode:'
+3. Extraire valeur après ':' (strict|flexible|exploratory|free)
+4. Si ligne absente → STOP_PROTOCOL("Plan.RL4: deviation_mode manquant")
+5. Si valeur invalide → STOP_PROTOCOL("Plan.RL4: mode invalide")
+6. Stocker: MODE = [valeur extraite]
+```
+
+### ÉTAPE 2 : Lecture Tasks.RL4
+```
+1. read_file('.reasoning_rl4/Tasks.RL4')
+2. Extraire toutes lignes contenant '- [ ] [P0]' ou '- [x] [P0]'
+3. Pour chaque ligne : extraire taskId si '@rl4:id=' présent
+4. Si aucune tâche P0 trouvée → Stocker: P0_TASKS = []
+5. Si parsing échoue → STOP_PROTOCOL("Tasks.RL4: format invalide")
+6. Stocker: P0_TASKS = [liste des tâches P0 non complétées]
+```
+
+### ÉTAPE 3 : Lecture Context.RL4
+```
+1. read_file('.reasoning_rl4/Context.RL4')
+2. Extraire ligne contenant 'bias:'
+3. Extraire valeur numérique après ':'
+4. Si ligne absente → STOP_PROTOCOL("Context.RL4: bias manquant")
+5. Si valeur non numérique → STOP_PROTOCOL("Context.RL4: bias invalide")
+6. Stocker: BIAS_CURRENT = [valeur extraite]
+```
+
+### ÉTAPE 4 : Validation du protocole
+```
+Si MODE = NULL ou P0_TASKS = NULL ou BIAS_CURRENT = NULL:
+    → STOP_PROTOCOL("Lecture incomplète")
+```
+
+**Ce protocole est NON NÉGOCIABLE.**
+
+---
+
+## CALCUL DU BIAS IMPACT
+
+**Formule obligatoire :**
+
+```
+BIAS_IMPACT = (fichiers_créés × 5) + (fichiers_modifiés × 2) + (lignes_ajoutées ÷ 100)
+
+Exemples:
+- Créer 1 fichier .ts (50 lignes) → 5 + 0 + 0.5 = 5.5%
+- Modifier 3 fichiers (200 lignes) → 0 + 6 + 2 = 8%
+- Créer 2 fichiers + modifier 1 → 10 + 2 + (lignes ÷ 100) = 12%+
+```
+
+**Si BIAS_IMPACT non calculable (action imprévue) :**
+```
+→ STOP_PROTOCOL("BIAS_IMPACT non calculable pour action: [description]")
+```
+
+---
+
+## PROTOCOLE STOP UNIFORME
+
+**Format obligatoire en cas d'arrêt :**
+
+```
+⛔ RL4 STOP — [RAISON]
+
+MODE ACTUEL: [strict|flexible|exploratory|free]
+TÂCHES P0: [liste ou "aucune"]
+BIAS ACTUEL: [X]%
+BIAS IMPACT: [Y]%
+BIAS TOTAL: [X+Y]%
+THRESHOLD: [0|25|50|100]%
+
+VIOLATION: [description exacte]
+
+OPTIONS:
+a) Rejeter cette action
+b) Ajouter à backlog (Tasks.RL4)
+c) Modifier mode dans Plan.RL4
+d) Créer tâche P0 urgente
+
+ACTION REQUISE: Choisir une option.
+```
+
+**Après affichage de ce message : ARRÊT COMPLET DU RAISONNEMENT.**
+
+**L'agent ne doit PAS :**
+- Proposer des alternatives
+- Continuer à raisonner
+- Suggérer des contournements
+- Expliquer comment il aurait pu faire autrement
+
+**L'agent doit : S'ARRÊTER.**
+
+---
+
+## MODE STRICT — PROTOCOLE OPÉRATIONNEL
+
+**Condition:** MODE = "strict"
+
+**Protocole de validation AVANT toute action :**
+
+```
+1. L'action modifie-t-elle du code ? (création, modification, suppression)
+   → OUI: continuer
+   → NON: aller à section ACTIONS NON-CODE
+
+2. L'action est-elle explicitement liée à une tâche dans P0_TASKS ?
+   → OUI: continuer
+   → NON: STOP_PROTOCOL("Action non liée à tâche P0")
+
+3. Le taskId de la tâche est-il présent et valide ?
+   → OUI: action autorisée
+   → NON: STOP_PROTOCOL("Tâche P0 sans @rl4:id valide")
+```
+
+**Validation tâche P0 :**
+```
+Une tâche est P0 valide si:
+- Ligne contient '- [ ] [P0]' (non complétée)
+- Ligne contient '@rl4:id=<identifiant>'
+- Identifiant est non vide
+
+Si tâche P0 sans ID → considérer comme INVALIDE
+Si format ambigu → STOP_PROTOCOL("Format P0 ambigu")
+```
+
+---
+
+## MODE FLEXIBLE — PROTOCOLE OPÉRATIONNEL
+
+**Condition:** MODE = "flexible"
+
+**Protocole de validation AVANT toute action :**
+
+```
+1. L'action modifie-t-elle du code ?
+   → OUI: continuer
+   → NON: aller à section ACTIONS NON-CODE
+
+2. L'action est-elle liée à une tâche P0 ou P1 ?
+   → P0: action autorisée (pas de vérification bias)
+   → P1: continuer
+   → Aucune: continuer
+
+3. Calculer BIAS_IMPACT selon formule
+4. Calculer BIAS_TOTAL = BIAS_CURRENT + BIAS_IMPACT
+5. Si BIAS_TOTAL >= 25:
+   → STOP_PROTOCOL("Bias threshold dépassé: 25%")
+6. Si BIAS_TOTAL < 25:
+   → Action autorisée
+```
+
+---
+
+## MODE EXPLORATORY — PROTOCOLE OPÉRATIONNEL
+
+**Condition:** MODE = "exploratory"
+
+**Protocole de validation AVANT toute action :**
+
+```
+1. Calculer BIAS_IMPACT selon formule
+2. Calculer BIAS_TOTAL = BIAS_CURRENT + BIAS_IMPACT
+3. Si BIAS_TOTAL >= 50:
+   → STOP_PROTOCOL("Bias threshold dépassé: 50%")
+4. Si BIAS_TOTAL < 50:
+   → Action autorisée
+```
+
+---
+
+## MODE FREE — PROTOCOLE OPÉRATIONNEL
+
+**Condition:** MODE = "free"
+
+**Protocole de validation AVANT toute action :**
+
+```
+1. Action autorisée (toute modification)
+2. OBLIGATION: Informer utilisateur des changements planifiés
+3. Format obligatoire:
+   "🔓 MODE FREE: Les modifications suivantes seront appliquées:
+   - [liste détaillée]
+   Bias impact estimé: [X]%"
+```
+
+---
+
+## ACTIONS NON-CODE — PROTOCOLE
+
+**Toute action non-code suit les MÊMES règles que le code :**
+
+Actions non-code incluent:
+- Renommer fichier/dossier
+- Supprimer fichier/dossier
+- Créer répertoire
+- Réorganiser structure
+- Créer documentation (.md)
+- Modifier configuration (.json, .yaml, .toml)
+- Modifier règles Cursor (.mdc)
+
+**Protocole:**
+```
+Appliquer le protocole du MODE actuel comme si c'était du code.
+Pas d'exception.
+```
+
+---
+
+## FICHIERS RL4 — INTERDICTION ABSOLUE
+
+**L'agent ne doit JAMAIS modifier ces fichiers :**
+- `.reasoning_rl4/Plan.RL4`
+- `.reasoning_rl4/Tasks.RL4`
+- `.reasoning_rl4/Context.RL4`
+- `.reasoning_rl4/ADRs.RL4`
+- `.reasoning_rl4/*.jsonl`
+
+**Exception unique :**
+```
+Si la demande utilisateur est EXPLICITEMENT:
+"Modifie Plan.RL4" ou "Ajoute une tâche dans Tasks.RL4"
+→ Alors modification autorisée
+```
+
+**Si l'agent tente de "réparer" ces fichiers pour se débloquer :**
+```
+→ VIOLATION CRITIQUE
+→ STOP_PROTOCOL("Tentative de modification fichier RL4 non autorisée")
+```
+
+---
+
+## TERMINAL RL4 — PROTOCOLE OPÉRATIONNEL
+
+**Question binaire obligatoire :**
+
+```
+La commande à exécuter est-elle liée à une tâche dans P0_TASKS avec @rl4:id ?
+```
+
+### SI OUI (tâche trackée):
+
+**Protocole obligatoire:**
+```
+1. Vérifier que la tâche a un @rl4:id valide
+2. Si @rl4:id absent → STOP_PROTOCOL("Tâche sans ID, impossible de tracker")
+3. Fournir commande enrichie au format:
+
+"Pour tracker cette exécution dans RL4:
+
+1. Ouvre Terminal RL4: Cmd+Shift+P → 'RL4: Open Terminal'
+2. Exécute:
+
+# Context: [description technique de l'action]
+# Expected: [résultat attendu précis]
+# Related files: [fichiers concernés]
+rl4_run <taskId> '<command>'
+
+Cela loggera l'exécution dans terminal-events.jsonl."
+```
+
+**Enrichissement obligatoire :**
+- `# Context:` doit contenir une description technique (pas vague)
+- `# Expected:` doit contenir un critère vérifiable
+- `# Related files:` doit lister les fichiers impactés
+
+**Si enrichissement impossible (commande trop complexe):**
+```
+→ STOP_PROTOCOL("Commande non enrichissable: [raison]")
+```
+
+### SI NON (commande routine):
+
+```
+"Exécute en terminal régulier: <command>"
+(Pas de rl4_run, pas d'enrichissement)
+```
+
+**Commandes routine (liste exhaustive):**
+- `ls`, `cd`, `pwd`, `cat`, `grep`
+- `git status`, `git log`, `git diff`
+- Lecture seule (pas de modification d'état)
+
+**Si doute sur classification:**
+```
+→ Par défaut: considérer comme tâche trackée
+```
+
+---
+
+## PARSING STRICT — PROTOCOLE DE VÉRIFICATION
+
+**Lors de l'extraction des fichiers RL4 :**
+
+### Vérification Plan.RL4:
+```
+1. Chercher ligne exacte 'deviation_mode:'
+2. Extraire valeur après ':' (ignorer espaces)
+3. Valider valeur ∈ {strict, flexible, exploratory, free}
+4. Si ligne dupliquée → Prendre la première occurrence
+5. Si format invalide → STOP_PROTOCOL("Plan.RL4: parsing impossible")
+```
+
+### Vérification Tasks.RL4:
+```
+1. Chercher toutes lignes matching regex: '^- \[ \] \[P0\]'
+2. Pour chaque ligne: chercher '@rl4:id='
+3. Extraire identifiant après '=' jusqu'à espace ou fin de ligne
+4. Si '@rl4:id=' absent pour tâche P0 → Exclure de P0_TASKS
+5. Si format de ligne incohérent → Ignorer ligne, continuer parsing
+6. Si aucune ligne P0 valide → P0_TASKS = []
+```
+
+### Vérification Context.RL4:
+```
+1. Chercher ligne exacte 'bias:'
+2. Extraire valeur numérique après ':'
+3. Convertir en nombre (float/int)
+4. Si conversion échoue → STOP_PROTOCOL("Context.RL4: bias non numérique")
+5. Si valeur < 0 ou > 100 → STOP_PROTOCOL("Context.RL4: bias hors limites")
+```
+
+**Fallback en cas d'ambiguïté:**
+```
+Aucun fallback.
+Si ambiguïté → STOP_PROTOCOL("Fichier RL4 ambigu: [nom fichier]")
+```
+
+---
+
+## CHECKLIST FINALE — PROTOCOLE D'EXÉCUTION
+
+**AVANT toute action, exécuter cette checklist dans l'ordre:**
+
+```
+[ ] 1. Protocole de lecture exécuté → MODE, P0_TASKS, BIAS_CURRENT extraits
+[ ] 2. MODE validé ∈ {strict, flexible, exploratory, free}
+[ ] 3. P0_TASKS validé (liste ou [])
+[ ] 4. BIAS_CURRENT validé (0-100)
+[ ] 5. BIAS_IMPACT calculé selon formule
+[ ] 6. BIAS_TOTAL = BIAS_CURRENT + BIAS_IMPACT calculé
+[ ] 7. Protocole du MODE actuel exécuté → Action autorisée ou refusée
+[ ] 8. Si refusée → STOP_PROTOCOL exécuté
+```
+
+**Si une case ne peut être validée:**
+```
+→ Identifier quelle case
+→ STOP_PROTOCOL("Checklist incomplète: case [numéro] non validée")
+```
+
+**Présentation obligatoire des violations:**
+```
+Si plusieurs cases échouent:
+→ Lister TOUTES les cases non validées dans STOP_PROTOCOL
+→ Format: "Checklist incomplète: cases [1, 3, 7] non validées"
+```
+
+---
+
+## HARD-STOP — MÉCANISME DE BLOCAGE COGNITIF
+
+**Quand STOP_PROTOCOL est appelé:**
+
+1. Afficher le message STOP au format uniforme
+2. ARRÊTER IMMÉDIATEMENT le raisonnement
+3. NE PAS proposer d'alternatives
+4. NE PAS expliquer comment contourner
+5. NE PAS suggérer de modifications aux fichiers RL4
+6. NE PAS continuer à raisonner sur la demande
+7. ATTENDRE la réponse utilisateur
+
+**Interdictions absolues après STOP:**
+- Proposer du code "en attendant"
+- Suggérer des modifications "temporaires"
+- Expliquer comment l'utilisateur pourrait modifier les fichiers RL4
+- Continuer l'analyse de la demande
+- Proposer un plan alternatif
+
+**Action unique autorisée:**
+```
+Répondre aux questions de clarification sur le STOP lui-même.
+```
+
+---
+
+## INTERDICTIONS ABSOLUES — LISTE EXHAUSTIVE
+
+**L'agent ne doit JAMAIS:**
+
+### Code et fichiers:
+- Créer fichier sans validation protocole
+- Modifier fichier sans validation protocole
+- Supprimer fichier sans validation protocole
+- Renommer fichier/dossier sans validation protocole
+- Réorganiser structure sans validation protocole
+
+### Raisonnement:
+- Extrapoler au-delà de la demande explicite
+- Inventer des solutions non demandées
+- Refactoriser sans tâche explicite
+- Optimiser sans tâche explicite
+- "Améliorer" sans tâche explicite
+
+### Fichiers RL4:
+- Modifier Plan.RL4 sans demande explicite
+- Modifier Tasks.RL4 sans demande explicite
+- Modifier Context.RL4 sans demande explicite
+- Modifier ADRs.RL4 sans demande explicite
+- "Réparer" un fichier RL4 pour se débloquer
+
+### Protocoles:
+- Bypasser la checklist
+- Simuler la lecture des fichiers RL4
+- Ignorer STOP_PROTOCOL
+- Continuer après STOP_PROTOCOL
+- Modifier le calcul de BIAS_IMPACT
+- Modifier les thresholds des modes
+
+### Terminal:
+- Utiliser rl4_run sans enrichissement complet
+- Fournir commande Terminal RL4 pour tâche sans @rl4:id
+- Omettre les commentaires Context/Expected/Related files
+
+---
+
+## VIOLATION = ÉCHEC CRITIQUE
+
+**Si cette règle est violée:**
+
+1. L'agent a échoué sa mission
+2. L'action doit être annulée immédiatement
+3. L'utilisateur doit être informé de la violation
+4. Un rapport de violation doit être fourni:
+   ```
+   🚨 VIOLATION RL4 ENFORCEMENT
+
+   RÈGLE VIOLÉE: [identification précise]
+   ACTION EFFECTUÉE: [description]
+   PROTOCOLE IGNORÉ: [identification]
+   
+   Cette violation constitue un échec critique.
+   ```
+
+**Aucune excuse. Aucune exception. Aucune interprétation.**
+
+---
+
+## APPLICATION TEMPORELLE
+
+**Cette règle s'applique:**
+- AVANT chaque action (pas après)
+- AVANT chaque modification (pas pendant)
+- AVANT chaque création (pas après validation)
+
+**Si la règle est appliquée après l'action:**
+```
+→ VIOLATION
+→ L'action doit être annulée
+```
+
+---
+
+## MÉTA-RÈGLE
+
+**Ce fichier lui-même (.mdc) ne peut être modifié que:**
+- Si demande utilisateur explicite: "Modifie RL4_STRICT_MODE_ENFORCEMENT.mdc"
+- Après validation du protocole du MODE actuel
+- Avec calcul de BIAS_IMPACT
+
+**Si l'agent tente de modifier ce fichier pour s'autoriser des actions:**
+```
+→ VIOLATION CRITIQUE DE NIVEAU MAXIMUM
+→ Échec total de l'enforcement
+```
+
+**Cette règle est la loi. Elle ne négocie pas.**

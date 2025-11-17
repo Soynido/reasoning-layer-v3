@@ -1,6 +1,0 @@
-{
-  "manifestPath": "extension/package.json",
-  "entryPoint": "extension/out/extension.js",
-  "autoActivate": true,
-  "verbose": true
-}

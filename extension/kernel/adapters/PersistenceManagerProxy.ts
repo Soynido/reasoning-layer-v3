@@ -22,7 +22,7 @@ export class PersistenceManagerProxy {
         
         const tracesPath = path.join(
             workspaceRoot,
-            '.reasoning',
+            '.reasoning_rl4',
             'traces',
             `${new Date().toISOString().split('T')[0]}.jsonl`
         );

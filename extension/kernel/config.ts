@@ -1,7 +1,7 @@
 /**
  * Kernel Configuration
  * 
- * Loads from .reasoning/kernel_config.json
+ * Loads from .reasoning_rl4/kernel_config.json
  * Feature flags for gradual rollout
  */
 
@@ -23,7 +23,7 @@ export interface KernelConfig {
 }
 
 export function loadKernelConfig(workspaceRoot: string): KernelConfig {
-    const configPath = path.join(workspaceRoot, '.reasoning', 'kernel_config.json');
+    const configPath = path.join(workspaceRoot, '.reasoning_rl4', 'kernel_config.json');
     
     const defaults: KernelConfig = {
         USE_TIMER_REGISTRY: true,

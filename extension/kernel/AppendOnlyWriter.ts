@@ -23,13 +23,15 @@ export interface AppendOptions {
 export class AppendOnlyWriter {
     private filePath: string;
     private maxSizeMB: number = 50;
+    private maxLines: number = 10000; // ✅ NEW: Max lines before rotation
     private buffer: string[] = [];
     private bufferSize: number = 0;
     private maxBufferSize: number = 1000; // Lines before auto-flush
     
-    constructor(filePath: string, maxSizeMB: number = 50) {
+    constructor(filePath: string, maxSizeMB: number = 50, maxLines: number = 10000) {
         this.filePath = filePath;
         this.maxSizeMB = maxSizeMB;
+        this.maxLines = maxLines; // ✅ NEW: Configure max lines
     }
     
     /**
@@ -43,8 +45,8 @@ export class AppendOnlyWriter {
         this.buffer.push(entry);
         this.bufferSize += entry.length;
         
-        // Auto-flush if buffer full
-        if (this.buffer.length >= this.maxBufferSize) {
+        // Auto-flush if buffer full OR every 10 lines (for low-frequency writes)
+        if (this.buffer.length >= this.maxBufferSize || this.buffer.length >= 10) {
             await this.flush();
         }
     }
@@ -85,7 +87,7 @@ export class AppendOnlyWriter {
     }
     
     /**
-     * Rotate file if size exceeds limit
+     * Rotate file if size OR line count exceeds limit (✅ ENHANCED)
      */
     private async rotateIfNeeded(): Promise<void> {
         if (!fsSync.existsSync(this.filePath)) {
@@ -95,15 +97,30 @@ export class AppendOnlyWriter {
         const stats = await fs.stat(this.filePath);
         const sizeMB = stats.size / 1024 / 1024;
         
-        if (sizeMB >= this.maxSizeMB) {
-            // Rotate: file.jsonl -> file.YYYY-MM-DD-HHmmss.jsonl
-            const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
+        // ✅ NEW: Check line count
+        const content = await fs.readFile(this.filePath, 'utf-8');
+        const lineCount = content.split('\n').filter(l => l.trim()).length;
+        
+        // Rotate if size OR line count exceeds threshold
+        if (sizeMB >= this.maxSizeMB || lineCount >= this.maxLines) {
+            const timestamp = Date.now();
             const ext = path.extname(this.filePath);
             const base = this.filePath.slice(0, -ext.length);
-            const rotatedPath = `${base}.${timestamp}${ext}`;
+            const rotatedPath = `${base}-${timestamp}${ext}`;
             
             await fs.rename(this.filePath, rotatedPath);
-            console.log(`📦 Rotated ${path.basename(this.filePath)} -> ${path.basename(rotatedPath)} (${sizeMB.toFixed(1)}MB)`);
+            
+            // ✅ NEW: Compress in background (non-blocking)
+            const { exec } = require('child_process');
+            exec(`gzip "${rotatedPath}"`, (err: any) => {
+                if (err) console.warn('AppendOnlyWriter: Failed to compress archive:', err);
+                else console.log(`✅ Compressed ${path.basename(rotatedPath)} → ${path.basename(rotatedPath)}.gz`);
+            });
+            
+            const reason = sizeMB >= this.maxSizeMB 
+                ? `size ${sizeMB.toFixed(1)}MB` 
+                : `${lineCount} lines`;
+            console.log(`📦 Rotated ${path.basename(this.filePath)} (${reason}) → ${path.basename(rotatedPath)}.gz`);
         }
     }
     
@@ -130,14 +147,30 @@ export class AppendOnlyWriter {
         const content = await fs.readFile(this.filePath, 'utf-8');
         const lines = content.trim().split('\n').filter(l => l);
         
-        return lines.map(line => {
+        // Filter out Git conflict markers
+        const isGitConflictMarker = (line: string): boolean => {
+            const trimmed = line.trim();
+            return trimmed.startsWith('<<<<<<<') || 
+                   trimmed.startsWith('=======') || 
+                   trimmed.startsWith('>>>>>>>') ||
+                   trimmed.includes('<<<<<<< Updated upstream') ||
+                   trimmed.includes('>>>>>>> Stashed changes');
+        };
+        
+        return lines
+            .filter(line => !isGitConflictMarker(line)) // Remove Git conflict markers
+            .map(line => {
             try {
                 return JSON.parse(line);
             } catch (error) {
+                    // Only warn if it's not a Git conflict marker (already filtered)
+                    if (!isGitConflictMarker(line)) {
                 console.warn(`⚠️ Invalid JSONL line: ${line.substring(0, 50)}...`);
+                    }
                 return null;
             }
-        }).filter(e => e !== null);
+            })
+            .filter(e => e !== null);
     }
     
     /**
